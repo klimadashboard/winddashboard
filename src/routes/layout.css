@@ -1,0 +1,12 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+}
+
+:root {
+  --blue-dark: #1e3689;
+  --blue-sky:  #009ee3;
+  --text-dark: #1a1a2e;
+  --off-white: #f8f9fc;
+}

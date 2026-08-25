@@ -1,0 +1,39 @@
+node_modules
+
+# Output
+.output
+.vercel
+.netlify
+.wrangler
+/.svelte-kit
+/build
+/scripts/raster/*
+
+# Intermediate per-band GeoJSONs (scripts/extract_band_geojson.py output) — pure
+# tippecanoe input for the local mbtiles build, never read by the app itself.
+# Regenerate from scripts/raster/osm_wka_distance_zones_widmung.tif when needed
+# (see PIPELINE.md Schritt 4a). ~470 MB, not worth tracking.
+/geodata/band_*.geojson
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code — personal/local-machine settings and agent worktree checkouts,
+# never meant to be shared (contains local file-permission grants tied to
+# this machine's username and paths).
+.claude/settings.local.json
+.claude/worktrees/
+
+# Env
+.env
+.env.*
+!.env.example
+!.env.test
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# Python bytecode (scripts/ are run directly, never imported as a package)
+__pycache__/
