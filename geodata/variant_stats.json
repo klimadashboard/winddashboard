@@ -1,0 +1,96 @@
+{
+  "default": {
+    "count": 4093,
+    "totalHa": 351912,
+    "perBundesland": {
+      "Niederösterreich": 152967,
+      "Burgenland": 48457,
+      "Steiermark": 47855,
+      "Oberösterreich": 36428,
+      "Tirol": 21673,
+      "Kärnten": 19613,
+      "Salzburg": 18617,
+      "Vorarlberg": 4358,
+      "(unassigned)": 1885,
+      "Wien": 59
+    }
+  },
+  "800": {
+    "count": 4898,
+    "totalHa": 501336,
+    "perBundesland": {
+      "Niederösterreich": 256265,
+      "Burgenland": 78381,
+      "Steiermark": 51860,
+      "Oberösterreich": 41230,
+      "Kärnten": 27567,
+      "Tirol": 22048,
+      "Salzburg": 19297,
+      "Vorarlberg": 4447,
+      "Wien": 134,
+      "(unassigned)": 107
+    }
+  },
+  "1000": {
+    "count": 4468,
+    "totalHa": 420282,
+    "perBundesland": {
+      "Niederösterreich": 200943,
+      "Burgenland": 61138,
+      "Steiermark": 48210,
+      "Oberösterreich": 36512,
+      "Kärnten": 26514,
+      "Tirol": 21713,
+      "Salzburg": 18720,
+      "Vorarlberg": 4358,
+      "(unassigned)": 2087,
+      "Wien": 86
+    }
+  },
+  "1200": {
+    "count": 4026,
+    "totalHa": 347312,
+    "perBundesland": {
+      "Niederösterreich": 152913,
+      "Burgenland": 48447,
+      "Steiermark": 45522,
+      "Oberösterreich": 31397,
+      "Kärnten": 23977,
+      "Tirol": 21165,
+      "Salzburg": 17776,
+      "Vorarlberg": 4188,
+      "(unassigned)": 1885,
+      "Wien": 41
+    }
+  },
+  "1500": {
+    "count": 3442,
+    "totalHa": 259261,
+    "perBundesland": {
+      "Niederösterreich": 98612,
+      "Steiermark": 41607,
+      "Burgenland": 35230,
+      "Oberösterreich": 23539,
+      "Tirol": 19928,
+      "Kärnten": 19466,
+      "Salzburg": 16191,
+      "Vorarlberg": 3913,
+      "(unassigned)": 775
+    }
+  },
+  "2000": {
+    "count": 2648,
+    "totalHa": 160408,
+    "perBundesland": {
+      "Niederösterreich": 46647,
+      "Steiermark": 34187,
+      "Tirol": 17687,
+      "Burgenland": 17685,
+      "Oberösterreich": 14912,
+      "Kärnten": 13314,
+      "Salzburg": 12616,
+      "Vorarlberg": 3352,
+      "(unassigned)": 8
+    }
+  }
+}
