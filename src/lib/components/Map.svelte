@@ -26,6 +26,7 @@
 	import {
 		CARTO_BASEMAP,
 		CARTO_LABELS_STYLE,
+		CARTO_RASTER_CONTEXT,
 		AUSTRIA_CENTER,
 		AUSTRIA_ZOOM,
 		CLASSIFICATION_TILES,
@@ -163,7 +164,7 @@
 			// German GL label fetch.
 			map.addSource("carto-context", {
 				type: "raster",
-				tiles: ["https://basemaps.cartocdn.com/rastertiles/light_nolabels/{z}/{x}/{y}.png"],
+				tiles: [CARTO_RASTER_CONTEXT],
 				tileSize: 256,
 				attribution: "© CARTO",
 			});

@@ -18,6 +18,13 @@ To recreate this project with the same configuration:
 npx sv@0.15.2 create --template minimal --types ts --add tailwindcss="plugins:none" --no-install windkraft
 ```
 
+## Environment variables
+
+Copy `.env.example` to `.env` and fill in `PUBLIC_CARTO_API_KEY` — the map's
+CARTO basemap requires an API key ([get one here](https://carto.com/basemaps/apikey/)).
+Set the same variable in the Vercel project's environment variables for
+deployed builds.
+
 ## Developing
 
 Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
