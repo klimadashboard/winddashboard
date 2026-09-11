@@ -6,6 +6,20 @@
 	import RenewableGoalsChart from "./RenewableGoalsChart.svelte";
 	import { AUSTRIA_HA } from "$lib/config/austria";
 	import { BEZIRK_TO_BUNDESLAND } from "$lib/config/bezirke";
+	import { loadRegionStats } from "$lib/data/regionStats";
+
+	// Erste Stelle der Gemeindekennziffer = Bundesland.
+	const BUNDESLAND_BY_GKZ: Record<string, string> = {
+		"1": "Burgenland",
+		"2": "Kärnten",
+		"3": "Niederösterreich",
+		"4": "Oberösterreich",
+		"5": "Salzburg",
+		"6": "Steiermark",
+		"7": "Tirol",
+		"8": "Vorarlberg",
+		"9": "Wien",
+	};
 
 	let { onComplete }: { onComplete: () => void } = $props();
 
@@ -27,18 +41,21 @@
 	// opt-in toggle, not the default.
 	let potentialViewMode = $state<"absolute" | "percent">("absolute");
 
-	// ── Constants from raster analysis (osm_wka_distance_zones_widmung.tif,
-	// "default" Bundesland-specific settlement-distance scenario). Verified
-	// against a fresh run of create_classification_from_simplified.py —
-	// see PIPELINE.md §6. ──────────────────────────────────────────────────
-	const SCHUTZ_HA = 987_740; // code 1
-	const SIEDLUNG_HA = 4_678_664; // code 2
-	const SONSTIGE_HA = 2_280_513; // codes 3–10, 12–13 (infrastructure/terrain)
-	const WIND_HA = 38_530; // code 11, Wind zu gering (<150 W/m²) — split out of "Sonstige"
-	const POTENTIAL_HA = 355_378; // code 14, raster-based
+	// ── Konstanten aus dem Klassifikationsraster ──────────────────────────────
+	// Stand widmung_v2 (abschichtung.tif, Schema clean-44), erzeugt von
+	// scripts/create_classification_from_simplified.py. Nach jedem neuen
+	// Rasterlauf hier aktualisieren — siehe PIPELINE.md §6.
+	// Die Codes 9 (Wichtige Objekte) und 10 (Freileitung) sind entfallen, 15
+	// (Nicht-Wohn-Hüllen) und 16 (Gewässer) neu hinzugekommen; beide zählen zu
+	// "Sonstige".
+	const SCHUTZ_HA = 1_007_705; // code 1
+	const SIEDLUNG_HA = 4_569_390; // code 2
+	const SONSTIGE_HA = 2_342_789; // codes 3–8, 12, 13, 15, 16
+	const WIND_HA = 40_553; // code 11, Wind zu gering
+	const POTENTIAL_HA = 365_190; // code 14, raster-based
 
 	// Vector-derived potential (used in the "final" headline)
-	const POTENTIAL_VECTOR_HA = 351_912;
+	const POTENTIAL_VECTOR_HA = 365_161;
 
 	// Colors for the persistent header bar — fixed left-to-right stacking
 	// order: each category's segment appears once its step is reached and
@@ -71,16 +88,17 @@
 	};
 
 	// ── Bundesland breakdown (vector data, sorted by potential area) ─────────
+	// Stand widmung_v2 (abschichtung.tif, 9.9.2026) — aus geodata/zone_stats.json.
 	const BUNDESLAENDER = [
-		{ name: "Niederösterreich", short: "NÖ", ha: 152_967 },
-		{ name: "Burgenland", short: "B", ha: 48_457 },
-		{ name: "Steiermark", short: "ST", ha: 47_855 },
-		{ name: "Oberösterreich", short: "OÖ", ha: 36_428 },
-		{ name: "Tirol", short: "T", ha: 21_673 },
-		{ name: "Kärnten", short: "K", ha: 19_613 },
-		{ name: "Salzburg", short: "S", ha: 18_617 },
-		{ name: "Vorarlberg", short: "V", ha: 4_358 },
-		{ name: "Wien", short: "W", ha: 59 },
+		{ name: "Niederösterreich", short: "NÖ", ha: 145_712 },
+		{ name: "Burgenland", short: "B", ha: 71_014 },
+		{ name: "Steiermark", short: "ST", ha: 44_768 },
+		{ name: "Oberösterreich", short: "OÖ", ha: 37_288 },
+		{ name: "Kärnten", short: "K", ha: 25_420 },
+		{ name: "Tirol", short: "T", ha: 19_478 },
+		{ name: "Salzburg", short: "S", ha: 16_903 },
+		{ name: "Vorarlberg", short: "V", ha: 4_226 },
+		{ name: "Wien", short: "W", ha: 255 },
 	];
 
 	// 0 Titel · 1 Siedlung · 2 Schutz · 3 Sonstige · 4 Wind · 5 Potential ·
@@ -108,8 +126,37 @@
 		Math.max(1, ...Object.values(turbinesByBL)),
 	);
 
+	// Windräder stehen nicht in allen 9 Bundesländern — Salzburg, Tirol und
+	// Vorarlberg haben aktuell keine. Zahl aus den Daten statt hartcodiert.
+	const bundeslaenderMitWind = $derived(
+		Object.values(turbinesByBL).filter((n) => n > 0).length,
+	);
+
 	function fmt(n: number, d = 0) {
 		return n.toLocaleString("de-AT", { maximumFractionDigits: d });
+	}
+
+	// Anlagen je Bundesland — aus der vorberechneten Gemeindetabelle, deren
+	// Zuordnung geometrisch gegen die amtlichen Gemeindegrenzen erfolgt ist.
+	// Der frühere Weg über BEZIRK_TO_BUNDESLAND verlor die 51 Anlagen ohne
+	// `bezirk`-Attribut, wodurch die Balken hier nicht zu den Zahlen auf den
+	// Gemeindeseiten passten (NÖ 794 statt 801, Steiermark 112 statt 116).
+	// Fällt auf die Namenszuordnung zurück, falls die Tabelle nicht lädt.
+	async function turbinesPerBundesland(turbGj: any): Promise<Record<string, number>> {
+		const table = await loadRegionStats();
+		const out: Record<string, number> = {};
+		if (table) {
+			for (const [gkz, entry] of Object.entries(table.regions)) {
+				const bl = BUNDESLAND_BY_GKZ[gkz[0]];
+				if (bl) out[bl] = (out[bl] ?? 0) + entry.turbines;
+			}
+			return out;
+		}
+		for (const f of turbGj.features) {
+			const bl = BEZIRK_TO_BUNDESLAND[f.properties.bezirk ?? ""];
+			if (bl) out[bl] = (out[bl] ?? 0) + 1;
+		}
+		return out;
 	}
 
 	// ── Data loading ──────────────────────────────────────────────────────────
@@ -129,12 +176,7 @@
 		}
 		zoningByBL = byBL;
 		turbineCount = turbGj.features.length;
-		const turbinesByBLCount: Record<string, number> = {};
-		for (const f of turbGj.features) {
-			const bl = BEZIRK_TO_BUNDESLAND[f.properties.bezirk ?? ""];
-			if (bl) turbinesByBLCount[bl] = (turbinesByBLCount[bl] ?? 0) + 1;
-		}
-		turbinesByBL = turbinesByBLCount;
+		turbinesByBL = await turbinesPerBundesland(turbGj);
 		const totalKW: number = turbGj.features.reduce(
 			(s: number, f: any) => s + (f.properties.power_kw ?? 0),
 			0,
@@ -452,8 +494,8 @@
 					</p>
 				</div>
 				<p class="text-sm leading-relaxed text-slate-700 mb-3">
-					Bestehende Infrastruktur (Straßen, Freileitungen) und ungeeignetes
-					Gelände (Hangneigung, Seehöhe) schließen weitere
+					Bestehende Infrastruktur (Straßen, Bahnen, Gebäude) sowie ungeeignetes
+					Gelände (Hangneigung, Seehöhe, Gewässer) schließen weitere
 					<strong class="text-slate-900">{fmt(SONSTIGE_HA)}&thinsp;ha</strong> aus.
 				</p>
 				<div class="flex justify-between">
@@ -757,7 +799,8 @@
 						ausgebaut:
 						<strong class="text-slate-900">{fmt(turbineCount)} Windräder</strong
 						>
-						sind bereits in Betrieb — verteilt auf alle Bundesländer.
+						sind bereits in Betrieb — verteilt auf aktuell {bundeslaenderMitWind}
+						Bundesländer.
 					</p>
 				{/if}
 

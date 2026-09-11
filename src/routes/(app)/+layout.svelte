@@ -9,7 +9,7 @@
 	import NoeMindestabstandNotice from "$lib/components/NoeMindestabstandNotice.svelte";
 	import Scrollytelling from "$lib/components/Scrollytelling.svelte";
 	import SearchBar from "$lib/components/SearchBar.svelte";
-	import { vizMode, storyComplete, selectedRegion, variantStats } from "$lib/stores/windStore";
+	import { vizMode, storyComplete, selectedRegion, zoneStats } from "$lib/stores/windStore";
 	import { browser } from "$app/environment";
 	import { onMount } from "svelte";
 	import { page } from "$app/stores";
@@ -25,9 +25,9 @@
 			storyComplete.set(true);
 		}
 		if (browser) {
-			fetch("/data/variant_stats")
+			fetch("/data/zone_stats")
 				.then((r) => r.json())
-				.then((stats) => variantStats.set(stats))
+				.then((stats) => zoneStats.set(stats))
 				.catch(() => {});
 		}
 	});

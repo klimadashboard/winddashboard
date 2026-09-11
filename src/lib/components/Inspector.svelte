@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { selectedRegion, regionStats, settlementVariant, variantStats, storyComplete } from "$lib/stores/windStore";
+	import { selectedRegion, regionStats, zoneStats, storyComplete } from "$lib/stores/windStore";
 	import { infoCards, faqCategories } from "$lib/data/faq";
 	import type { InfoCard, GraphicKey } from "$lib/data/faq";
 	import { getRegionIntro } from "$lib/data/regionIntro";
@@ -40,9 +40,10 @@
 	const region = $derived($selectedRegion);
 	const stats = $derived($regionStats);
 	const intro = $derived(region ? getRegionIntro(region, stats) : null);
-	// Falls back to the last known "default" figures while variant_stats.json is loading.
-	const zoneCount = $derived($variantStats?.[$settlementVariant]?.count ?? 4093);
-	const totalAreaHa = $derived($variantStats?.[$settlementVariant]?.totalHa ?? 351912);
+	// Fällt auf die zuletzt bekannten Zahlen zurück, solange zone_stats.json lädt.
+	// Stand widmung_v2 (abschichtung.tif, Schema clean-44, 9.9.2026).
+	const zoneCount = $derived($zoneStats?.count ?? 3812);
+	const totalAreaHa = $derived($zoneStats?.totalHa ?? 365161);
 	const potentialPct = $derived(Math.round((totalAreaHa / AUSTRIA_HA) * 1000) / 10);
 
 	// ── Bento card modal ──

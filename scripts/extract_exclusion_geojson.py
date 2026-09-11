@@ -1,11 +1,15 @@
 """
 Extract exclusion zone GeoJSONs from classification.tif for scrollytelling.
 
-Groups:
+Gruppen (Klassencodes siehe create_classification_from_simplified.py):
   schutzgebiete   → code 1
   siedlungen      → code 2
-  sonstige        → codes 3-10, 12-13 (infrastructure/terrain, wind split out below)
+  sonstige        → codes 3–8, 12, 13, 15, 16 (Infrastruktur, Gelände, Gewässer)
   wind            → code 11 (Wind zu gering)
+
+Die Codes 9 und 10 sind mit widmung_v2 stillgelegt, 15 und 16 kamen hinzu; der
+Bereichsausdruck 3–10 hätte die neuen stillschweigend übergangen, deshalb steht
+"sonstige" jetzt als ausdrückliche Liste.
 """
 
 import json, numpy as np
@@ -23,10 +27,14 @@ OUT_DIR = "geodata"
 # Downsample factor — 20× gives ~500 m pixels, fast + small output
 FACTOR = 20
 
+# Alles, was weder Schutzgebiet (1), Siedlungsabstand (2), Wind (11),
+# geeignete Fläche (14) noch außerhalb (0) ist.
+SONSTIGE_CODES = [3, 4, 5, 6, 7, 8, 12, 13, 15, 16]
+
 GROUPS = {
     "exclusion_schutz":    lambda c: c == 1,
     "exclusion_siedlung":  lambda c: c == 2,
-    "exclusion_sonstige":  lambda c: ((c >= 3) & (c <= 10)) | (c == 12) | (c == 13),
+    "exclusion_sonstige":  lambda c: np.isin(c, SONSTIGE_CODES),
     "exclusion_wind":      lambda c: c == 11,
 }
 

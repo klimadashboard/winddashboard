@@ -1,0 +1,1745 @@
+{
+  "schema_version": "2.2.1",
+  "generated_at": "2026-09-09T12:39:21Z",
+  "pipeline": "widmung_v2",
+  "band_schema": "clean-44-ohne-wichtige-objekte-aug-2026",
+  "raster_file": "abschichtung.tif",
+  "band_count": 44,
+  "raster": {
+    "crs": "EPSG:31287",
+    "width": 24001,
+    "height": 14001,
+    "pixel_size_m": 25.0,
+    "bounds": [
+      99987.5,
+      249987.50000000006,
+      700012.5000000002,
+      600012.5000000002
+    ],
+    "dtype": "uint8",
+    "nodata": 0,
+    "nodata_meaning": "0 ist ein gueltiger Wert (Bedingung trifft nicht zu), kein echtes NoData"
+  },
+  "category_order": [
+    "Mensch",
+    "Natur",
+    "Geografie",
+    "Total & Ergebnis",
+    "Siedlungsabstand-Varianten",
+    "Referenz (Zonen & WKA-Bestand)",
+    "Sonstige"
+  ],
+  "stufe_order": [
+    "roh",
+    "quelle",
+    "aggregat",
+    "zone",
+    "summe_quellen",
+    "summe_zonen",
+    "ergebnis"
+  ],
+  "familien": [
+    {
+      "key": "siedlung",
+      "category": "Mensch",
+      "label_de": "Siedlung",
+      "description_de": "Abstand um amtlich gewidmetes Wohnbauland."
+    },
+    {
+      "key": "haeuser_im_gruenen",
+      "category": "Mensch",
+      "label_de": "Häuser im Grünen",
+      "description_de": "Abstand um bewohnte Einzellagen außerhalb des Baulands."
+    },
+    {
+      "key": "nichtwohn_huellen",
+      "category": "Mensch",
+      "label_de": "Nicht-Wohn-Hüllen",
+      "description_de": "Unbewohnte und industrieartige Kataster-Hüllen mit ihrem Fußabdruck."
+    },
+    {
+      "key": "seilbahn_gebaeude",
+      "category": "Mensch",
+      "label_de": "Seilbahn-Gebäude",
+      "description_de": "Liftstationen und andere Gebäude an Seilbahnlinien."
+    },
+    {
+      "key": "gebaeude",
+      "category": "Mensch",
+      "label_de": "Gebäude",
+      "description_de": "Übrige Gebäude aus OpenStreetMap und Kataster mit ihrem Fußabdruck."
+    },
+    {
+      "key": "verkehr",
+      "category": "Mensch",
+      "label_de": "Verkehr",
+      "description_de": "Abstand entlang Straßen, Bahnen und Personenseilbahnen."
+    },
+    {
+      "key": "militaer",
+      "category": "Mensch",
+      "label_de": "Militär",
+      "description_de": "Militärische Sperrgebiete."
+    },
+    {
+      "key": "luftfahrt",
+      "category": "Mensch",
+      "label_de": "Luftfahrt",
+      "description_de": "Flughafenareale und ihre An- und Abflugkorridore."
+    },
+    {
+      "key": "summe",
+      "category": "Mensch",
+      "label_de": "Gesamt Mensch",
+      "description_de": "Alle Quellen und alle Ausschlussflächen der Kategorie Mensch, je als ein Band."
+    },
+    {
+      "key": "schutzgebiet",
+      "category": "Natur",
+      "label_de": "Schutzgebiete",
+      "description_de": "Amtliche und offene Schutzgebietsdaten, ohne Abstandspuffer."
+    },
+    {
+      "key": "summe",
+      "category": "Natur",
+      "label_de": "Gesamt Natur",
+      "description_de": "Quellen und Ausschluss der Kategorie Natur, deckungsgleich, weil ohne Puffer."
+    },
+    {
+      "key": "kriterien",
+      "category": "Geografie",
+      "label_de": "Kriterien",
+      "description_de": "Schwellenwerte für Gelände, Wind und Gewässer."
+    },
+    {
+      "key": "summe",
+      "category": "Geografie",
+      "label_de": "Gesamt Geografie",
+      "description_de": "Quellen und Ausschluss der Kategorie Geografie, deckungsgleich, weil ohne Puffer."
+    },
+    {
+      "key": "ergebnis",
+      "category": "Total & Ergebnis",
+      "label_de": "Ergebnis",
+      "description_de": "Gesamtausschluss sowie verfügbare Fläche, roh und bereinigt."
+    },
+    {
+      "key": "amtliche_zonen",
+      "category": "Referenz (Zonen & WKA-Bestand)",
+      "label_de": "Amtliche Zonen",
+      "description_de": "Windkraft-Positivzonen der Bundesländer."
+    },
+    {
+      "key": "wka_bestand",
+      "category": "Referenz (Zonen & WKA-Bestand)",
+      "label_de": "WKA-Bestand",
+      "description_de": "Bestehende Windräder als Park-Hüllen und als Einzelpunkte."
+    }
+  ],
+  "kategorien": [
+    {
+      "key": "mensch",
+      "category": "Mensch",
+      "label_de": "Mensch",
+      "description_de": "Ausschlüsse wegen Nähe zu Menschen und ihrer Infrastruktur: Siedlungen, Häuser im Grünen, Gebäude, Verkehrswege, militärische Sperrgebiete und Luftfahrt. Quellen sind die Flächenwidmungen der neun Bundesländer, Kataster und Adressregister, OpenStreetMap sowie die niederösterreichischen Mindestabstandszonen."
+    },
+    {
+      "key": "natur",
+      "category": "Natur",
+      "label_de": "Natur",
+      "description_de": "Amtliche Schutzgebiete und Schutzgebiete aus OpenStreetMap gelten als Ausschluss. In dieser Kategorie gibt es keine Abstandspuffer, Quellen und Zonen fallen daher zusammen."
+    },
+    {
+      "key": "geo",
+      "category": "Geografie",
+      "label_de": "Geografie",
+      "description_de": "Physische Kriterien aus Geländemodell, Windatlas und OpenStreetMap: Hangneigung, Seehöhe, Windleistungsdichte und größere Gewässer. Jedes Kriterium ist ein Schwellenwert, keine Abstandsregel."
+    },
+    {
+      "key": "ergebnis",
+      "category": "Total & Ergebnis",
+      "label_de": "Ergebnis",
+      "description_de": "Die Vereinigung aller Ausschlüsse und ihr Gegenstück, die verbleibende Fläche. Die um Splitter bereinigte Fläche ist das Endergebnis der Abschichtung."
+    },
+    {
+      "key": "varianten",
+      "category": "Siedlungsabstand-Varianten",
+      "label_de": "Varianten",
+      "description_de": "Alternative Siedlungsabstände zum Vergleich mit dem Regelwert. Derzeit ist keine Variante konfiguriert, die Kategorie bleibt leer."
+    },
+    {
+      "key": "referenz",
+      "category": "Referenz (Zonen & WKA-Bestand)",
+      "label_de": "Referenz",
+      "description_de": "Kein Ausschluss, sondern Vergleichsmaßstab: die amtlichen Windkraft-Zonen der Länder und die bestehenden Windräder."
+    },
+    {
+      "key": "sonstige",
+      "category": "Sonstige",
+      "label_de": "Sonstige",
+      "description_de": "Auffangkategorie für Bänder ohne eigene Zuordnung. Derzeit leer."
+    }
+  ],
+  "stufen": [
+    {
+      "key": "roh",
+      "label_de": "Rohdaten",
+      "description_de": "Rohdatensatz vor der Vereinigung, nur dort, wo verschiedene Quellen in ein Band fließen."
+    },
+    {
+      "key": "quelle",
+      "label_de": "Quelle",
+      "description_de": "Objekte einer Quelle, ohne Abstandspuffer."
+    },
+    {
+      "key": "aggregat",
+      "label_de": "Aggregat",
+      "description_de": "Vereinigung der Quellen einer Familie, ohne Abstandspuffer."
+    },
+    {
+      "key": "zone",
+      "label_de": "Zone",
+      "description_de": "Ausschlussfläche mit Abstand, geht in die Summe ein."
+    },
+    {
+      "key": "summe_quellen",
+      "label_de": "Summe Quellen",
+      "description_de": "Vereinigung aller Quellen einer Kategorie."
+    },
+    {
+      "key": "summe_zonen",
+      "label_de": "Summe Ausschluss",
+      "description_de": "Vereinigung aller Ausschlussflächen einer Kategorie."
+    },
+    {
+      "key": "ergebnis",
+      "label_de": "Ergebnis",
+      "description_de": "Verfügbare Fläche nach Abzug aller Ausschlüsse."
+    }
+  ],
+  "bands": [
+    {
+      "index": 1,
+      "name": "official_settlement_source",
+      "label_de": "Amtliches Wohnbauland",
+      "description_de": "Amtlich gewidmetes Wohn-, Misch-, Kern- und Dorfgebiet aller neun Bundesländer, ohne Abstand.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        0,
+        60,
+        200,
+        200
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [
+        "flaechenwidmung_bgld",
+        "flaechenwidmung_ktn",
+        "flaechenwidmung_noe",
+        "flaechenwidmung_ooe",
+        "flaechenwidmung_sbg",
+        "flaechenwidmung_stmk",
+        "flaechenwidmung_tirol",
+        "flaechenwidmung_vbg",
+        "flaechenwidmung_wien"
+      ],
+      "abgeleitet_von": [],
+      "familie": "siedlung",
+      "stufe": "quelle",
+      "dashboard_layer": false
+    },
+    {
+      "index": 2,
+      "name": "settlement_buffer",
+      "label_de": "Siedlungsabstand",
+      "description_de": "Abstand von 1.000 m um amtliches Wohn-, Misch-, Kern- und Dorfgebiet aller neun Bundesländer; in Niederösterreich 1.200 m.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        70,
+        130,
+        220,
+        140
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": null,
+      "puffer_hinweis": "Bundeslandabhängig (SETTLEMENT_BUFFER_BY_BL): 1.200 m in Niederösterreich, sonst einheitlich 1.000 m.",
+      "quelle": [
+        "verwaltungsgrenzen_vgd"
+      ],
+      "abgeleitet_von": [
+        "official_settlement_source"
+      ],
+      "familie": "siedlung",
+      "stufe": "zone",
+      "dashboard_layer": true
+    },
+    {
+      "index": 3,
+      "name": "haeuser_im_gruenen_ferienhaus",
+      "label_de": "Ferienhaus und Tourismus",
+      "description_de": "Ferienhaus- und Tourismusgebiete aus den amtlichen Widmungen des Burgenlands und Tirols, ohne Abstand.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        155,
+        30,
+        90,
+        200
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [
+        "flaechenwidmung_bgld",
+        "flaechenwidmung_ktn",
+        "flaechenwidmung_noe",
+        "flaechenwidmung_ooe",
+        "flaechenwidmung_sbg",
+        "flaechenwidmung_stmk",
+        "flaechenwidmung_tirol",
+        "flaechenwidmung_vbg",
+        "flaechenwidmung_wien"
+      ],
+      "abgeleitet_von": [],
+      "familie": "haeuser_im_gruenen",
+      "stufe": "quelle",
+      "dashboard_layer": false
+    },
+    {
+      "index": 4,
+      "name": "haeuser_im_gruenen_widmung",
+      "label_de": "Amtliche Einzellagen-Widmung",
+      "description_de": "Amtliche Widmungen für Hofstellen, Camping, Golf, Kleingärten und Auffüllungsgebiete, ohne Abstand. Ohne Niederösterreich, dort tragen die Zonen des Sektoralen Raumordnungsprogramms den Abstand bereits.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        230,
+        120,
+        0,
+        200
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [
+        "flaechenwidmung_bgld",
+        "flaechenwidmung_ktn",
+        "flaechenwidmung_noe",
+        "flaechenwidmung_ooe",
+        "flaechenwidmung_sbg",
+        "flaechenwidmung_stmk",
+        "flaechenwidmung_tirol",
+        "flaechenwidmung_vbg",
+        "flaechenwidmung_wien",
+        "verwaltungsgrenzen_vgd"
+      ],
+      "abgeleitet_von": [],
+      "familie": "haeuser_im_gruenen",
+      "stufe": "quelle",
+      "dashboard_layer": false
+    },
+    {
+      "index": 5,
+      "name": "haeuser_im_gruenen_streusiedlung",
+      "label_de": "Streusiedlungs-Hüllen",
+      "description_de": "Hüllen bewohnter Streusiedlungen, gebildet aus mindestens fünf adressierten Objekten mit höchstens 200 m Abstand zueinander, ohne Abstand nach außen. Ohne Niederösterreich.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        255,
+        170,
+        0,
+        190
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [
+        "bev_adressregister",
+        "dkm_geoparquet",
+        "verwaltungsgrenzen_vgd"
+      ],
+      "abgeleitet_von": [],
+      "familie": "haeuser_im_gruenen",
+      "stufe": "quelle",
+      "dashboard_layer": false
+    },
+    {
+      "index": 6,
+      "name": "haeuser_im_gruenen_noe_pdf",
+      "label_de": "NÖ-Mindestabstandszonen",
+      "description_de": "Mindestabstandszonen des niederösterreichischen Sektoralen Raumordnungsprogramms um Gebäude, Adressen und Grünland-Widmungen. Sie enthalten den Abstand von 750 m bereits und werden deshalb nicht erneut gepuffert.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        255,
+        210,
+        60,
+        110
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": null,
+      "puffer_hinweis": "750 m bereits im Quellband enthalten - die NÖ-SekROP-PDF-Zonen liefern Objekt und Abstand zusammen, kein zweiter Puffer hier.",
+      "quelle": [
+        "noe_sekrop_mindestabstandszonen"
+      ],
+      "abgeleitet_von": [],
+      "familie": "haeuser_im_gruenen",
+      "stufe": "quelle",
+      "dashboard_layer": false
+    },
+    {
+      "index": 7,
+      "name": "haeuser_im_gruenen",
+      "label_de": "Häuser im Grünen",
+      "description_de": "Abstand von 750 m um bewohnte Einzellagen außerhalb des Baulands: Ferienhaus- und Tourismusgebiete, amtliche Widmungen für Hofstellen, Camping, Golf, Kleingärten und Auffüllungsgebiete sowie Streusiedlungen. In Niederösterreich gelten stattdessen die Mindestabstandszonen des Sektoralen Raumordnungsprogramms, die den Abstand bereits enthalten.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        255,
+        140,
+        60,
+        150
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": 750.0,
+      "puffer_hinweis": null,
+      "quelle": [],
+      "abgeleitet_von": [
+        "haeuser_im_gruenen_ferienhaus",
+        "haeuser_im_gruenen_widmung",
+        "haeuser_im_gruenen_streusiedlung",
+        "haeuser_im_gruenen_noe_pdf"
+      ],
+      "familie": "haeuser_im_gruenen",
+      "stufe": "zone",
+      "dashboard_layer": true
+    },
+    {
+      "index": 8,
+      "name": "nonresidential_hulls_source",
+      "label_de": "Nicht-Wohn-Hüllen",
+      "description_de": "Unbewohnte und industrieartige Kataster-Hüllen, ohne Abstand.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        130,
+        130,
+        130,
+        190
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [
+        "dkm_geoparquet",
+        "osm_pbf"
+      ],
+      "abgeleitet_von": [],
+      "familie": "nichtwohn_huellen",
+      "stufe": "quelle",
+      "dashboard_layer": false
+    },
+    {
+      "index": 9,
+      "name": "nonresidential_hulls_buffer",
+      "label_de": "Ausschluss Nicht-Wohn-Hüllen",
+      "description_de": "Abstand von 25 m um unbewohnte und industrieartige Kataster-Hüllen; das entspricht praktisch dem Fußabdruck.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        180,
+        180,
+        180,
+        130
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": 25.0,
+      "puffer_hinweis": null,
+      "quelle": [],
+      "abgeleitet_von": [
+        "nonresidential_hulls_source"
+      ],
+      "familie": "nichtwohn_huellen",
+      "stufe": "zone",
+      "dashboard_layer": true
+    },
+    {
+      "index": 10,
+      "name": "cableway_buildings_source",
+      "label_de": "Seilbahn-Gebäude",
+      "description_de": "Gebäude aus OpenStreetMap in unmittelbarer Nähe einer Seilbahnlinie, vor allem Liftstationen, ohne Abstand.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        0,
+        130,
+        130,
+        190
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [
+        "osm_pbf",
+        "dkm_geoparquet"
+      ],
+      "abgeleitet_von": [],
+      "familie": "seilbahn_gebaeude",
+      "stufe": "quelle",
+      "dashboard_layer": false
+    },
+    {
+      "index": 11,
+      "name": "cableway_buildings_buffer",
+      "label_de": "Ausschluss Seilbahn-Gebäude",
+      "description_de": "Abstand von 50 m um Gebäude an Seilbahnlinien.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        80,
+        190,
+        190,
+        150
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": 50.0,
+      "puffer_hinweis": null,
+      "quelle": [],
+      "abgeleitet_von": [
+        "cableway_buildings_source"
+      ],
+      "familie": "seilbahn_gebaeude",
+      "stufe": "zone",
+      "dashboard_layer": true
+    },
+    {
+      "index": 12,
+      "name": "general_buildings_source",
+      "label_de": "Sonstige Gebäude und Einzellagen",
+      "description_de": "Übrige Gebäude aus OpenStreetMap wie Garagen, Schuppen, Ställe, Industriebauten und untypisierte Gebäude, dazu bewohnte Einzellagen und niederösterreichische Streusiedlungs-Bauflächen aus Kataster und Gebäuderegister, ohne Abstand.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        150,
+        60,
+        200,
+        190
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [
+        "osm_pbf",
+        "dkm_geoparquet",
+        "bev_adressregister"
+      ],
+      "abgeleitet_von": [],
+      "familie": "gebaeude",
+      "stufe": "quelle",
+      "dashboard_layer": false
+    },
+    {
+      "index": 13,
+      "name": "general_buildings_buffer",
+      "label_de": "Ausschluss sonstige Gebäude",
+      "description_de": "Abstand von 25 m um sonstige Gebäude und Einzellagen; das entspricht praktisch dem Fußabdruck.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        180,
+        120,
+        220,
+        150
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": 25.0,
+      "puffer_hinweis": null,
+      "quelle": [],
+      "abgeleitet_von": [
+        "general_buildings_source"
+      ],
+      "familie": "gebaeude",
+      "stufe": "zone",
+      "dashboard_layer": true
+    },
+    {
+      "index": 14,
+      "name": "road_motorway_trunk",
+      "label_de": "Autobahnen und Schnellstraßen",
+      "description_de": "Abstand von 150 m beiderseits von Autobahnen und Schnellstraßen aus OpenStreetMap. Als Tunnel ausgewiesene Abschnitte bleiben unberücksichtigt.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        255,
+        140,
+        0,
+        150
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": 150.0,
+      "puffer_hinweis": null,
+      "quelle": [
+        "osm_pbf"
+      ],
+      "abgeleitet_von": [],
+      "familie": "verkehr",
+      "stufe": "zone",
+      "dashboard_layer": true
+    },
+    {
+      "index": 15,
+      "name": "road_federal_state",
+      "label_de": "Bundes- und Landesstraßen",
+      "description_de": "Abstand von 150 m beiderseits von Bundes- und Landesstraßen aus OpenStreetMap, einschließlich der nachgeordneten Landesstraßen. Als Tunnel ausgewiesene Abschnitte bleiben unberücksichtigt.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        255,
+        180,
+        0,
+        145
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": 150.0,
+      "puffer_hinweis": null,
+      "quelle": [
+        "osm_pbf"
+      ],
+      "abgeleitet_von": [],
+      "familie": "verkehr",
+      "stufe": "zone",
+      "dashboard_layer": true
+    },
+    {
+      "index": 16,
+      "name": "rail_main",
+      "label_de": "Hauptbahnen",
+      "description_de": "Abstand von 150 m beiderseits von Haupt- und Schmalspurbahnen aus OpenStreetMap. Als Tunnel ausgewiesene Abschnitte bleiben unberücksichtigt.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        120,
+        80,
+        40,
+        150
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": 150.0,
+      "puffer_hinweis": null,
+      "quelle": [
+        "osm_pbf"
+      ],
+      "abgeleitet_von": [],
+      "familie": "verkehr",
+      "stufe": "zone",
+      "dashboard_layer": true
+    },
+    {
+      "index": 17,
+      "name": "cableway_people_150m",
+      "label_de": "Personenseilbahnen",
+      "description_de": "Abstand von 150 m um Personenseilbahnen aus OpenStreetMap: Gondelbahnen, Kabinen- und Pendelbahnen, Sessellifte und Kombibahnen. Schlepplifte und Materialseilbahnen erzeugen keine Zone.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        255,
+        0,
+        0,
+        140
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": 150.0,
+      "puffer_hinweis": null,
+      "quelle": [
+        "osm_pbf"
+      ],
+      "abgeleitet_von": [],
+      "familie": "verkehr",
+      "stufe": "zone",
+      "dashboard_layer": true
+    },
+    {
+      "index": 18,
+      "name": "military_restricted_area",
+      "label_de": "Militärisches Sperrgebiet",
+      "description_de": "Militärische Sperrgebiete aus OpenStreetMap, ohne zusätzlichen Abstand.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        255,
+        0,
+        0,
+        140
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [
+        "osm_pbf"
+      ],
+      "abgeleitet_von": [],
+      "familie": "militaer",
+      "stufe": "zone",
+      "dashboard_layer": true
+    },
+    {
+      "index": 19,
+      "name": "airport_area_major",
+      "label_de": "Hauptflughafen-Areale",
+      "description_de": "Areale der Hauptflughäfen aus OpenStreetMap, ohne zusätzlichen Abstand.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        255,
+        0,
+        0,
+        140
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [
+        "osm_pbf"
+      ],
+      "abgeleitet_von": [],
+      "familie": "luftfahrt",
+      "stufe": "zone",
+      "dashboard_layer": true
+    },
+    {
+      "index": 20,
+      "name": "airport_runway_corridor_5km",
+      "label_de": "An- und Abflugkorridore",
+      "description_de": "Korridore ab beiden Landebahn-Enden der Hauptflughäfen: 5 km lang, ±15 Grad um die verlängerte Bahnachse.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        255,
+        0,
+        255,
+        110
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": null,
+      "puffer_hinweis": "Kein isotroper Puffer: Korridor 5.000 m ab beiden Landebahn-Enden (AIRPORT_CORRIDOR_LENGTH_M), ±15° Halbwinkel um die verlängerte Bahnachse (AIRPORT_CORRIDOR_HALF_ANGLE_DEG).",
+      "quelle": [
+        "osm_pbf"
+      ],
+      "abgeleitet_von": [],
+      "familie": "luftfahrt",
+      "stufe": "zone",
+      "dashboard_layer": true
+    },
+    {
+      "index": 21,
+      "name": "nature_protection_areas",
+      "label_de": "Amtliche Schutzgebiete",
+      "description_de": "Nationalparks, Naturschutzgebiete, Europaschutzgebiete nach Natura 2000 und Ramsar-Gebiete aus den amtlichen Datensätzen, ohne Abstand.",
+      "category": "Natur",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        0,
+        170,
+        60,
+        170
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [
+        "naturschutzgebiete"
+      ],
+      "abgeleitet_von": [],
+      "familie": "schutzgebiet",
+      "stufe": "zone",
+      "dashboard_layer": false
+    },
+    {
+      "index": 22,
+      "name": "osm_nature_protection_areas",
+      "label_de": "Schutzgebiete aus OpenStreetMap",
+      "description_de": "Als Schutzgebiet ausgewiesene Flächen aus OpenStreetMap, ohne Abstand.",
+      "category": "Natur",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        255,
+        0,
+        0,
+        140
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [
+        "osm_pbf"
+      ],
+      "abgeleitet_von": [],
+      "familie": "schutzgebiet",
+      "stufe": "zone",
+      "dashboard_layer": false
+    },
+    {
+      "index": 23,
+      "name": "geography_slope_too_steep",
+      "label_de": "Hangneigung zu steil",
+      "description_de": "Hangneigung über 15 Grad, ermittelt aus dem Geländemodell mit 25 m Auflösung.",
+      "category": "Geografie",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        120,
+        70,
+        30,
+        150
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [
+        "dgm_25m"
+      ],
+      "abgeleitet_von": [],
+      "familie": "kriterien",
+      "stufe": "zone",
+      "dashboard_layer": true
+    },
+    {
+      "index": 24,
+      "name": "geography_elevation_too_high",
+      "label_de": "Seehöhe zu hoch",
+      "description_de": "Seehöhe über 2.500 m, ermittelt aus dem Geländemodell mit 25 m Auflösung.",
+      "category": "Geografie",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        120,
+        120,
+        120,
+        150
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [
+        "dgm_25m"
+      ],
+      "abgeleitet_von": [],
+      "familie": "kriterien",
+      "stufe": "zone",
+      "dashboard_layer": true
+    },
+    {
+      "index": 25,
+      "name": "geography_wind_too_low",
+      "label_de": "Wind zu gering",
+      "description_de": "Windleistungsdichte in 150 m Höhe unter rund 160 W/m², aus dem Globalen Windatlas. Der Grenzwert entspricht 150 W/m² in 130 m Höhe, mit dem Windprofil auf 150 m hochgerechnet.",
+      "category": "Geografie",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        80,
+        160,
+        255,
+        145
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [
+        "wind_leistungsdichte_150m"
+      ],
+      "abgeleitet_von": [],
+      "familie": "kriterien",
+      "stufe": "zone",
+      "dashboard_layer": true
+    },
+    {
+      "index": 26,
+      "name": "geography_water_bodies",
+      "label_de": "Größere Gewässer",
+      "description_de": "Seen, Stauseen und Flüsse aus OpenStreetMap, zusammenhängende Wasserflächen ab 1 ha.",
+      "category": "Geografie",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        0,
+        90,
+        170,
+        170
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [
+        "osm_pbf"
+      ],
+      "abgeleitet_von": [],
+      "familie": "kriterien",
+      "stufe": "zone",
+      "dashboard_layer": true
+    },
+    {
+      "index": 27,
+      "name": "exclusion_human",
+      "label_de": "Ausschluss Mensch",
+      "description_de": "Vereinigung aller Ausschlüsse der Kategorie Mensch: Siedlungsabstand, Häuser im Grünen, Gebäude und Anlagen, Verkehr, Militär und Luftfahrt; auf das Staatsgebiet zugeschnitten.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": true,
+      "is_total": true,
+      "color_rgba": [
+        255,
+        0,
+        0,
+        130
+      ],
+      "default_visible": true,
+      "rolle": "aggregat_kategorie",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [],
+      "abgeleitet_von": [
+        "settlement_buffer",
+        "haeuser_im_gruenen",
+        "nonresidential_hulls_buffer",
+        "cableway_buildings_buffer",
+        "general_buildings_buffer",
+        "road_motorway_trunk",
+        "road_federal_state",
+        "rail_main",
+        "cableway_people_150m",
+        "military_restricted_area",
+        "airport_area_major",
+        "airport_runway_corridor_5km"
+      ],
+      "familie": "summe",
+      "stufe": "summe_zonen",
+      "dashboard_layer": true
+    },
+    {
+      "index": 28,
+      "name": "exclusion_nature",
+      "label_de": "Ausschluss Natur",
+      "description_de": "Amtliche Schutzgebiete, also Nationalparks, Naturschutzgebiete, Europaschutzgebiete nach Natura 2000 und Ramsar-Gebiete, sowie Schutzgebiete aus OpenStreetMap, vereinigt und auf das Staatsgebiet zugeschnitten. Ohne Abstandspuffer.",
+      "category": "Natur",
+      "value_type": "binary",
+      "clipped_to_austria": true,
+      "is_total": true,
+      "color_rgba": [
+        0,
+        180,
+        0,
+        150
+      ],
+      "default_visible": true,
+      "rolle": "aggregat_kategorie",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [],
+      "abgeleitet_von": [
+        "nature_protection_areas",
+        "osm_nature_protection_areas"
+      ],
+      "familie": "summe",
+      "stufe": "summe_zonen",
+      "dashboard_layer": true
+    },
+    {
+      "index": 29,
+      "name": "exclusion_geography",
+      "label_de": "Ausschluss Geografie",
+      "description_de": "Vereinigung der Kriterien Hangneigung, Seehöhe, Wind und Gewässer; auf das Staatsgebiet zugeschnitten.",
+      "category": "Geografie",
+      "value_type": "binary",
+      "clipped_to_austria": true,
+      "is_total": true,
+      "color_rgba": [
+        80,
+        80,
+        220,
+        140
+      ],
+      "default_visible": true,
+      "rolle": "aggregat_kategorie",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [],
+      "abgeleitet_von": [
+        "geography_slope_too_steep",
+        "geography_elevation_too_high",
+        "geography_wind_too_low",
+        "geography_water_bodies"
+      ],
+      "familie": "summe",
+      "stufe": "summe_zonen",
+      "dashboard_layer": true
+    },
+    {
+      "index": 30,
+      "name": "all_exclusions",
+      "label_de": "Ausschluss gesamt",
+      "description_de": "Vereinigung der Ausschlüsse aus Mensch, Natur und Geografie: alles, was ausgeschlossen ist.",
+      "category": "Total & Ergebnis",
+      "value_type": "binary",
+      "clipped_to_austria": true,
+      "is_total": true,
+      "color_rgba": [
+        255,
+        0,
+        0,
+        120
+      ],
+      "default_visible": false,
+      "rolle": "aggregat_gesamt",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [],
+      "abgeleitet_von": [
+        "exclusion_human",
+        "exclusion_nature",
+        "exclusion_geography"
+      ],
+      "familie": "ergebnis",
+      "stufe": "summe_zonen",
+      "dashboard_layer": true
+    },
+    {
+      "index": 31,
+      "name": "available_after_all_exclusions_raw",
+      "label_de": "Verfügbare Fläche roh",
+      "description_de": "Das Gegenstück zum Gesamtausschluss: die verbleibende Fläche ohne Mindestgrößen-Filter, einschließlich aller Splitter.",
+      "category": "Total & Ergebnis",
+      "value_type": "binary",
+      "clipped_to_austria": true,
+      "is_total": false,
+      "color_rgba": [
+        0,
+        220,
+        120,
+        150
+      ],
+      "default_visible": false,
+      "rolle": "verfuegbarkeit_roh",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [],
+      "abgeleitet_von": [
+        "all_exclusions"
+      ],
+      "familie": "ergebnis",
+      "stufe": "ergebnis",
+      "dashboard_layer": false
+    },
+    {
+      "index": 32,
+      "name": "available_cleaned_min_10ha",
+      "label_de": "Eignungsflächen",
+      "description_de": "Das Endergebnis: die nach Abzug aller Ausschlüsse verbleibende Fläche, bereinigt um Splitter; nur zusammenhängende Flächen ab 10 ha.",
+      "category": "Total & Ergebnis",
+      "value_type": "binary",
+      "clipped_to_austria": true,
+      "is_total": false,
+      "color_rgba": [
+        0,
+        255,
+        0,
+        185
+      ],
+      "default_visible": true,
+      "rolle": "verfuegbarkeit_bereinigt",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [],
+      "abgeleitet_von": [
+        "available_after_all_exclusions_raw"
+      ],
+      "familie": "ergebnis",
+      "stufe": "ergebnis",
+      "dashboard_layer": true
+    },
+    {
+      "index": 33,
+      "name": "available_blur_sigma_100m",
+      "label_de": "Unschärfe schwach",
+      "description_de": "Eignungsflächen, weichgezeichnet mit einer Standardabweichung von 100 m. Dient der flächigen Darstellung, nicht der Auswertung.",
+      "category": "Total & Ergebnis",
+      "value_type": "percent_0_100",
+      "clipped_to_austria": true,
+      "is_total": false,
+      "color_rgba": [
+        134,
+        226,
+        168,
+        180
+      ],
+      "default_visible": false,
+      "rolle": "unschaerfe",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [],
+      "abgeleitet_von": [
+        "available_after_all_exclusions_raw"
+      ],
+      "familie": "ergebnis",
+      "stufe": "ergebnis",
+      "dashboard_layer": false
+    },
+    {
+      "index": 34,
+      "name": "available_blur_sigma_200m",
+      "label_de": "Unschärfe mittel",
+      "description_de": "Eignungsflächen, weichgezeichnet mit einer Standardabweichung von 200 m. Dient der flächigen Darstellung, nicht der Auswertung.",
+      "category": "Total & Ergebnis",
+      "value_type": "percent_0_100",
+      "clipped_to_austria": true,
+      "is_total": false,
+      "color_rgba": [
+        45,
+        190,
+        130,
+        180
+      ],
+      "default_visible": false,
+      "rolle": "unschaerfe",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [],
+      "abgeleitet_von": [
+        "available_after_all_exclusions_raw"
+      ],
+      "familie": "ergebnis",
+      "stufe": "ergebnis",
+      "dashboard_layer": false
+    },
+    {
+      "index": 35,
+      "name": "available_blur_sigma_250m",
+      "label_de": "Unschärfe stark",
+      "description_de": "Eignungsflächen, weichgezeichnet mit einer Standardabweichung von 250 m. Dient der flächigen Darstellung, nicht der Auswertung.",
+      "category": "Total & Ergebnis",
+      "value_type": "percent_0_100",
+      "clipped_to_austria": true,
+      "is_total": false,
+      "color_rgba": [
+        0,
+        148,
+        110,
+        180
+      ],
+      "default_visible": false,
+      "rolle": "unschaerfe",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [],
+      "abgeleitet_von": [
+        "available_after_all_exclusions_raw"
+      ],
+      "familie": "ergebnis",
+      "stufe": "ergebnis",
+      "dashboard_layer": false
+    },
+    {
+      "index": 36,
+      "name": "available_blur_sigma_300m",
+      "label_de": "Unschärfe sehr stark",
+      "description_de": "Eignungsflächen, weichgezeichnet mit einer Standardabweichung von 300 m. Dient der flächigen Darstellung, nicht der Auswertung.",
+      "category": "Total & Ergebnis",
+      "value_type": "percent_0_100",
+      "clipped_to_austria": true,
+      "is_total": false,
+      "color_rgba": [
+        0,
+        104,
+        88,
+        180
+      ],
+      "default_visible": false,
+      "rolle": "unschaerfe",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [],
+      "abgeleitet_von": [
+        "available_after_all_exclusions_raw"
+      ],
+      "familie": "ergebnis",
+      "stufe": "ergebnis",
+      "dashboard_layer": false
+    },
+    {
+      "index": 37,
+      "name": "official_wind_zoning",
+      "label_de": "Amtliche Windkraft-Zonen",
+      "description_de": "Alle amtlichen Windkraft-Positivzonen der Länder in einem Layer: Zonierung Niederösterreich, Vorrang- und Eignungszonen Steiermark, Vorrangzonen Salzburg, Eignungszonen Burgenland, Beschleunigungszonen Kärnten. Dient dem Vergleich mit der Abschichtung und ist selbst kein Ausschluss.",
+      "category": "Referenz (Zonen & WKA-Bestand)",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        0,
+        90,
+        255,
+        190
+      ],
+      "default_visible": true,
+      "rolle": "referenz",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [
+        "amtliche_windzonen_noe",
+        "amtliche_windzonen_bgld",
+        "amtliche_windzonen_ktn",
+        "amtliche_windzonen_stmk",
+        "amtliche_windzonen_sbg",
+        "verwaltungsgrenzen_vgd"
+      ],
+      "abgeleitet_von": [],
+      "familie": "amtliche_zonen",
+      "stufe": "zone",
+      "dashboard_layer": true
+    },
+    {
+      "index": 38,
+      "name": "wka_bestand_ausserhalb_zonen",
+      "label_de": "WKA-Bestand außerhalb der Zonen",
+      "description_de": "Bestehende Windräder aus OpenStreetMap außerhalb der amtlichen Zonen, zu Park-Hüllen zusammengefasst: Anlagen mit weniger als 750 m Abstand bilden einen Park, dessen Hülle 200 m Rand erhält. Referenz, kein Ausschluss.",
+      "category": "Referenz (Zonen & WKA-Bestand)",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        0,
+        190,
+        230,
+        200
+      ],
+      "default_visible": false,
+      "rolle": "referenz",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [
+        "osm_pbf"
+      ],
+      "abgeleitet_von": [
+        "official_wind_zoning"
+      ],
+      "familie": "wka_bestand",
+      "stufe": "zone",
+      "dashboard_layer": true
+    },
+    {
+      "index": 39,
+      "name": "haeuser_im_gruenen_source",
+      "label_de": "Quellen Häuser im Grünen",
+      "description_de": "Vereinigung der drei Quellen Ferienhaus und Tourismus, amtliche Einzellagen-Widmung und Streusiedlungs-Hüllen, ohne Abstand und ohne Niederösterreich.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        255,
+        150,
+        90,
+        160
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [],
+      "abgeleitet_von": [
+        "haeuser_im_gruenen_ferienhaus",
+        "haeuser_im_gruenen_widmung",
+        "haeuser_im_gruenen_streusiedlung"
+      ],
+      "familie": "haeuser_im_gruenen",
+      "stufe": "aggregat",
+      "dashboard_layer": false
+    },
+    {
+      "index": 40,
+      "name": "general_buildings_roh_osm",
+      "label_de": "Sonstige Gebäude aus OpenStreetMap",
+      "description_de": "Gebäude aus OpenStreetMap, die weiter als 100 m von einer Personenseilbahn entfernt liegen und von keiner der sechs abdeckenden Flächen erfasst werden: amtliches Wohnbauland, Ferienhaus- und Tourismusgebiete, amtliche Einzellagen-Widmung, niederösterreichische Mindestabstandszonen, Streusiedlungs-Hüllen und bewohnte Einzellagen. Rohdatensatz vor der Vereinigung mit den Kataster-Fußabdrücken.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        190,
+        130,
+        220,
+        150
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [
+        "osm_pbf"
+      ],
+      "abgeleitet_von": [],
+      "familie": "gebaeude",
+      "stufe": "roh",
+      "dashboard_layer": false
+    },
+    {
+      "index": 41,
+      "name": "general_buildings_roh_dkm",
+      "label_de": "Sonstige Gebäude aus dem Kataster",
+      "description_de": "Kataster-Fußabdrücke bewohnter Einzellagen mit weniger als fünf Adressen sowie die Hüllen innerhalb Niederösterreichs. Rohdatensatz vor der Vereinigung mit den Gebäuden aus OpenStreetMap.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        170,
+        100,
+        210,
+        150
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [
+        "dkm_geoparquet",
+        "bev_adressregister"
+      ],
+      "abgeleitet_von": [],
+      "familie": "gebaeude",
+      "stufe": "roh",
+      "dashboard_layer": false
+    },
+    {
+      "index": 42,
+      "name": "sources_human",
+      "label_de": "Quellen Mensch",
+      "description_de": "Vereinigung aller ungepufferten Quellen der Kategorie Mensch: Wohnbauland, die vier Quellen der Häuser im Grünen, Nicht-Wohn-Hüllen, Seilbahn-Gebäude, sonstige Gebäude, Militärflächen und Flughafen-Areale, dazu Straßen, Bahnen und Personenseilbahnen als Linien ohne Abstand. Die An- und Abflugkorridore haben keine Objektquelle und fehlen deshalb.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": true,
+      "color_rgba": [
+        255,
+        90,
+        90,
+        110
+      ],
+      "default_visible": false,
+      "rolle": "aggregat_kategorie",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [],
+      "abgeleitet_von": [
+        "official_settlement_source",
+        "haeuser_im_gruenen_ferienhaus",
+        "haeuser_im_gruenen_widmung",
+        "haeuser_im_gruenen_streusiedlung",
+        "haeuser_im_gruenen_noe_pdf",
+        "nonresidential_hulls_source",
+        "cableway_buildings_source",
+        "general_buildings_source",
+        "military_restricted_area",
+        "airport_area_major"
+      ],
+      "familie": "summe",
+      "stufe": "summe_quellen",
+      "dashboard_layer": false
+    },
+    {
+      "index": 43,
+      "name": "sources_nature",
+      "label_de": "Quellen Natur",
+      "description_de": "Vereinigung der amtlichen Schutzgebiete und der Schutzgebiete aus OpenStreetMap. In der Kategorie Natur gibt es keinen Abstand, das Band ist deshalb inhaltsgleich mit dem Ausschluss Natur und existiert nur, damit jede Kategorie denselben Aufbau hat.",
+      "category": "Natur",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": true,
+      "color_rgba": [
+        90,
+        200,
+        90,
+        110
+      ],
+      "default_visible": false,
+      "rolle": "aggregat_kategorie",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [],
+      "abgeleitet_von": [
+        "nature_protection_areas",
+        "osm_nature_protection_areas"
+      ],
+      "familie": "summe",
+      "stufe": "summe_quellen",
+      "dashboard_layer": false
+    },
+    {
+      "index": 44,
+      "name": "sources_geography",
+      "label_de": "Quellen Geografie",
+      "description_de": "Vereinigung der Kriterien Hangneigung, Seehöhe, Wind und Gewässer. Es gibt keinen Abstand, das Band ist deshalb inhaltsgleich mit dem Ausschluss Geografie und existiert nur der Einheitlichkeit halber.",
+      "category": "Geografie",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": true,
+      "color_rgba": [
+        110,
+        140,
+        220,
+        110
+      ],
+      "default_visible": false,
+      "rolle": "aggregat_kategorie",
+      "puffer_m": null,
+      "puffer_hinweis": null,
+      "quelle": [],
+      "abgeleitet_von": [
+        "geography_slope_too_steep",
+        "geography_elevation_too_high",
+        "geography_wind_too_low",
+        "geography_water_bodies"
+      ],
+      "familie": "summe",
+      "stufe": "summe_quellen",
+      "dashboard_layer": false
+    }
+  ],
+  "parameters": {
+    "MIN_FRAGMENT_AREA_HA": "10.0",
+    "PIPELINE": "widmung_v2",
+    "BAND_SCHEMA": "clean-44-ohne-wichtige-objekte-aug-2026",
+    "SETTLEMENT_BUFFER_BY_BL": "{\"Burgenland\": 1000.0, \"Kärnten\": 1000.0, \"Niederösterreich\": 1200.0, \"Oberösterreich\": 1000.0, \"Salzburg\": 1000.0, \"Steiermark\": 1000.0, \"Tirol\": 1000.0, \"Vorarlberg\": 1000.0, \"Wien\": 1000.0}",
+    "HIG_FAMILY_BUFFER_M": "750.0",
+    "NONRESIDENTIAL_HULL_BUFFER_M": "25.0",
+    "HIG_CHAIN_M": "200.0",
+    "HIG_MIN_ADRESSEN": "5",
+    "DROPPED_HUMAN_BANDS": "keine",
+    "CABLEWAY_BUILDING_BUFFER_M": "50.0",
+    "GENERAL_BUILDING_BUFFER_M": "25.0",
+    "HIG_SOURCE": "amtliche Widmung + NÖ-SekROP-PDF + DKM-Hüllen + BEV-Adressregister (build_hig_sources.py); NÖ-Streusiedlung durch PDF ersetzt",
+    "WICHTIGE_OBJEKTE": "in haeuser_im_gruenen (750 m); vorher eigenes 250-m-Band",
+    "BEWOHNTE_EINZELLAGEN": "in general_buildings_source (25 m); vorher eigenes 25-m-Bandpaar",
+    "POWER_LINES": "kein Ausschlusskriterium (Clean-Schema Aug 2026)",
+    "AIRPORT_CORRIDOR_LENGTH_M": "5000.0",
+    "AIRPORT_CORRIDOR_HALF_ANGLE_DEG": "15.0",
+    "WIEN": "amtliche Widmung Stadt Wien (GENFLWIDMUNGOGD), kein Vollausschluss mehr",
+    "WATER_MIN_AREA_HA": "1.0",
+    "UNCERTAINTY_BLUR_SIGMAS_M": "100,200,250,300",
+    "SETTLEMENT_BUFFER_VARIANTS": "{}",
+    "SETTLEMENT_BUFFER_VARIANT_NAMES": "",
+    "UNCERTAINTY_BLUR_SOURCE": "available_after_all_exclusions_raw",
+    "WKA_CLUSTER_CHAIN_M": "750.0",
+    "WKA_HULL_MARGIN_M": "200.0",
+    "DISTANCE_ENGINE": "fft",
+    "SLOPE_MAX_DEG": "15.0",
+    "ELEVATION_MAX_M": "2500.0",
+    "PD_MIN_W_M2": "150.0",
+    "PD_MIN_REFERENCE_HEIGHT_M": "130.0",
+    "PD_MIN_AT_150M_W_M2": "159.4971"
+  },
+  "sources": {
+    "dgm_25m": {
+      "pfad": "data/gelaende/DGM_R25.tif",
+      "stand": "30.03.2026",
+      "rolle": "Grid-Template (CRS/Transform), Hangneigung und Seehöhe"
+    },
+    "wind_leistungsdichte_150m": {
+      "pfad": "data/gelaende/AUT_power-density_150m.tif",
+      "stand": "29.03.2026",
+      "rolle": "Global Wind Atlas, Windhöffigkeitsschwelle"
+    },
+    "osm_pbf": {
+      "pfad": "data/osm/austria-260330.osm.pbf",
+      "stand": "30.03.2026",
+      "rolle": "Geofabrik-Extrakt Österreich: Straßen, Bahn, Seilbahnen, Militär, Flughäfen, Gebäude, Gewässer, Schutzgebiete, Bestands-WKA"
+    },
+    "verwaltungsgrenzen_vgd": {
+      "pfad": "data/admin/VGD_Oesterreich_gen_50_20221002/VGD_50_generalisiert.shp",
+      "stand": "02.10.2022",
+      "rolle": "Staatsgebiet (valid_area) und Bundeslandzuordnung"
+    },
+    "bev_adressregister": {
+      "pfad": "data/adressen/",
+      "stand": "Stichtag 01.10.2025",
+      "rolle": "Bewohnt-Signal (Adressen und Gebäudeeigenschaften) für die Hüllen-Klassifikation"
+    },
+    "dkm_geoparquet": {
+      "pfad": "output/kataster/at_dkm_gst_nfl_epsg31287.geoparquet",
+      "stand": "Dateidatum 15.05.; erzeugtes Artefakt aus BEV-DKM",
+      "rolle": "DKM-Bauflächen/Gärten für Streusiedlungs-Hüllen, Nicht-Wohn-Hüllen und Einzellagen"
+    },
+    "naturschutzgebiete": {
+      "pfad": "data/natur/SG_AT_2024_v_April_Stand_3_April_2024.zip",
+      "stand": "03.04.2024",
+      "rolle": "Nationalparks, NSG, Europaschutzgebiete/Natura 2000, Ramsar"
+    },
+    "noe_sekrop_mindestabstandszonen": {
+      "pfad": "data/noe_sekrop/TeilC_3_2_Karte_Mindestabstandszonen_A0_20240402.pdf",
+      "stand": "Karten-Stand 02.04.2024 (Dateidatum 29.03.2026)",
+      "rolle": "Quelle der NÖ-750-m-Zonen (georeferenziert nach output/noe/pdf_750m_*.geojson)"
+    },
+    "amtliche_windzonen_noe": {
+      "pfad": "data/zonen/zonierung_noe.json",
+      "stand": "LGBl. 47/2024, 71 Zonen (Dateidatum 30.04.2026)",
+      "rolle": "Referenzband official_wind_zoning"
+    },
+    "amtliche_windzonen_bgld": {
+      "pfad": "data/zonen/WK_Eignungszonen.zip",
+      "stand": "EXPORT_DAT 20260721",
+      "rolle": "Referenzband official_wind_zoning"
+    },
+    "amtliche_windzonen_ktn": {
+      "pfad": "data/zonen/RED_III_Windkraftbeschleunigungszone.zip",
+      "stand": "unbekannt — zu klären",
+      "rolle": "Referenzband official_wind_zoning"
+    },
+    "amtliche_windzonen_stmk": {
+      "pfad": "data/zonen/luca_zonen/Stmk.shp",
+      "stand": "unbekannt — zu klären (handdigitalisiert, nicht amtlich bezogen)",
+      "rolle": "Referenzband official_wind_zoning"
+    },
+    "amtliche_windzonen_sbg": {
+      "pfad": "data/zonen/luca_zonen/Sbg.shp",
+      "stand": "unbekannt — zu klären (handdigitalisiert, nicht amtlich bezogen)",
+      "rolle": "Referenzband official_wind_zoning"
+    },
+    "flaechenwidmung_bgld": {
+      "pfad": "data/widmung/burgenland/WIDMUNGSFLAECHEN.zip",
+      "stand": "Dateidatum 22.06.",
+      "rolle": "Amtliche Flächenwidmung Burgenland"
+    },
+    "flaechenwidmung_ktn": {
+      "pfad": "data/widmung/kaernten/flawi_ktn_gpkg.zip",
+      "stand": "Dateidatum 12.07.",
+      "rolle": "Amtliche Flächenwidmung Kärnten"
+    },
+    "flaechenwidmung_noe": {
+      "pfad": "data/widmung/niederoesterreich/RRU_WI_HUELLE.gpkg",
+      "stand": "Dateidatum 10.07.",
+      "rolle": "Amtliche Flächenwidmung Niederösterreich"
+    },
+    "flaechenwidmung_ooe": {
+      "pfad": "data/widmung/oberoesterreich/FLWI_WIDMUNGEN_F.zip",
+      "stand": "Dateidatum 10.07.",
+      "rolle": "Amtliche Flächenwidmung Oberösterreich"
+    },
+    "flaechenwidmung_sbg": {
+      "pfad": "data/widmung/salzburg/Flaechenwidmung_Shapefile.zip",
+      "stand": "Dateidatum 12.07.",
+      "rolle": "Amtliche Flächenwidmung Salzburg"
+    },
+    "flaechenwidmung_stmk": {
+      "pfad": "data/widmung/steiermark/Bauland.zip + data/widmung/steiermark/Flaewi.shp.zip",
+      "stand": "Dateidatum 10.07. / 22.06.",
+      "rolle": "Amtliche Flächenwidmung Steiermark (beide Dateien nötig)"
+    },
+    "flaechenwidmung_tirol": {
+      "pfad": "data/widmung/tirol/FLW_Flaechenwidmung_*.gpkg",
+      "stand": "Dateidatum 12.07.",
+      "rolle": "Amtliche Flächenwidmung Tirol"
+    },
+    "flaechenwidmung_vbg": {
+      "pfad": "data/widmung/vorarlberg/fwp_flaeche.gpkg",
+      "stand": "Dateidatum 12.07.",
+      "rolle": "Amtliche Flächenwidmung Vorarlberg"
+    },
+    "flaechenwidmung_wien": {
+      "pfad": "data/widmung/wien/genflwidmung_wien.geojson",
+      "stand": "Dateidatum 29.07.",
+      "rolle": "Amtliche Flächenwidmung Wien (WFS GENFLWIDMUNGOGD)"
+    }
+  },
+  "caveats": [
+    {
+      "id": "noe_dkm_reconstructed",
+      "affects": {
+        "bundesland": "NÖ",
+        "bands": [
+          8,
+          9,
+          12,
+          13,
+          27,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          41
+        ]
+      },
+      "severity": "methodisch",
+      "text_de": "Die DKM-Basis für Niederösterreich ist aus DXF-Linienwerk rekonstruiert, nicht amtlich flächig geliefert. Rund 29 % der rekonstruierten Polygone sind mehrdeutig klassifiziert oder ohne Klassifikation verworfen. Der Wirkungspfad läuft von der DKM-Rekonstruktion über Band 12 (dort werden die NÖ-Streusiedlungs-Hüllen eingebunden) durch dessen Pufferband 13 in die Gruppensummen 27/30/31/32 und weiter in die Unschärfebänder 33-36 - Band 32, die veröffentlichte Potenzialfläche, eingeschlossen.",
+      "numbers": {
+        "polygons_total": 3491407,
+        "ambiguous": 684249,
+        "unassigned": 338674
+      },
+      "applies_to_other_states": false
+    },
+    {
+      "id": "blur_bands_bleed_across_border",
+      "affects": {
+        "bands": [
+          33,
+          34,
+          35,
+          36
+        ]
+      },
+      "severity": "methodisch",
+      "text_de": "Diese vier Bänder erben den Österreich-Clip nur mittelbar, weil sie ein bereits geclipptes Band weichzeichnen; die Gaußglocke trägt Werte geringfügig über die Staatsgrenze. clipped_to_austria bleibt true, aber wer daraus auf „exakt auf Österreich beschnitten\" schließt und Flächen aufsummiert, rechnet falsch."
+    },
+    {
+      "id": "tunnelfilter_unvollstaendig",
+      "affects": {
+        "bands": [
+          14,
+          15,
+          16,
+          27,
+          30,
+          31,
+          32
+        ]
+      },
+      "severity": "methodisch",
+      "text_de": "Der Tunnelfilter bei Autobahnen, Bundes- und Landesstraßen und Hauptbahnen prüft nur, ob ein Abschnitt ausdrücklich als Tunnel ausgewiesen ist. Abschnitte, die stattdessen als unterirdisch oder überdeckt geführt sind, werden gepuffert, obwohl dort kein Verkehr an der Oberfläche liegt. Betroffen sind 144 Objekte; die Flächenwirkung liegt unter 0,7 Prozent der ausgewiesenen Potenzialfläche und läuft über das Verkehrsband in die Summen 27, 30, 31 und 32. Registerpunkt 70.",
+      "numbers": {
+        "objekte_betroffen": 144,
+        "flaechenwirkung_anteil_max": 0.007
+      }
+    }
+  ],
+  "geography_water_bodies_wirkungspfad": [
+    "geography_water_bodies",
+    "exclusion_geography",
+    "all_exclusions",
+    "available_after_all_exclusions_raw",
+    "available_cleaned_min_10ha",
+    "available_blur_sigma_100m",
+    "available_blur_sigma_200m",
+    "available_blur_sigma_250m",
+    "available_blur_sigma_300m",
+    "sources_geography"
+  ],
+  "dkm_geoparquet_wirkungspfad": [
+    "haeuser_im_gruenen_streusiedlung",
+    "haeuser_im_gruenen",
+    "nonresidential_hulls_source",
+    "nonresidential_hulls_buffer",
+    "cableway_buildings_source",
+    "cableway_buildings_buffer",
+    "general_buildings_source",
+    "general_buildings_buffer",
+    "exclusion_human",
+    "all_exclusions",
+    "available_after_all_exclusions_raw",
+    "available_cleaned_min_10ha",
+    "available_blur_sigma_100m",
+    "available_blur_sigma_200m",
+    "available_blur_sigma_250m",
+    "available_blur_sigma_300m",
+    "haeuser_im_gruenen_source",
+    "general_buildings_roh_dkm",
+    "sources_human"
+  ],
+  "cableway_typ_wirkungspfad": [
+    "cableway_buildings_source",
+    "cableway_buildings_buffer",
+    "general_buildings_source",
+    "general_buildings_buffer",
+    "cableway_people_150m",
+    "exclusion_human",
+    "all_exclusions",
+    "available_after_all_exclusions_raw",
+    "available_cleaned_min_10ha",
+    "available_blur_sigma_100m",
+    "available_blur_sigma_200m",
+    "available_blur_sigma_250m",
+    "available_blur_sigma_300m",
+    "general_buildings_roh_osm",
+    "sources_human"
+  ]
+}
