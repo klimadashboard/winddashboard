@@ -1,4 +1,12 @@
-import type { SettlementVariant } from "./variants";
+// ⚠️ Erzeugt von scripts/generate_bands_config.py — nicht von Hand ändern.
+// Quelle: scripts/raster/abschichtung.bands.json
+// Bandschema: clean-44-ohne-wichtige-objekte-aug-2026
+// Manifest erzeugt: 2026-09-09T12:39:21Z
+//
+// Layer sind alle Bänder mit `dashboard_layer: true` und `rolle: "bedingung"`,
+// plus `exclusion_nature` (widmung_v2 blendet die einzelnen Schutzgebietsbänder
+// aus). `slug` ist der Bandname aus dem Manifest und zugleich der Layername in
+// den Vektorkacheln und das `source-layer` in MapLibre.
 
 export interface BandDef {
 	band: number;
@@ -7,9 +15,6 @@ export interface BandDef {
 	description: string;
 	color: string; // 8-digit hex RRGGBBAA
 	group: BandGroup;
-	// Only the settlement band (band 1) has variant-specific slugs — every other
-	// band is identical across all 6 settlement-distance scenarios.
-	variantSlugs?: Record<SettlementVariant, string>;
 }
 
 export type BandGroup = "human" | "nature" | "terrain" | "wind";
@@ -24,176 +29,170 @@ export const BAND_GROUPS: Record<BandGroup, { label: string; color: string }> =
 
 export const BAND_DEFS: BandDef[] = [
 	{
-		band: 1,
-		slug: "band_01_human_settlement",
+		band: 2,
+		slug: "settlement_buffer",
 		label: "Siedlungsabstand",
 		description:
-			"Mindestabstand zu Wohngebäuden und Siedlungen (bundeslandspezifisch, 1.000–1.500 m)",
-		color: "#f97316cc",
-		group: "human",
-		variantSlugs: {
-			default: "band_01_human_settlement",
-			"800": "band_01_human_settlement_800",
-			"1000": "band_01_human_settlement_1000",
-			"1200": "band_01_human_settlement_1200",
-			"1500": "band_01_human_settlement_1500",
-			"2000": "band_01_human_settlement_2000",
-		},
-	},
-	{
-		band: 2,
-		slug: "band_02_human_important_objects",
-		label: "Wichtige Objekte",
-		description:
-			"Pufferzone (250 m) um besonders schutzwürdige Einzelobjekte — vorläufige Kategorie, genaue fachliche Definition noch nicht dokumentiert",
-		color: "#9a3412a6",
-		group: "human",
-	},
-	{
-		band: 3,
-		slug: "band_03_human_cableway_buildings",
-		label: "Gebäude an Seilbahnen",
-		description:
-			"Pufferzone (50 m) um Gebäude an Seilbahnen — vorläufige Kategorie, genaue fachliche Definition noch nicht dokumentiert",
-		color: "#c2410c8c",
-		group: "human",
-	},
-	{
-		band: 4,
-		slug: "band_04_human_haeuser_im_gruenen",
-		label: "Haus im Grünen",
-		description: "Mindestabstand (750 m) zu Einzelgebäuden außerhalb von Siedlungen",
-		color: "#fb923ca6",
-		group: "human",
-	},
-	{
-		band: 5,
-		slug: "band_05_human_general_buildings",
-		label: "Allgemeine Gebäude",
-		description:
-			"Pufferzone (25 m) um sonstige Gebäude — vorläufige Kategorie, genaue fachliche Definition noch nicht dokumentiert",
-		color: "#fdba7482",
-		group: "human",
-	},
-	{
-		band: 6,
-		slug: "band_06_human_power_380kv",
-		label: "Freileitung 380/400 kV",
-		description: "Pufferzone von 150 m entlang Hochspannungsfreileitungen (380/400 kV)",
-		color: "#fbbf2496",
+			"Abstand von 1.000 m um amtliches Wohn-, Misch-, Kern- und Dorfgebiet aller neun Bundesländer; in Niederösterreich 1.200 m.",
+		color: "#4682dc8c",
 		group: "human",
 	},
 	{
 		band: 7,
-		slug: "band_07_human_road_motorway",
-		label: "Autobahn/Schnellstraße",
-		description: "Pufferzone von 150 m entlang Autobahnen und Schnellstraßen",
-		color: "#f59e0b96",
-		group: "human",
-	},
-	{
-		band: 8,
-		slug: "band_08_human_road_federal",
-		label: "Bundes-/Landesstraße",
-		description: "Pufferzone von 150 m entlang Bundes- und Landesstraßen",
-		color: "#d9770696",
+		slug: "haeuser_im_gruenen",
+		label: "Häuser im Grünen (750 m)",
+		description:
+			"Abstand von 750 m um bewohnte Einzellagen außerhalb des Baulands: Ferienhaus- und Tourismusgebiete, amtliche Widmungen für Hofstellen, Camping, Golf, Kleingärten und Auffüllungsgebiete sowie Streusiedlungen. In Niederösterreich gelten stattdessen die Mindestabstandszonen des Sektoralen Raumordnungsprogramms, die den Abstand bereits enthalten.",
+		color: "#ff8c3c96",
 		group: "human",
 	},
 	{
 		band: 9,
-		slug: "band_09_human_rail",
-		label: "Hauptbahn",
-		description: "Pufferzone von 150 m entlang Haupteisenbahnstrecken",
-		color: "#b45309a6",
-		group: "human",
-	},
-	{
-		band: 10,
-		slug: "band_10_human_cableway_people",
-		label: "Seilbahn",
-		description: "Pufferzone von 150 m entlang Personenseilbahnen und Liften",
-		color: "#92400e8c",
+		slug: "nonresidential_hulls_buffer",
+		label: "Ausschluss Nicht-Wohn-Hüllen (25 m)",
+		description:
+			"Abstand von 25 m um unbewohnte und industrieartige Kataster-Hüllen; das entspricht praktisch dem Fußabdruck.",
+		color: "#b4b4b482",
 		group: "human",
 	},
 	{
 		band: 11,
-		slug: "band_11_human_military",
-		label: "Militärsperrzone",
-		description: "Sperrzone rund um militärische Gebiete",
-		color: "#ef444496",
-		group: "human",
-	},
-	{
-		band: 12,
-		slug: "band_12_human_airport",
-		label: "Flughafen",
-		description: "Sperrzone rund um Flughäfen und Flugplätze",
-		color: "#dc262696",
+		slug: "cableway_buildings_buffer",
+		label: "Ausschluss Seilbahn-Gebäude (50 m)",
+		description:
+			"Abstand von 50 m um Gebäude an Seilbahnlinien.",
+		color: "#50bebe96",
 		group: "human",
 	},
 	{
 		band: 13,
-		slug: "band_13_human_airport_lateral",
-		label: "Flughafen Seitenbereich",
-		description: "6-km-Prüfzone seitlich der sechs großen Verkehrsflughäfen",
-		color: "#b91c1c8c",
+		slug: "general_buildings_buffer",
+		label: "Ausschluss sonstige Gebäude (25 m)",
+		description:
+			"Abstand von 25 m um sonstige Gebäude und Einzellagen; das entspricht praktisch dem Fußabdruck.",
+		color: "#b478dc96",
 		group: "human",
 	},
 	{
 		band: 14,
-		slug: "band_14_nature_protection",
-		label: "Schutzgebiet (gesetzlich)",
-		description: "Nationalpark, Naturschutzgebiet, Natura 2000, Ramsar-Gebiet",
-		color: "#16a34ab0",
-		group: "nature",
+		slug: "road_motorway_trunk",
+		label: "Autobahnen und Schnellstraßen (150 m)",
+		description:
+			"Abstand von 150 m beiderseits von Autobahnen und Schnellstraßen aus OpenStreetMap. Als Tunnel ausgewiesene Abschnitte bleiben unberücksichtigt.",
+		color: "#ff8c0096",
+		group: "human",
 	},
 	{
 		band: 15,
-		slug: "band_15_nature_osm",
-		label: "Schutzgebiet (OSM)",
-		description: "Weitere Schutzgebiete aus OpenStreetMap-Daten",
-		color: "#4ade8096",
-		group: "nature",
+		slug: "road_federal_state",
+		label: "Bundes- und Landesstraßen (150 m)",
+		description:
+			"Abstand von 150 m beiderseits von Bundes- und Landesstraßen aus OpenStreetMap, einschließlich der nachgeordneten Landesstraßen. Als Tunnel ausgewiesene Abschnitte bleiben unberücksichtigt.",
+		color: "#ffb40091",
+		group: "human",
 	},
 	{
 		band: 16,
-		slug: "band_16_geo_slope",
-		label: "Hangneigung >15°",
-		description: "Gelände mit einer Neigung von mehr als 15 Grad",
-		color: "#a8a29ea6",
-		group: "terrain",
+		slug: "rail_main",
+		label: "Hauptbahnen (150 m)",
+		description:
+			"Abstand von 150 m beiderseits von Haupt- und Schmalspurbahnen aus OpenStreetMap. Als Tunnel ausgewiesene Abschnitte bleiben unberücksichtigt.",
+		color: "#78502896",
+		group: "human",
 	},
 	{
 		band: 17,
-		slug: "band_17_geo_elevation",
-		label: "Seehöhe >2500 m",
-		description: "Flächen über 2.500 m Seehöhe",
-		color: "#d6d3d196",
-		group: "terrain",
+		slug: "cableway_people_150m",
+		label: "Personenseilbahnen (150 m)",
+		description:
+			"Abstand von 150 m um Personenseilbahnen aus OpenStreetMap: Gondelbahnen, Kabinen- und Pendelbahnen, Sessellifte und Kombibahnen. Schlepplifte und Materialseilbahnen erzeugen keine Zone.",
+		color: "#ff00008c",
+		group: "human",
 	},
 	{
 		band: 18,
-		slug: "band_18_geo_wind",
-		label: "Windleistung <150 W/m²",
+		slug: "military_restricted_area",
+		label: "Militärisches Sperrgebiet",
 		description:
-			"Windleistungsdichte (@150 m) unter 150 W/m² oder keine Winddaten verfügbar",
-		color: "#64748ba6",
+			"Militärische Sperrgebiete aus OpenStreetMap, ohne zusätzlichen Abstand.",
+		color: "#ff00008c",
+		group: "human",
+	},
+	{
+		band: 19,
+		slug: "airport_area_major",
+		label: "Hauptflughafen-Areale",
+		description:
+			"Areale der Hauptflughäfen aus OpenStreetMap, ohne zusätzlichen Abstand.",
+		color: "#ff00008c",
+		group: "human",
+	},
+	{
+		band: 20,
+		slug: "airport_runway_corridor_5km",
+		label: "An- und Abflugkorridore",
+		description:
+			"Korridore ab beiden Landebahn-Enden der Hauptflughäfen: 5 km lang, ±15 Grad um die verlängerte Bahnachse.",
+		color: "#ff00ff6e",
+		group: "human",
+	},
+	{
+		band: 23,
+		slug: "geography_slope_too_steep",
+		label: "Hangneigung zu steil",
+		description:
+			"Hangneigung über 15 Grad, ermittelt aus dem Geländemodell mit 25 m Auflösung.",
+		color: "#78461e96",
+		group: "terrain",
+	},
+	{
+		band: 24,
+		slug: "geography_elevation_too_high",
+		label: "Seehöhe zu hoch",
+		description:
+			"Seehöhe über 2.500 m, ermittelt aus dem Geländemodell mit 25 m Auflösung.",
+		color: "#78787896",
+		group: "terrain",
+	},
+	{
+		band: 25,
+		slug: "geography_wind_too_low",
+		label: "Wind zu gering",
+		description:
+			"Windleistungsdichte in 150 m Höhe unter rund 160 W/m², aus dem Globalen Windatlas. Der Grenzwert entspricht 150 W/m² in 130 m Höhe, mit dem Windprofil auf 150 m hochgerechnet.",
+		color: "#50a0ff91",
 		group: "wind",
+	},
+	{
+		band: 26,
+		slug: "geography_water_bodies",
+		label: "Größere Gewässer",
+		description:
+			"Seen, Stauseen und Flüsse aus OpenStreetMap, zusammenhängende Wasserflächen ab 1 ha.",
+		color: "#005aaaaa",
+		group: "terrain",
+	},
+	{
+		band: 28,
+		slug: "exclusion_nature",
+		label: "Ausschluss Natur",
+		description:
+			"Amtliche Schutzgebiete, also Nationalparks, Naturschutzgebiete, Europaschutzgebiete nach Natura 2000 und Ramsar-Gebiete, sowie Schutzgebiete aus OpenStreetMap, vereinigt und auf das Staatsgebiet zugeschnitten. Ohne Abstandspuffer.",
+		color: "#00b40096",
+		group: "nature",
 	},
 ];
 
 export const GROUP_ORDER: BandGroup[] = ["human", "nature", "terrain", "wind"];
 
-// Single vector-tile source (TileServer GL) — all 16 bands as source-layers.
-// Upload scripts/raster/windkraft_exclusion_bands.mbtiles to the tile server,
-// then add to config.json:  "windkraft-exclusion-bands": { "mbtiles": "windkraft_exclusion_bands.mbtiles" }
+export function bandLayerId(slug: string): string {
+	return `detail-${slug}-fill`;
+}
+
+export function bandSourceId(slug: string): string {
+	return `detail-${slug}`;
+}
+
 export const EXCLUSION_BANDS_SOURCE = "exclusion-bands";
 export const EXCLUSION_BANDS_TILES =
 	"https://tiles.klimadashboard.org/data/windkraft_exclusion_bands/{z}/{x}/{y}.pbf";
-
-export function bandLayerId(slug: string) {
-	return `detail-${slug}-fill`;
-}
-export function bandSourceId(slug: string) {
-	return `detail-${slug}`;
-}

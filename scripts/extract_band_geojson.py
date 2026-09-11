@@ -1,20 +1,22 @@
 """
-Extract individual band GeoJSONs from osm_wka_distance_zones_widmung.tif.
+Extract individual band GeoJSONs from the Abschichtung raster.
 
-Each of the 18 "default" exclusion bands is polygonized and written to
-geodata/band_NN_<slug>.geojson. Features have a single property: {"band_id": N}.
+Welche Bänder Layer werden, entscheidet das Bandmanifest — dieselbe Auswahl wie
+in scripts/generate_bands_config.py, damit Kacheln und `bands.ts` nicht
+auseinanderlaufen können. Jedes Band wird polygonisiert nach
+geodata/<bandname>.geojson geschrieben, mit einer Eigenschaft: {"band_id": N},
+wobei N der Bandindex aus dem Manifest ist.
 
-The settlement-distance band (band_01_human_settlement) additionally gets 5 more
-variants extracted (800/1000/1200/1500/2000 m) from the source file's settlement-
-distance-variant bands, since that is the only band that differs between the 6
-settlement-distance scenarios (see PIPELINE.md / README §3.6) — everything else
-(power lines, roads, rail, cableways, military, airports, nature, terrain, wind)
-is identical across all variants, so only this one band needs extra copies.
+Der Dateiname ist der Bandname aus dem Manifest und zugleich der Layername in
+den Vektorkacheln (`tippecanoe -L <name>:…`) und das `source-layer` in MapLibre.
 
-Uses Resampling.max so thin buffers (roads, power lines) don't disappear at 20×.
+Uses Resampling.max so thin buffers (roads) don't disappear at 20×.
 """
 
 import json
+import os
+import sys
+
 import numpy as np
 import rasterio
 from rasterio.enums import Resampling
@@ -24,44 +26,17 @@ from shapely.geometry import shape, mapping
 from shapely.ops import unary_union
 import shapely
 
-SRC = "scripts/raster/osm_wka_distance_zones_widmung.tif"
+SRC_CANDIDATES = [
+    "scripts/raster/abschichtung.tif",
+    "scripts/raster/osm_wka_distance_zones_widmung.tif",
+]
+SRC = next((p for p in SRC_CANDIDATES if os.path.exists(p)), SRC_CANDIDATES[-1])
 AUSTRIA_OUTLINE = "geodata/austria_outline.geojson"
 OUT_DIR = "geodata"
 
-# (source band index, output band_id, slug) for the 18 "default" exclusion bands.
-# output band_id (1-18) is the STABLE identifier used throughout the app
-# (src/lib/config/bands.ts BAND_DEFS[].band) — it must NOT be confused with the
-# source band index, which only says where to read the pixels from.
-BAND_SLUGS = [
-    (2,  1,  "band_01_human_settlement"),
-    (4,  2,  "band_02_human_important_objects"),
-    (6,  3,  "band_03_human_cableway_buildings"),
-    (8,  4,  "band_04_human_haeuser_im_gruenen"),
-    (10, 5,  "band_05_human_general_buildings"),
-    (11, 6,  "band_06_human_power_380kv"),
-    (12, 7,  "band_07_human_road_motorway"),
-    (13, 8,  "band_08_human_road_federal"),
-    (14, 9,  "band_09_human_rail"),
-    (15, 10, "band_10_human_cableway_people"),
-    (16, 11, "band_11_human_military"),
-    (17, 12, "band_12_human_airport"),
-    (18, 13, "band_13_human_airport_lateral"),
-    (19, 14, "band_14_nature_protection"),
-    (20, 15, "band_15_nature_osm"),
-    (21, 16, "band_16_geo_slope"),
-    (22, 17, "band_17_geo_elevation"),
-    (23, 18, "band_18_geo_wind"),
-]
-
-# Extra settlement-distance variants for band_01 (band 2 above = "default").
-# Resolved by band *description*, not a hardcoded index — robust to re-ordering.
-SETTLEMENT_VARIANT_DESCRIPTIONS = {
-    "800":  "settlement_widmung_buffer_800m",
-    "1000": "settlement_widmung_buffer_1000m",
-    "1200": "settlement_widmung_buffer_1200m",
-    "1500": "settlement_widmung_buffer_1500m",
-    "2000": "settlement_widmung_buffer_2000m",
-}
+# Die Layerauswahl kommt aus dem Manifest — siehe generate_bands_config.py.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from generate_bands_config import MANIFEST, select_bands  # noqa: E402
 
 # Simplification tolerance — keep fine; Tippecanoe will handle LOD simplification
 SIMPLIFY_TOL = 0.00005  # degrees (~5 m at Austrian latitudes) — fine since source is 25 m
@@ -178,21 +153,18 @@ def main():
         print(f"  CRS: {src.crs}, size: {src.width}×{src.height}, bands: {src.count}")
         austria_mask_arr = load_austria_mask(src)
 
-        for band_idx, band_id, slug in BAND_SLUGS:
-            if band_idx > src.count:
-                print(f"  Band {band_idx}: not in file (only {src.count} bands), skipping")
-                continue
-            extract_band(src, band_idx, slug, band_id, austria_mask_arr)
+        with open(MANIFEST, encoding="utf-8") as fh:
+            manifest = json.load(fh)
+        names = list(src.descriptions)
+        bands = select_bands(manifest)
+        print(f"  {len(bands)} Layer laut Manifest")
 
-        print("\nSettlement-distance variants (band_01 alternates) …")
-        descriptions = list(src.descriptions)
-        for variant, band_name in SETTLEMENT_VARIANT_DESCRIPTIONS.items():
-            if band_name not in descriptions:
-                print(f"  {band_name}: not found in file, skipping")
+        for b in bands:
+            if b["name"] not in names:
+                print(f"  {b['name']}: nicht im Raster, übersprungen")
                 continue
-            band_idx = descriptions.index(band_name) + 1  # rasterio band index is 1-based
-            slug = f"band_01_human_settlement_{variant}"
-            extract_band(src, band_idx, slug, band_id=1, austria_mask_arr=austria_mask_arr)
+            band_idx = names.index(b["name"]) + 1
+            extract_band(src, band_idx, b["name"], b["index"], austria_mask_arr)
 
     print("Done.")
 

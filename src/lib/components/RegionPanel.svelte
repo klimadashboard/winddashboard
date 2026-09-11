@@ -17,9 +17,9 @@
 	const faqItems = [
 		{ q: 'Was bedeutet Windpotenzial?', a: 'Das Windpotenzial beschreibt die verfügbare Windenergie an einem Standort, ausgedrückt als mittlere Leistungsdichte in Watt pro Quadratmeter (W/m²). Je höher der Wert, desto wirtschaftlicher der Betrieb einer Windkraftanlage.' },
 		{ q: 'Was bedeutet der Schwellenwert von 300 W/m²?', a: 'Als wirtschaftliches Minimum gilt eine mittlere Windleistungsdichte von 300 W/m² in 150 m Nabenhöhe. Flächen mit geringerem Windpotenzial oder fehlenden Winddaten werden als ungeeignet ausgeschlossen.' },
-		{ q: 'Welche Abstände und Ausschlussgründe gelten?', a: 'Mindestabstände zu Wohngebieten, Einzelgebäuden, Straßen (150 m), Eisenbahnen (150 m) und Freileitungen (150 m) sowie Schutzgebiete (Natura 2000, Nationalparks) schließen Flächen aus.' },
+		{ q: 'Welche Abstände und Ausschlussgründe gelten?', a: 'Mindestabstände zu Wohngebieten, Einzelgebäuden, Straßen (150 m) und Eisenbahnen (150 m) sowie Schutzgebiete (Natura 2000, Nationalparks) schließen Flächen aus. Freileitungen sind seit der Datenlieferung vom September 2026 kein Ausschlusskriterium mehr.' },
 		{ q: 'Wie werden offizielle Eignungszonen ausgewiesen?', a: 'Offizielle Windkraft-Eignungszonen werden in sektoralen Raumordnungsprogrammen der Bundesländer festgelegt. Bisher hat Niederösterreich (NÖ LGBl. Nr. 47/2024) solche Zonen definiert.' },
-		{ q: 'Welche Datengrundlagen werden verwendet?', a: 'Die Daten basieren auf dem Global Wind Atlas (Windpotenzial), dem österreichischen DGM 25 m (Gelände), OpenStreetMap (Infrastruktur) sowie Schutzgebietsdaten und offiziellen Verwaltungsgrenzen.' },
+		{ q: 'Welche Datengrundlagen werden verwendet?', a: 'Die Daten basieren auf dem European Wind Atlas (Windpotenzial), dem österreichischen DGM 25 m (Gelände), OpenStreetMap (Infrastruktur) sowie Schutzgebietsdaten und offiziellen Verwaltungsgrenzen.' },
 	];
 
 	let openFaq: number | null = $state(null);

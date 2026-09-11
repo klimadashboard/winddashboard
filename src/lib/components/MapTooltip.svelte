@@ -66,14 +66,14 @@
 							>{Number(info.zone.area_ha).toLocaleString("de-AT")} ha</span
 						>
 					</div>
-					{#if Number(info.zone.n_existing_turbines) > 0}
-						<div>
-							<span class="text-slate-400">Bestehende Anlagen</span>
-							<span class="font-medium text-slate-700"
-								>{info.zone.n_existing_turbines}</span
-							>
-						</div>
-					{/if}
+					<!--
+						Bewusst KEINE Anlagenzahl je Potenzialfläche: eine Fläche ist eine
+						geometrische Einheit, keine Planungseinheit. Liegen mehrere Anlagen
+						einer offiziellen Eignungszone nebeneinander in einer Fläche, wirkt
+						die Zahl wie eine Aussage über das Projekt — sie ist aber nur ein
+						Zählergebnis. Bestandsanlagen werden stattdessen je Gemeinde im
+						Fließtext ausgewiesen.
+					-->
 					<div class="text-slate-400 mt-1 text-[10px]">
 						{info.zone.bundesland ?? ""}
 					</div>

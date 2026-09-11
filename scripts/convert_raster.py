@@ -71,12 +71,14 @@ COLORMAP = {
     6:  (234, 179, 8,   140),  # Eisenbahn (150 m)         – yellow-600
     7:  (168, 162, 158, 155),  # Hangneigung >15°          – stone-400
     8:  (214, 211, 209, 145),  # Seehöhe >2500 m           – stone-300
-    9:  (154, 52,  18,  150),  # Wichtige Objekte (250 m)  – orange-900
-    10: (251, 191, 36,  140),  # Freileitung 380/400 kV    – amber-400
+    # 9 (Wichtige Objekte) und 10 (Freileitung 380/400 kV) sind mit widmung_v2
+    # stillgelegt — beide Kriterien gibt es nicht mehr.
     11: (148, 163, 184, 150),  # Wind zu gering            – slate-400
     12: (253, 186, 116, 130),  # Allgemeine Gebäude (25 m) – orange-300
     13: (194, 65,  12,  140),  # Gebäude an Seilbahnen (50 m) – orange-700
     14: (147, 197, 253, 220),  # Geeignet                  – blue-300
+    15: (180, 83,  9,   166),  # Nicht-Wohn-Hüllen (25 m)  – amber-700
+    16: (8,   145, 178, 140),  # Größere Gewässer          – cyan-600
 }
 
 INPUT_TIF  = "classification.tif"

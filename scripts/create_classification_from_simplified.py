@@ -1,72 +1,79 @@
 #!/usr/bin/env python3
 """
-Derive classification.tif (single-band, codes 0–14) from osm_wka_distance_zones_widmung.tif.
+Derive classification.tif (single-band) from the Abschichtung raster.
 
-Source bands (54-band raster, "widmung_v1" pipeline, EPSG:31287, 25 m). Only the
-default (Bundesland-specific) settlement distance is used here — the 6 settlement-
-distance variants (bands 31–54) feed the interactive slider instead, via
-extract_possible_zones.py / extract_band_geojson.py.
+Die Zuordnung läuft über **Bandnamen**, nicht über Bandnummern: widmung_v1 hat
+54 Bänder, widmung_v2 nur 44 und in anderer Reihenfolge. Namen, die im jeweiligen
+Raster fehlen, werden übersprungen — dieselbe Tabelle bedient damit beide
+Lieferungen.
 
-  02 settlement_widmung_buffer     → code 2  (Siedlungsabstand)
-  04 important_objects_buffer      → code 9  (Wichtige Objekte, 250 m)
-  06 cableway_buildings_buffer     → code 13 (Gebäude an Seilbahnen, 50 m)
-  08 haeuser_im_gruenen_buffer     → code 3  (Haus im Grünen, 750 m)
-  10 general_buildings_buffer      → code 12 (Allgemeine Gebäude, 25 m)
-  11 power_380_400kv               → code 10 (Freileitung)
-  12 road_motorway_trunk           → code 5  (Verkehrsweg 150 m)
-  13 road_federal_state            → code 5  (Verkehrsweg 150 m)
-  14 rail_main                     → code 6  (Eisenbahn 150 m)
-  15 cableway_people_150m          → code 5  (Verkehrsweg 150 m)
-  16 military_restricted_area      → code 4  (Sperrzone)
-  17 airport_area                  → code 4  (Sperrzone)
-  18 airport_lateral_check_6km     → code 4  (Sperrzone)
-  19 nature_protection_areas       → code 1  (Schutzgebiet)
-  20 osm_nature_protection_areas   → code 1  (Schutzgebiet)
-  21 geography_slope_too_steep     → code 7  (Hangneigung >15°)
-  22 geography_elevation_too_high  → code 8  (Seehöhe >2500 m)
-  23 geography_wind_too_low        → code 11 (Wind zu gering, <150 W/m²)
-  29 available_cleaned_min_10ha    → code 14 (geeignet, Default-Variante)
+Klassencodes (stabil, weil sie in Legende, Kacheln und Tooltip stecken):
 
-Priority: last-write wins (highest listed = highest priority).
-  0 = outside Austria / no data (nothing set)
+   1 Schutzgebiet            7 Hangneigung >15°      12 Allgemeine Gebäude (25 m)
+   2 Siedlungsabstand        8 Seehöhe >2.500 m      13 Gebäude an Seilbahnen (50 m)
+   3 Haus im Grünen (750 m)  9 (stillgelegt)         14 Geeignet
+   4 Sperrzone              10 (stillgelegt)         15 Nicht-Wohn-Hüllen (25 m)
+   5 Verkehrsweg (150 m)    11 Wind zu gering        16 Größere Gewässer
+   6 Eisenbahn (150 m)
 
-Output:
-  scripts/raster/classification.tif  — single-band uint8, same CRS/resolution as source
+Mit widmung_v2 stillgelegt: **9** (Wichtige Objekte) und **10** (Freileitung
+380/400 kV). Beide Kriterien gibt es in der Lieferung nicht mehr — `POWER_LINES`
+steht im Manifest ausdrücklich auf "kein Ausschlusskriterium". Die Nummern werden
+nicht neu vergeben, damit alte Kacheln und Screenshots interpretierbar bleiben.
+Neu hinzugekommen: **15** und **16**.
+
+Priorität: letzter Treffer gewinnt (weiter unten in RULES = höhere Priorität).
+  0 = außerhalb Österreichs / kein Datum
+
+Ausgabe:
+  scripts/raster/classification.tif — einbandig uint8, CRS und Auflösung wie die Quelle
 """
 
 import json
+import os
 import sys
 import numpy as np
 import rasterio
 from rasterio.features import rasterize
 from rasterio.warp import transform_geom
 
-SRC = "scripts/raster/osm_wka_distance_zones_widmung.tif"
+SRC_CANDIDATES = [
+    "scripts/raster/abschichtung.tif",
+    "scripts/raster/osm_wka_distance_zones_widmung.tif",
+]
+SRC = next((p for p in SRC_CANDIDATES if os.path.exists(p)), SRC_CANDIDATES[-1])
 OUT = "scripts/raster/classification.tif"
 AUSTRIA_OUTLINE = "geodata/austria_outline.geojson"
 
-# Band index (1-based) → output classification code, in ascending priority
-# (lower-priority entries are written first and can be overwritten)
+# Bandname → Klassencode, aufsteigend nach Priorität. Namen aus beiden
+# Lieferungen stehen nebeneinander; was im Raster fehlt, wird übersprungen.
 RULES = [
-    (23, 11),   # geography_wind_too_low        → Wind zu gering
-    (22,  8),   # geography_elevation_too_high  → Seehöhe >2500 m
-    (21,  7),   # geography_slope_too_steep     → Hangneigung >15°
-    (10, 12),   # general_buildings_buffer      → Allgemeine Gebäude
-    ( 6, 13),   # cableway_buildings_buffer     → Gebäude an Seilbahnen
-    (11, 10),   # power_380_400kv               → Freileitung
-    (14,  6),   # rail_main                     → Eisenbahn
-    (12,  5),   # road_motorway_trunk           → Verkehrsweg
-    (13,  5),   # road_federal_state            → Verkehrsweg
-    (15,  5),   # cableway_people_150m          → Verkehrsweg
-    ( 4,  9),   # important_objects_buffer      → Wichtige Objekte
-    (16,  4),   # military_restricted_area      → Sperrzone
-    (17,  4),   # airport_area                  → Sperrzone
-    (18,  4),   # airport_lateral_check_6km     → Sperrzone
-    (20,  1),   # osm_nature_protection_areas   → Schutzgebiet
-    (19,  1),   # nature_protection_areas       → Schutzgebiet
-    ( 8,  3),   # haeuser_im_gruenen_buffer     → Haus im Grünen
-    ( 2,  2),   # settlement_widmung_buffer     → Siedlungsabstand
-    (29, 14),   # available_cleaned_min_10ha    → geeignet (Default-Variante)
+    ("geography_wind_too_low",            11),
+    ("geography_elevation_too_high",       8),
+    ("geography_slope_too_steep",          7),
+    ("geography_water_bodies",            16),   # nur widmung_v2
+    ("general_buildings_buffer",          12),
+    ("nonresidential_hulls_buffer",       15),   # nur widmung_v2
+    ("cableway_buildings_buffer",         13),
+    ("power_380_400kv",                   10),   # nur widmung_v1
+    ("rail_main",                          6),
+    ("road_motorway_trunk",                5),
+    ("road_federal_state",                 5),
+    ("cableway_people_150m",               5),
+    ("important_objects_buffer",           9),   # nur widmung_v1
+    ("military_restricted_area",           4),
+    ("airport_area",                       4),   # widmung_v1
+    ("airport_area_major",                 4),   # widmung_v2
+    ("airport_lateral_check_6km",          4),   # widmung_v1
+    ("airport_runway_corridor_5km",        4),   # widmung_v2
+    ("osm_nature_protection_areas",        1),
+    ("nature_protection_areas",            1),
+    ("haeuser_im_gruenen_buffer",          3),   # widmung_v1
+    ("haeuser_im_gruenen",                 3),   # widmung_v2 (Zone, nicht _source)
+    ("settlement_widmung_buffer",          2),   # widmung_v1
+    ("settlement_buffer",                  2),   # widmung_v2
+    ("available_cleaned_min_10ha_default", 14),  # widmung_v1
+    ("available_cleaned_min_10ha",        14),
 ]
 
 
@@ -78,11 +85,18 @@ def main():
 
         classification = np.zeros((height, width), dtype=np.uint8)
 
-        for band_idx, code in RULES:
-            band_name = src.descriptions[band_idx - 1]
+        names = list(src.descriptions)
+        missing = []
+        for band_name, code in RULES:
+            if band_name not in names:
+                missing.append(band_name)
+                continue
+            band_idx = names.index(band_name) + 1
             print(f"  Band {band_idx:02d} ({band_name}) → code {code}")
             data = src.read(band_idx)
             classification[data == 1] = code
+        if missing:
+            print(f"\n  Nicht in dieser Lieferung: {', '.join(missing)}")
 
         # Mask to Austria's real border. The source's wind-too-low band is not
         # clipped to the country outline (it flags "missing data" wherever the

@@ -1,3 +1,10 @@
+<script lang="ts">
+	// Die Bandtabelle unten kommt direkt aus dem Bandmanifest des Datenanbieters,
+	// nicht aus einer abgetippten Liste — sonst beschreibt die Methodik-Seite nach
+	// jeder Lieferung ein Schema, das es nicht mehr gibt.
+	import manifest from "$lib/data/abschichtung.bands.json";
+</script>
+
 <svelte:head>
 	<title>Methodik – Windkraft Österreich</title>
 	<meta
@@ -176,7 +183,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						{#each [["Burgenland", "1.200 m", "750 m"], ["Niederösterreich", "1.200 m", "750 m"], ["Oberösterreich", "1.000 m", "750 m"], ["Steiermark", "1.000 m", "750 m"], ["Kärnten", "1.500 m", "750 m"], ["Salzburg", "1.000 m", "750 m"], ["Tirol", "1.000 m", "750 m"], ["Vorarlberg", "1.000 m", "750 m"], ["Wien", "1.000 m", "750 m"]] as row}
+						{#each [["Burgenland", "1.000 m", "750 m"], ["Niederösterreich", "1.200 m", "750 m"], ["Oberösterreich", "1.000 m", "750 m"], ["Steiermark", "1.000 m", "750 m"], ["Kärnten", "1.000 m", "750 m"], ["Salzburg", "1.000 m", "750 m"], ["Tirol", "1.000 m", "750 m"], ["Vorarlberg", "1.000 m", "750 m"], ["Wien", "1.000 m", "750 m"]] as row}
 							<tr
 								class="border-b border-slate-100 hover:bg-slate-50 transition-colors"
 							>
@@ -188,6 +195,15 @@
 					</tbody>
 				</table>
 			</div>
+			<p class="text-xs text-slate-500 mt-3 leading-relaxed">
+				<strong class="text-slate-600">Hinweis:</strong> Die Tabelle zeigt die Abstände,
+				mit denen unsere Karte tatsächlich rechnet. In der Datenlieferung vom
+				September 2026 wurden sie für das Burgenland von 1.200 m und für Kärnten von
+				1.500 m auf jeweils 1.000 m vereinheitlicht. Ob das den landesrechtlichen
+				Vorgaben entspricht, klären wir gerade mit dem Datenanbieter — in einzelnen
+				Bundesländern können die gesetzlichen Mindestabstände höher liegen als hier
+				gerechnet.
+			</p>
 			<p class="text-xs text-slate-500 mt-3 leading-relaxed">
 				„Einzelgebäude" sind einzelne Wohnhäuser außerhalb von Siedlungen — etwa
 				ein einzelnes Bauernhaus. Weil sie nicht Teil eines größeren
@@ -205,8 +221,14 @@
 				Neben Siedlungen halten wir auch zu einzelnen, empfindlichen oder
 				sicherheitsrelevanten Objekten einen Mindestabstand ein.
 			</p>
+			<p class="text-xs text-slate-500 leading-relaxed mb-3">
+				Die Kategorie „Wichtige Objekte" (250 m um Kirchen, Schlösser und ähnliche
+				Landmarken) ist mit der Datenlieferung vom September 2026 entfallen. Ebenso
+				entfallen ist der Abstand zu Hochspannungsfreileitungen — Freileitungen sind
+				derzeit kein Ausschlusskriterium. Beides ist beim Datenanbieter angefragt.
+			</p>
 			<div class="space-y-3">
-				{#each [{ title: "Wichtige Objekte", buffer: "250 m", note: "z. B. Kirchen, Kapellen, Schlösser, Klöster und Ruinen — also kulturell oder landschaftlich sensible Landmarken." }, { title: "Einzelgebäude im Grünland", buffer: "750 m", note: "Einzelne Wohngebäude außerhalb von Siedlungsflächen (siehe Tabelle oben)." }, { title: "Gebäude an Seilbahnen", buffer: "50 m", note: "Gebäude im unmittelbaren Umfeld von Seilbahnanlagen, etwa Stationsgebäude." }, { title: "Sonstige Gebäude", buffer: "25 m", note: "Alle übrigen Gebäude, die keiner anderen Kategorie zugeordnet sind." }] as cat}
+				{#each [{ title: "Einzelgebäude im Grünland", buffer: "750 m", note: "Einzelne Wohngebäude außerhalb von Siedlungsflächen (siehe Tabelle oben)." }, { title: "Gebäude an Seilbahnen", buffer: "50 m", note: "Gebäude im unmittelbaren Umfeld von Seilbahnanlagen, etwa Stationsgebäude." }, { title: "Nicht-Wohn-Hüllen", buffer: "25 m", note: "Gebäudehüllen ohne Wohnnutzung, etwa Betriebs- und Nebengebäude." }, { title: "Sonstige Gebäude", buffer: "25 m", note: "Alle übrigen Gebäude, die keiner anderen Kategorie zugeordnet sind." }] as cat}
 					<div class="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
 						<p
 							class="text-sm font-semibold mb-1"
@@ -296,9 +318,11 @@
 						Zu wenig Wind
 					</p>
 					<p class="text-xs text-slate-600 leading-relaxed">
-						Standorte mit einer mittleren Windleistungsdichte unter 150 W/m²
-						(gemessen auf 150 m Höhe, laut European Wind Atlas) lohnen sich
-						wirtschaftlich in aller Regel nicht und sind daher ausgeschlossen.
+						Standorte mit einer mittleren Windleistungsdichte unter 150 W/m² in
+						130 m Nabenhöhe lohnen sich wirtschaftlich in aller Regel nicht und
+						sind daher ausgeschlossen. Die Daten stammen aus dem European Wind
+						Atlas, der die Leistungsdichte für 150 m Höhe ausweist — dort
+						entspricht die Schwelle rund 160 W/m².
 						Fehlen für einen Standort Winddaten, wird er sicherheitshalber
 						ebenfalls ausgeschlossen. Wichtig: eine Windmessung vor Ort ist auf
 						jeden Fall dennoch notwendig und liefert detailliertere Daten als
@@ -338,11 +362,12 @@
 			<p class="text-sm text-slate-600 leading-relaxed">
 				Die gesamte Berechnung basiert auf einer einzigen Rasterdatei namens
 				<code class="bg-slate-100 rounded px-1.5 py-0.5 font-mono text-xs"
-					>osm_wka_distance_zones_widmung.tif</code
-				>: 54 Bänder (Ebenen), Datentyp uint8, Koordinatensystem EPSG:31287
-				(österreichisches amtliches Bezugssystem), Auflösung 25 m pro
-				Rasterzelle. Jedes Band entspricht einer Zwischenstufe oder einem
-				Teilergebnis der oben beschriebenen Ausschlusskriterien:
+					>abschichtung.tif</code
+				>: {manifest.band_count} Bänder (Ebenen), Datentyp {manifest.raster.dtype},
+				Koordinatensystem {manifest.raster.crs} (österreichisches amtliches
+				Bezugssystem), Auflösung {manifest.raster.pixel_size_m} m pro Rasterzelle.
+				Jedes Band entspricht einer Zwischenstufe oder einem Teilergebnis der oben
+				beschriebenen Ausschlusskriterien:
 			</p>
 			<div class="rounded-2xl border border-slate-200 overflow-x-auto">
 				<table class="w-full text-sm">
@@ -364,17 +389,20 @@
 						</tr>
 					</thead>
 					<tbody>
-						{#each [["1–2", "settlement_widmung_source/buffer"], ["3–4", "important_objects_source/buffer"], ["5–6", "cableway_buildings_source/buffer"], ["7–8", "haeuser_im_gruenen_source/buffer"], ["9–10", "general_buildings_source/buffer"], ["11", "power_380_400kv"], ["12–13", "road_motorway_trunk / road_federal_state"], ["14", "rail_main"], ["15", "cableway_people_150m"], ["16", "military_restricted_area"], ["17–18", "airport_area / airport_lateral_check_6km"], ["19–20", "nature_protection_areas / osm_nature_protection_areas"], ["21", "geography_slope_too_steep"], ["22", "geography_elevation_too_high"], ["23", "geography_wind_too_low"], ["24–27", "exclusion_human/nature/geography, all_exclusions"], ["28", "available_after_all_exclusions_raw"], ["29", "available_cleaned_min_10ha (Default-Variante)"], ["30", "official_wind_zoning (Referenz: NÖ + Stmk + Sbg)"], ["31–54", "6 Siedlungsabstand-Varianten × 4 Bänder (siehe oben)"]] as [num, name]}
+						{#each manifest.bands as band}
 							<tr
 								class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors"
 							>
 								<td
 									class="px-4 py-2 text-slate-400 font-mono text-xs tabular-nums"
-									>{num}</td
+									>{band.index}</td
 								>
-								<td class="px-4 py-2 font-mono text-xs text-slate-700"
-									>{name}</td
-								>
+								<td class="px-4 py-2 font-mono text-xs text-slate-700">
+									{band.name}
+									{#if band.label_de}
+										<span class="font-sans text-slate-400"> — {band.label_de}</span>
+									{/if}
+								</td>
 							</tr>
 						{/each}
 					</tbody>

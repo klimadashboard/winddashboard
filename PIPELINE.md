@@ -26,12 +26,67 @@ osm_wka_distance_zones_widmung.tif  (Quelldaten, extern generiert, "widmung_v1")
         │
         └─ Schritt 5: scripts/fetch_water_bodies.py (GGN + OSM, unabhängig vom .tif)
                        + scripts/extract_possible_zones.py
-                  └─▶ geodata/possible_zones_<variant>.geojson  (6×)
-                      geodata/zone_centroids_<variant>.geojson  (6×)
-                      geodata/variant_stats.json
+                  └─▶ geodata/possible_zones.geojson
+                      geodata/zone_centroids.geojson
+                      geodata/zone_stats.json
 ```
 
 Danach in Schritt 6 die App-Konstanten aktualisieren.
+
+---
+
+## Lieferung widmung_v2 (9.9.2026) — Teilstand
+
+Neues Paket vom Datenanbieter: `abschichtung.tif` (153 MB, sha256
+`c1809c4cf9cb243d420efc949ff5543130ef3c5a75db9e948d2ea53c94416f37`),
+`abschichtung.bands.json` (Manifest 2.2.1), `LAYER.md`, `LAYER-MANIFEST.md`.
+Bandschema `clean-44-ohne-wichtige-objekte-aug-2026`, Pipeline `widmung_v2`,
+44 Bänder, EPSG:31287, 24001×14001, 25 m. Geprüft: alle 44 Bandnamen im TIF
+stimmen mit dem Manifest überein, Rasterblock im Manifest passt zum File.
+
+**Stand: vollständig auf widmung_v2 umgestellt (10.9.2026)**
+
+| Schritt | Stand |
+|---|---|
+| 1 Klassifikationsraster | neu — Codes 9 und 10 stillgelegt, 15 (Nicht-Wohn-Hüllen) und 16 (Gewässer) neu |
+| 2 Rasterkacheln | **nicht gelaufen, bewusst** — der Layer `classification-raster` wird in der App nie sichtbar geschaltet |
+| 3 Ausschluss-GeoJSONs (Story) | neu |
+| 4 Detailansicht-Vektorkacheln | neu — 17 Layer statt 23, Layernamen sind jetzt die Bandnamen des Manifests |
+| 5 Potenzialflächen | neu — 3.812 Flächen, 365.161 ha (vorher 4.093 / 351.912) |
+| 5b Gemeinde-Kennzahlen | neu |
+| 6 App-Konstanten | alle fünf Balkenwerte plus `POTENTIAL_VECTOR_HA` und `BUNDESLAENDER` |
+
+**Die Layerliste ist nicht mehr handgepflegt.** `scripts/generate_bands_config.py`
+erzeugt `src/lib/config/bands.ts` aus dem Manifest, `extract_band_geojson.py` liest
+dieselbe Auswahl, und die Methodik-Seite rendert die Bandtabelle direkt aus
+`src/lib/data/abschichtung.bands.json`. Nach einer neuen Lieferung genügt es, das
+Manifest zu ersetzen und die Skripte laufen zu lassen.
+
+**Klassencodes:** 9 (Wichtige Objekte) und 10 (Freileitung 380/400 kV) sind
+stillgelegt und werden nicht neu vergeben, damit ältere Kacheln lesbar bleiben.
+
+**Was noch aussteht — und warum**
+
+- Das Manifest-Dokument beschreibt in Abschnitt 6 ein Ziel-Dashboard mit 17 Layern
+  und setzt dafür drei neue Sammelbänder 45–47 voraus (`gebaeude_zone`,
+  `verkehr_zone`, `luftfahrt_zone`). Die sind in diesem TIF **nicht enthalten**.
+  Wir kommen mit den Detailbändern auf dieselben 17 Layer; sobald W7.8 kommt,
+  ersetzen die drei Sammelbänder die neun Detailbänder von Gebäuden, Verkehr und
+  Luftfahrt. `generate_bands_config.py` zieht das dann automatisch nach.
+- Der Bedienfeld-Baum aus dem Manifest (Kategorie → Familie → Stufe) ist **nicht**
+  umgesetzt; das Panel gruppiert weiter nach `BandGroup`. Das ist die eigentliche
+  W7.8-Arbeit.
+
+**Offene Punkte beim Anbieter**
+
+| | |
+|---|---|
+| Siedlungsabstands-Varianten | `SETTLEMENT_BUFFER_VARIANTS` ist `{}`, die Kategorie „Siedlungsabstand-Varianten" hat 0 Bänder. **Am 10.9.2026 auf Entscheidung ersatzlos entfernt** — die zehn `possible_zones_*`/`zone_centroids_*`-Dateien, `variants.ts`, der `settlementVariant`-Store und die Variantenspalten in `region_stats.json` sind weg. Ein Szenario, ein Datensatz |
+| `wka_bestand_punkte.geojson` | in der Übergabetabelle des Manifests genannt, im Paket nicht enthalten; `existing_turbines.geojson` bleibt auf dem alten Stand |
+| Siedlungsabstand je Bundesland | neu NÖ 1.200 m, alle übrigen 1.000 m (vorher Kärnten 1.500, Burgenland/NÖ 1.200). Erklärt den Sprung in Burgenland (48.457 → 71.014 ha) und Kärnten (19.613 → 25.420 ha) |
+| Windschwelle | jetzt 150 W/m² bei **130 m** Nabenhöhe (≙ 159,5 W/m² @150 m), vorher @150 m. Legende und FAQ sagen noch „@150 m" |
+| **Freileitungen ganz entfallen** | `POWER_LINES = "kein Ausschlusskriterium (Clean-Schema Aug 2026)"`. Es gibt kein Band mehr — auch 380/400 kV sind raus, nicht nur die 110 kV. Damit ist die Entscheidung vom 8.9.2026, bei 380 kV zu bleiben, gegenstandslos, solange das Band nicht zurückkommt |
+| Windleistungsdichte je Fläche | das Raster liefert nur ein binäres „Wind zu gering"-Band. Laut `LAYER.md` liegt beim Anbieter `data/gelaende/AUT_power-density_150m.tif` (Stand 29.3.2026) — genau das bräuchten wir für `pd_mean_w_m2` |
 
 ---
 
@@ -185,8 +240,7 @@ GeoJSONs für die animierten Ausschluss-Overlays im Scrollytelling:
 ## Schritt 4 – Detailansicht-Vektorkacheln erzeugen
 
 Die 18 Ausschluss-Ebenen werden als **Vektor-MBTiles** für die interaktive Detailansicht
-aufgebaut, plus 5 zusätzliche Siedlungsabstand-Varianten-Layer für den Schieberegler
-(siehe unten) — macht 23 Layer in einer einzigen mbtiles. Die GeoJSONs werden bei
+aufgebaut — 18 Layer in einer einzigen mbtiles. Die GeoJSONs werden bei
 **voller 25-m-Auflösung** erzeugt, damit die Grenzen exakt mit den Potenzialzonen aus
 Schritt 5 übereinstimmen.
 
@@ -196,12 +250,9 @@ Schritt 5 übereinstimmen.
 python scripts/extract_band_geojson.py
 ```
 
-Schreibt `geodata/band_01_human_settlement.geojson` … `band_18_geo_wind.geojson` (18
-Bänder), plus `band_01_human_settlement_800.geojson`, `_1000.geojson`, `_1200.geojson`,
-`_1500.geojson`, `_2000.geojson` — die 5 alternativen Siedlungsabstand-Varianten. Nur der
-Siedlungsabstand unterscheidet sich zwischen den 6 Varianten (siehe Datei-Metadaten
-`SETTLEMENT_BUFFER_VARIANTS`); alle anderen 17 Bänder sind variantenunabhängig und werden
-nur einmal extrahiert.
+Schreibt `geodata/band_01_human_settlement.geojson` … `band_18_geo_wind.geojson`
+(18 Bänder). Die früheren fünf Siedlungsabstands-Varianten-Layer entfielen am
+10.9.2026 zusammen mit dem Rest der Variantenlogik.
 
 Jedes Band wird vor dem Vektorisieren auf `geodata/austria_outline.geojson` maskiert
 (`load_austria_mask()`) — mehrere Quellbänder (v. a. `geography_wind_too_low`) sind
@@ -209,9 +260,8 @@ selbst nicht auf Österreich geclippt und würden sonst weit ins benachbarte Aus
 (Bayern, Südtirol, Slowenien …) hineinreichen, sichtbar z. B. im Experten-Panel als
 riesige „Wind zu gering"-Fläche außerhalb der Landesgrenze.
 
-Alle Features tragen eine stabile `band_id` (1–18, s. Tabelle unten) — bei den 5
-Siedlungsabstand-Varianten ist das *immer* `1`, unabhängig vom Quellband im TIF, damit
-Hover-Tooltips & Legende unabhängig von der gewählten Variante funktionieren.
+Alle Features tragen eine stabile `band_id` (1–18, s. Tabelle unten), an der Legende und
+Hover-Tooltip hängen.
 
 | Slug | band_id | Quellband (Default) |
 |---|---:|---:|
@@ -237,34 +287,21 @@ Hover-Tooltips & Legende unabhängig von der gewählten Variante funktionieren.
 ### 4b – MBTiles mit Tippecanoe packen
 
 ```bash
+# Layerliste kommt aus dem Manifest — nie von Hand pflegen, sonst laufen
+# Kacheln, bands.ts und Legende auseinander.
+LAYERS=$(python3 -c "
+import json,sys; sys.path.insert(0,'scripts')
+from generate_bands_config import MANIFEST, select_bands
+m=json.load(open(MANIFEST))
+print(' '.join(f'-L {b[\"name\"]}:geodata/{b[\"name\"]}.geojson' for b in select_bands(m)))
+")
+
 tippecanoe \
   --output scripts/raster/windkraft_exclusion_bands.mbtiles \
   --force \
   --minimum-zoom=5 --maximum-zoom=14 \
   --no-tile-size-limit --simplification=4 --detect-shared-borders --no-tile-stats \
-  -L band_01_human_settlement:geodata/band_01_human_settlement.geojson \
-  -L band_01_human_settlement_800:geodata/band_01_human_settlement_800.geojson \
-  -L band_01_human_settlement_1000:geodata/band_01_human_settlement_1000.geojson \
-  -L band_01_human_settlement_1200:geodata/band_01_human_settlement_1200.geojson \
-  -L band_01_human_settlement_1500:geodata/band_01_human_settlement_1500.geojson \
-  -L band_01_human_settlement_2000:geodata/band_01_human_settlement_2000.geojson \
-  -L band_02_human_important_objects:geodata/band_02_human_important_objects.geojson \
-  -L band_03_human_cableway_buildings:geodata/band_03_human_cableway_buildings.geojson \
-  -L band_04_human_haeuser_im_gruenen:geodata/band_04_human_haeuser_im_gruenen.geojson \
-  -L band_05_human_general_buildings:geodata/band_05_human_general_buildings.geojson \
-  -L band_06_human_power_380kv:geodata/band_06_human_power_380kv.geojson \
-  -L band_07_human_road_motorway:geodata/band_07_human_road_motorway.geojson \
-  -L band_08_human_road_federal:geodata/band_08_human_road_federal.geojson \
-  -L band_09_human_rail:geodata/band_09_human_rail.geojson \
-  -L band_10_human_cableway_people:geodata/band_10_human_cableway_people.geojson \
-  -L band_11_human_military:geodata/band_11_human_military.geojson \
-  -L band_12_human_airport:geodata/band_12_human_airport.geojson \
-  -L band_13_human_airport_lateral:geodata/band_13_human_airport_lateral.geojson \
-  -L band_14_nature_protection:geodata/band_14_nature_protection.geojson \
-  -L band_15_nature_osm:geodata/band_15_nature_osm.geojson \
-  -L band_16_geo_slope:geodata/band_16_geo_slope.geojson \
-  -L band_17_geo_elevation:geodata/band_17_geo_elevation.geojson \
-  -L band_18_geo_wind:geodata/band_18_geo_wind.geojson
+  $LAYERS
 ```
 
 ### 4c – Metadaten setzen & hochladen
@@ -297,7 +334,7 @@ Prüfen: `https://tiles.klimadashboard.org/data/windkraft_exclusion_bands/10/560
 
 ---
 
-## Schritt 5 – Potenzialzonen-GeoJSONs (6 Siedlungsabstands-Varianten)
+## Schritt 5 – Potenzialzonen-GeoJSONs
 
 ```bash
 python scripts/fetch_water_bodies.py     # einmalig / bei Bedarf neu — siehe unten
@@ -349,22 +386,17 @@ schließt dann aber keine Gewässer aus.
 > bzw. nur die fehlenden Kacheln nachziehen und in den Cache mergen (dedupliziert
 > über die OSM-ID).
 
-`extract_possible_zones.py` liest für jede der 6 Siedlungsabstand-Varianten (`default`,
-`800`, `1000`, `1200`, `1500`, `2000`) das jeweilige `available_cleaned_min_10ha_<variant>`-Band
-bei **voller 25-m-Auflösung**, maskiert es auf `geodata/austria_outline.geojson`
-(`load_austria_mask()`) und auf `water_bodies.geojson` (`load_water_mask()`, beide einmal
-berechnet und über alle Varianten wiederverwendet) und schreibt pro Variante:
+`extract_possible_zones.py` liest das Ergebnisband (`available_cleaned_min_10ha` in
+widmung_v2, `…_default` in widmung_v1), maskiert auf Österreich und schreibt:
 
-- `geodata/possible_zones_<variant>.geojson` — Polygone mit Bundesland-Zuweisung und Turbinenzählung
-- `geodata/zone_centroids_<variant>.geojson` — Zentroide (Gewicht `w`) für Heatmap-Layer
+- `geodata/possible_zones.geojson` — Polygone mit Bundesland-Zuweisung und Turbinenzählung
+- `geodata/zone_centroids.geojson` — Zentroide (Gewicht `w`) für den Heatmap-Layer
+- `geodata/zone_stats.json` — `{count, totalHa, perBundesland}`, gelesen von Inspector
+  und Scrollytelling
 
-Die `default`-Variante wird stattdessen unsuffixiert geschrieben
-(`possible_zones.geojson`/`zone_centroids.geojson`) — es gibt also keine
-`possible_zones_default.geojson` als separate ~15-MB-Kopie.
-
-Zusätzlich entsteht `geodata/variant_stats.json` — pro Variante `{count, totalHa,
-perBundesland}` — Grundlage für den Siedlungsabstand-Schieberegler in der App (Inspector-
-Zonenzahl, Scrollytelling-Konstanten) und für Schritt 6 unten.
+Bis 10.9.2026 entstanden hier zusätzlich fünf uniforme Siedlungsabstands-Szenarien
+(800/1000/1200/1500/2000 m). Sie waren im UI nie erreichbar und fehlen in widmung_v2;
+sie wurden deshalb ersatzlos entfernt.
 
 Das Skript lädt `geodata/austria_states.geojson` (GADM Austria level-1, bereits im Repo)
 für den räumlichen Bundesland-Join. Turbinen-Zuordnung läuft über einen räumlichen Index
@@ -415,6 +447,58 @@ gleichen raster-basierten Zählweise wie `AUSTRIA_HA`. Genutzt für die
 „Anteil an der Bundeslandfläche"-Balken in `Scrollytelling.svelte` (Potentialflächen/
 Zonierungsflächen). Gegen Statistik Austria geprüft (Fläche und Benützungsarten,
 Stand 1.1.2025) — alle 9 Bundesländer liegen innerhalb von ~1 % der amtlichen Zahl.
+
+---
+
+## Schritt 5b – Gemeinde-Kennzahlen (`region_stats.json`)
+
+```bash
+# Amtliche Gemeindegrenzen holen (einmalig je Jahrgang)
+curl -L -A "Mozilla/5.0" -o /tmp/gem.zip \
+  "https://www.statistik.gv.at/gs-open/GEODATA/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=GEODATA:STATISTIK_AUSTRIA_GEM_20260101&outputFormat=SHAPE-ZIP&format_options=CHARSET:UTF-8"
+unzip -q /tmp/gem.zip -d /tmp/gemeinden
+
+python scripts/build_region_stats.py --gemeinden /tmp/gemeinden
+```
+
+Verschneidet `possible_zones*.geojson` (alle 6 Varianten), `official_zoning.geojson` und
+`existing_turbines.geojson` mit den **amtlichen Gemeindegrenzen der Statistik Austria**
+(EPSG:31287, CC-BY 4.0) und schreibt `geodata/region_stats.json` — je Gemeindekennziffer
+Potenzialflächen, offizielle Zone und Bestandsanlagen. Die App liest diese Tabelle und
+aggregiert Bezirke und Bundesländer über das GKZ-Präfix.
+
+**Warum vorberechnet:** die Zahlen kamen früher zur Laufzeit aus
+`queryRenderedFeatures` über die **Bounding Box** des Gemeindeumrisses. Eine Box ist
+keine Gemeinde — Hausleiten bekam so die Windkraftzone der Nachbargemeinde Rußbach
+zugeschrieben. Die Anlagenzahl stammte zudem aus `n_existing_turbines` der
+Potenzialflächen, wodurch Anlagen außerhalb jeder Potenzialfläche unsichtbar blieben
+(Munderfing: 6 Anlagen, angezeigt 0).
+
+**Trotzdem nicht die `outline`-Geometrien der Regions-API verwenden.** Die waren bis
+8.9.2026 einheitlich rund **205 m nach Westen und 77 m nach Norden versetzt** — MGI
+(EPSG:31287) → WGS84 ohne Datumstransformation. Gemessen gegen OSM-Verwaltungsgrenzen an
+Hausleiten (+201/+205 m), Rußbach (+206 m) und Munderfing (+208/+213 m), jeweils −77 m in
+der Breite. Der Kacheldatensatz `tiles.klimadashboard.org/data/municipalities-at`
+(© Statistik Austria) war nie betroffen und deckt sich metergenau mit OSM — deshalb
+zeichnet die App den Auswahlrahmen aus den Kacheln und nicht aus der API-Geometrie.
+
+> **Behoben am 9.9.2026.** Alle 2.116 österreichischen Gemeinden haben `outline` und
+> `outline_simple` aus der amtlichen Lieferung neu bekommen (flow-Repository,
+> `manual/wip/fix-at-outlines`). Restversatz im Median 0 m, keine Gemeinde weicht um mehr
+> als 25 m ab, IoU gegen die amtliche Grenze im Median 0,996. Die Bezirke waren nie
+> betroffen und blieben unangetastet. Für die Verschneidung hier bleibt die amtliche
+> Quelle maßgeblich: die API-Umrisse sind für den Transport auf rund 200 Stützpunkte
+> vereinfacht, was an Gemeindegrenzen ein paar Hektar hin oder her ausmacht.
+
+**Bekannte Mängel der Lieferung** (an den Datenanbieter gemeldet, im Skript abgefangen):
+
+| Problem | Umfang | Umgang im Skript |
+|---|---|---|
+| Anlagen auf Koordinate `[0, 0]` | 8 von 1.396 | Über den Gemeindenamen zugeordnet (6), 2 bleiben offen |
+| Länge/Breite vertauscht | 2 (Leoben, Potzneusiedl) | Automatisch erkannt und getauscht |
+| `pd_mean_w_m2` durchgehend 0 | alle 4.093 Flächen | Windleistungsdichte wird nicht ausgewiesen |
+| `zone_type` fehlt bei Stmk/Sbg/NÖ | 99 von 143 Zonen | Gilt als positiv ausgewiesene Zone |
+| `communities` fehlt | 32 von 143 Zonen | Zuordnung rein geometrisch |
 
 ---
 
@@ -495,6 +579,7 @@ im Code sollte grob aktuell gehalten werden.
 | `scripts/raster/ktn_windkraftbeschleunigungszone/`, `scripts/raster/bgld_wk_eignungszonen/` | Kärnten/Burgenland-Zonierungs-Shapefiles (`add_ktn_bgld_zoning.py`) | ✗ |
 | `scripts/raster/windkraft_classification.mbtiles` | Klassifikation (Raster) | ✗ |
 | `scripts/raster/windkraft_exclusion_bands.mbtiles` | Ausschluss-Ebenen (Vektor, 23 Layer) | ✗ |
+| `geodata/region_stats.json` | Kennzahlen je Gemeinde (`build_region_stats.py`, Schritt 5b) | ✓ |
 | `geodata/austria_states.geojson` | GADM Bundeslandgrenzen | ✓ |
 | `geodata/austria_outline.geojson` | Österreich-Umriss (aus States) — auch zum Maskieren in Schritt 1 | ✓ |
 | `geodata/possible_zones.geojson` / `zone_centroids.geojson` | Default-Variante (Bundesland-spezifisch) | ✓* |

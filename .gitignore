@@ -9,11 +9,31 @@ node_modules
 /build
 /scripts/raster/*
 
-# Intermediate per-band GeoJSONs (scripts/extract_band_geojson.py output) — pure
-# tippecanoe input for the local mbtiles build, never read by the app itself.
-# Regenerate from scripts/raster/osm_wka_distance_zones_widmung.tif when needed
-# (see PIPELINE.md Schritt 4a). ~470 MB, not worth tracking.
-/geodata/band_*.geojson
+# geodata/ ist ein Ausgabeverzeichnis der Pipeline. Versioniert wird nur, was die
+# App tatsächlich ausliefert (siehe src/routes/data/[name]/+server.ts) — alles
+# andere sind Zwischenstände, vor allem die Band-GeoJSONs als tippecanoe-Eingabe:
+# rund 470 MB, einzelne Dateien über 100 MB, jederzeit aus dem Raster neu
+# erzeugbar (PIPELINE.md Schritt 4a).
+#
+# Bewusst als Positivliste statt als Muster: bis widmung_v1 stand hier
+# `/geodata/band_*.geojson`. Mit widmung_v2 heißen die Dateien nach den
+# Bandnamen des Manifests (general_buildings_buffer.geojson statt
+# band_05_human_general_buildings.geojson) und fielen still aus der Regel —
+# eine 156-MB-Datei stand damit unbemerkt zum Commit bereit. Eine Positivliste
+# kann so nicht kippen: neue Zwischenstände sind per Default ignoriert.
+/geodata/*
+!/geodata/austria_outline.geojson
+!/geodata/austria_states.geojson
+!/geodata/exclusion_schutz.geojson
+!/geodata/exclusion_siedlung.geojson
+!/geodata/exclusion_sonstige.geojson
+!/geodata/exclusion_wind.geojson
+!/geodata/existing_turbines.geojson
+!/geodata/official_zoning.geojson
+!/geodata/possible_zones.geojson
+!/geodata/zone_centroids.geojson
+!/geodata/zone_stats.json
+!/geodata/region_stats.json
 
 # OS
 .DS_Store

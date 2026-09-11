@@ -46,6 +46,28 @@ function fmt(n: number): string {
 	return n.toLocaleString('de-AT');
 }
 
+// Bestandsanlagen werden je Gemeinde ausgewiesen, nicht je Potenzialfläche.
+// Eine Fläche ist eine geometrische Einheit: stehen mehrere Anlagen einer
+// offiziellen Eignungszone nebeneinander, verteilen sie sich beliebig auf die
+// Flächen und die Zahl je Fläche sagt nichts aus. Die Zahl je Gemeinde schon.
+function turbineSentence(name: string, n: number): string {
+	if (n <= 0) return '';
+	return n === 1
+		? `In ${name} ist derzeit 1 Windrad in Betrieb.`
+		: `In ${name} sind derzeit ${fmt(n)} Windräder in Betrieb.`;
+}
+
+// Ergänzt den Bestandssatz, wenn es Anlagen gibt. Gibt es eine Aufzählung
+// (Detailprüfung), steht der Satz davor — sonst hinge er unter den Bullets.
+function withTurbines(content: RegionIntroContent, name: string, n: number): RegionIntroContent {
+	const sentence = turbineSentence(name, n);
+	if (!sentence) return content;
+	const paragraphs = content.bullets
+		? [...content.paragraphs.slice(0, -1), sentence, content.paragraphs.at(-1)!]
+		: [...content.paragraphs, sentence];
+	return { ...content, paragraphs };
+}
+
 export function getStateId(region: Region): string | null {
 	return region.parents?.find(p => p.layer === 'state')?.id
 		?? (region.layer === 'state' ? region.id : null);
@@ -59,12 +81,12 @@ function introNÖ(name: string, s: ZoneStats): RegionIntroContent {
 	const hasTurbines = s.turbineCount > 0;
 
 	if (hasZone && hasTurbines) {
-		return {
+		return withTurbines({
 			paragraphs: [
 				`In ${name} befindet sich eine Windkraftzone, in der bereits Windräder errichtet wurden. Bestehende Anlagen könnten in Zukunft modernisiert und durch leistungsstärkere Windräder ersetzt werden.`,
 			],
 			afterBullets: [NÖ_TURBINE_LEGACY_NOTE],
-		};
+		}, name, s.turbineCount);
 	}
 	if (hasZone) {
 		return {
@@ -74,12 +96,12 @@ function introNÖ(name: string, s: ZoneStats): RegionIntroContent {
 		};
 	}
 	if (hasTurbines) {
-		return {
+		return withTurbines({
 			paragraphs: [
 				`In ${name} befinden sich bereits Windräder. Bestehende Anlagen könnten in Zukunft modernisiert und durch leistungsstärkere Windräder ersetzt werden.`,
 			],
 			afterBullets: [NÖ_TURBINE_LEGACY_NOTE],
-		};
+		}, name, s.turbineCount);
 	}
 	if (!hasPotential) {
 		return {
@@ -95,34 +117,34 @@ function introNÖ(name: string, s: ZoneStats): RegionIntroContent {
 	};
 }
 
-function introPotentialOnly(name: string, hasPotential: boolean): RegionIntroContent {
+function introPotentialOnly(name: string, hasPotential: boolean, turbineCount = 0): RegionIntroContent {
 	if (!hasPotential) {
-		return {
+		return withTurbines({
 			paragraphs: [
 				`In ${name} besteht laut Potenzialkarte grundsätzlich wenig Potenzial für Windkraft. Ob hier nicht doch ein Windrad errichtet werden kann, hängt jedoch von der Detailprüfung ab:`,
 			],
 			bullets: DETAIL_BULLETS,
-		};
+		}, name, turbineCount);
 	}
-	return {
+	return withTurbines({
 		paragraphs: [
 			`In ${name} besteht laut Potenzialkarte grundsätzlich Potenzial für Windkraft. Ob hier tatsächlich ein Windrad errichtet werden kann, hängt jedoch von der Detailprüfung ab:`,
 		],
 		bullets: DETAIL_BULLETS,
-	};
+	}, name, turbineCount);
 }
 
 function introTirol(name: string, s: ZoneStats): RegionIntroContent {
-	return introPotentialOnly(name, s.count > 0);
+	return introPotentialOnly(name, s.count > 0, s.turbineCount);
 }
 
 function introVorarlberg(name: string, s: ZoneStats): RegionIntroContent {
-	return introPotentialOnly(name, s.count > 0);
+	return introPotentialOnly(name, s.count > 0, s.turbineCount);
 }
 
 function introOÖ(name: string, s: ZoneStats): RegionIntroContent {
 	return {
-		...introPotentialOnly(name, s.count > 0),
+		...introPotentialOnly(name, s.count > 0, s.turbineCount),
 		afterBullets: [
 			'Das Land Oberösterreich arbeitet aktuell an einer überörtlichen Raumplanung mit dem Ziel, drei verschiedene Zonen für Windkraft auszuweisen: Beschleunigungsgebiete, neutrale Gebiete und Ausschlussgebiete.',
 		],
@@ -134,13 +156,20 @@ function introSteiermark(name: string, s: ZoneStats): RegionIntroContent {
 	const hasTurbines = s.turbineCount > 0;
 	const zoneType: OfficialZoneType = s.officialZoneType;
 
-	if (hasTurbines && (zoneType === 'vorrang' || zoneType === 'eignung')) {
-		return {
+	// `positive` steht für eine ausgewiesene Zone ohne Typangabe: die 17 steirischen
+	// SAPRO-Zonen kommen ohne `zone_type` aus der Lieferung. Bis der Datenanbieter
+	// Vorrang und Eignung unterscheidet, werden sie neutral als Zone beschrieben —
+	// vorher fielen sie durch alle Zweige und wurden als "keine vom Land vorgesehene
+	// Fläche" beschrieben, obwohl die Karte daneben eine Zone zeigte.
+	const hasZone = zoneType === 'vorrang' || zoneType === 'eignung' || zoneType === 'positive';
+
+	if (hasTurbines && hasZone) {
+		return withTurbines({
 			paragraphs: [
 				`In ${name} befindet sich eine Windkraftzone, in der bereits Windräder errichtet wurden. Bestehende Anlagen könnten in Zukunft modernisiert und durch leistungsstärkere Windräder ersetzt werden.`,
 			],
 			afterBullets: [STEIERMARK_REVISION_NOTE],
-		};
+		}, name, s.turbineCount);
 	}
 	if (zoneType === 'vorrang') {
 		return {
@@ -154,6 +183,14 @@ function introSteiermark(name: string, s: ZoneStats): RegionIntroContent {
 		return {
 			paragraphs: [
 				`In ${name} befindet sich eine sogenannte „Eignungszone". Das bedeutet, dass das Land Steiermark diese Flächen grundsätzlich für Windkraft vorgesehen hat.`,
+			],
+			afterBullets: [STEIERMARK_REVISION_NOTE],
+		};
+	}
+	if (zoneType === 'positive') {
+		return {
+			paragraphs: [
+				`In ${name} befindet sich eine vom Land Steiermark ausgewiesene Windkraftzone. Das bedeutet, dass diese Flächen grundsätzlich für Windkraft vorgesehen sind.`,
 			],
 			afterBullets: [STEIERMARK_REVISION_NOTE],
 		};
@@ -176,12 +213,12 @@ function introSteiermark(name: string, s: ZoneStats): RegionIntroContent {
 	}
 	// No official zone (neutral)
 	if (hasTurbines) {
-		return {
+		return withTurbines({
 			paragraphs: [
 				`In ${name} befinden sich bereits Windräder. Bestehende Anlagen könnten in Zukunft modernisiert und durch leistungsstärkere Windräder ersetzt werden.`,
 			],
 			afterBullets: [STEIERMARK_REVISION_NOTE],
-		};
+		}, name, s.turbineCount);
 	}
 	const detailIntro = 'Ob hier ein Windrad errichtet werden kann, hängt von der Detailprüfung ab:';
 	if (!hasPotential) {
@@ -210,12 +247,12 @@ function introKärnten(name: string, s: ZoneStats): RegionIntroContent {
 	const zoneType: OfficialZoneType = s.officialZoneType;
 
 	if (zoneType === 'positive' && hasTurbines) {
-		return {
+		return withTurbines({
 			paragraphs: [
 				`In ${name} befindet sich eine der insgesamt 4 „Beschleunigungsgebiete" für Windkraft in Kärnten, in dem bereits Windräder errichtet wurden. Bestehende Anlagen könnten in Zukunft modernisiert und durch leistungsstärkere Windräder ersetzt oder neue, moderne Anlagen dazugebaut werden.`,
 			],
 			afterBullets: [KÄRNTEN_LEGAL_NOTE],
-		};
+		}, name, s.turbineCount);
 	}
 	if (zoneType === 'positive') {
 		return {
@@ -250,11 +287,11 @@ function introBurgenland(name: string, s: ZoneStats): RegionIntroContent {
 	const hasTurbines = s.turbineCount > 0;
 
 	if (hasZone && hasTurbines) {
-		return {
+		return withTurbines({
 			paragraphs: [
 				`In ${name} befindet sich eine Windkraftzone, in der bereits Windräder errichtet wurden. Bestehende Anlagen könnten in Zukunft modernisiert und durch leistungsstärkere Windräder ersetzt werden.`,
 			],
-		};
+		}, name, s.turbineCount);
 	}
 	if (hasZone) {
 		return {
@@ -264,11 +301,11 @@ function introBurgenland(name: string, s: ZoneStats): RegionIntroContent {
 		};
 	}
 	if (hasTurbines) {
-		return {
+		return withTurbines({
 			paragraphs: [
 				`In ${name} befinden sich bereits Windräder. Bestehende Anlagen könnten in Zukunft modernisiert und durch leistungsstärkere Windräder ersetzt werden.`,
 			],
-		};
+		}, name, s.turbineCount);
 	}
 	if (!hasPotential) {
 		return {
@@ -289,27 +326,27 @@ function introSalzburg(name: string, s: ZoneStats): RegionIntroContent {
 	const hasPotential = s.count > 0;
 
 	if (hasZone) {
-		return {
+		return withTurbines({
 			paragraphs: [
 				`In ${name} befindet sich eine sogenannte Windkraft-„Vorrangzone". Die Errichtung von Windrädern soll gemäß der Raumordnung des Landes Salzburg bevorzugt in dieser Fläche stattfinden.`,
 			],
-		};
+		}, name, s.turbineCount);
 	}
 	const detailIntro = 'Ein Windrad kann hier also unter Umständen möglich sein, abhängig von der Detailprüfung:';
 	if (!hasPotential) {
-		return {
+		return withTurbines({
 			paragraphs: [
 				`In ${name} befindet sich aktuell keine Windkraft-„Vorrangzone". Das bedeutet, dass das Land Salzburg diese Flächen weder aktiv eingeplant, noch kategorisch ausgeschlossen hat. ${detailIntro}`,
 			],
 			bullets: DETAIL_BULLETS,
-		};
+		}, name, s.turbineCount);
 	}
-	return {
+	return withTurbines({
 		paragraphs: [
 			`In ${name} befindet sich aktuell keine Windkraft-„Vorrangzone". Das bedeutet, dass das Land Salzburg diese Flächen weder aktiv eingeplant, noch kategorisch ausgeschlossen hat. Laut Potenzialkarte besteht in ${name} grundsätzlich Potenzial für Windkraft. ${detailIntro}`,
 		],
 		bullets: DETAIL_BULLETS,
-	};
+	}, name, s.turbineCount);
 }
 
 // ── Generic fallback (used by Wien, and by states with no zone data yet) ────

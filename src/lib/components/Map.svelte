@@ -14,15 +14,12 @@
 		hiddenBands,
 		detailLayersReady,
 		emptyBands,
-		settlementVariant,
 		mapZoom,
 		centerBundesland,
 	} from "$lib/stores/windStore";
-	import type { VizMode, OfficialZoneType } from "$lib/stores/windStore";
+	import type { VizMode } from "$lib/stores/windStore";
 	import { BAND_DEFS, bandLayerId, EXCLUSION_BANDS_SOURCE, EXCLUSION_BANDS_TILES } from "$lib/config/bands";
 	import type { BandGroup, BandDef } from "$lib/config/bands";
-	import { possibleZonesUrl, zoneCentroidsUrl } from "$lib/config/variants";
-	import type { SettlementVariant } from "$lib/config/variants";
 	import {
 		CARTO_BASEMAP,
 		CARTO_LABELS_STYLE,
@@ -33,7 +30,13 @@
 		CLASSIFICATION_TILES_MIN_ZOOM,
 		CLASSIFICATION_TILES_MAX_ZOOM,
 	} from "$lib/config/tiles";
-	import type { Region, ZoneStats } from "$lib/stores/windStore";
+	import type { Region } from "$lib/stores/windStore";
+	import {
+		loadRegionStats,
+		statsForRegion,
+		boundsForRegion,
+	} from "$lib/data/regionStats";
+	import type { RegionStatsTable } from "$lib/data/regionStats";
 
 	export interface HoverInfo {
 		zone?: Record<string, unknown>;
@@ -63,17 +66,8 @@
 		"9": "Wien",
 	};
 
-	// Every slug a band def can render as. Only the settlement band (band 1) has
-	// more than one — one per settlement-distance variant; every other band has
-	// exactly one slug regardless of the selected variant.
-	function allSlugsForDef(def: BandDef): string[] {
-		return def.variantSlugs ? Object.values(def.variantSlugs) : [def.slug];
-	}
-	// The slug that should currently be shown for a band def, given the selected
-	// settlement-distance variant.
-	function activeSlugForDef(def: BandDef, variant: SettlementVariant): string {
-		return def.variantSlugs?.[variant] ?? def.slug;
-	}
+	// Matches nothing — the resting state of the selected-region highlight layers.
+	const NO_REGION_FILTER = ["==", ["get", "AGS"], "\u0000"] as const;
 
 	onMount(async () => {
 		// Dynamic import keeps maplibre-gl out of SSR bundle
@@ -112,7 +106,7 @@
 
 			map.addSource("possible-zones", {
 				type: "geojson",
-				data: possibleZonesUrl(get(settlementVariant)),
+				data: "/data/possible_zones",
 				generateId: true,
 			});
 
@@ -139,24 +133,13 @@
 
 			map.addSource("zone-centroids", {
 				type: "geojson",
-				data: zoneCentroidsUrl(get(settlementVariant)),
+				data: "/data/zone_centroids",
 			});
 
 			map.addSource("municipalities", {
 				type: "vector",
 				url: "https://tiles.klimadashboard.org/data/municipalities-at.json",
 				promoteId: { "municipalities": "AGS" },
-			});
-
-			// Generic selected-region outline — driven by the `outline` geometry
-			// from the regions API, not the municipalities vector tile. This is
-			// what makes district (Bezirk) and other non-municipality search
-			// results show up on the map: the municipalities tileset only has
-			// municipality-level features, so a Bezirk's feature-state never
-			// matches anything in it.
-			map.addSource("region-highlight", {
-				type: "geojson",
-				data: { type: "FeatureCollection", features: [] },
 			});
 
 			// Semi-transparent street/building context layer (sits above data fills,
@@ -270,16 +253,13 @@
 			// Classification raster — always hidden; added early so it's below zone fills
 			map.addLayer({ id: "classification-raster", type: "raster", source: "classification-raster", layout: { visibility: "none" }, paint: { "raster-opacity": 0.85, "raster-resampling": "linear", "raster-fade-duration": 200 } }, B);
 
-			// ── Detail band layers — 18 bands, below zone fills. The settlement
-			// band (1) gets one layer per settlement-distance variant; only the
-			// one matching $settlementVariant is ever shown (see updateLayers). ──
+			// ── Detail band layers — ein Layer je Band, unter den Zonenfüllungen ──
 			for (const def of BAND_DEFS) {
 				const r = parseInt(def.color.slice(1,3),16);
 				const g = parseInt(def.color.slice(3,5),16);
 				const b2 = parseInt(def.color.slice(5,7),16);
-				for (const slug of allSlugsForDef(def)) {
-					map.addLayer({ id: bandLayerId(slug), type: "fill", source: EXCLUSION_BANDS_SOURCE, "source-layer": slug, paint: { "fill-color": `rgb(${r},${g},${b2})`, "fill-opacity": 0 } }, B);
-				}
+				const slug = def.slug;
+				map.addLayer({ id: bandLayerId(slug), type: "fill", source: EXCLUSION_BANDS_SOURCE, "source-layer": slug, paint: { "fill-color": `rgb(${r},${g},${b2})`, "fill-opacity": 0 } }, B);
 			}
 			detailLayersReady.set(true);
 
@@ -363,19 +343,34 @@
 				},
 			}, B);
 
-			// Selected-region outline (any layer: Gemeinde, Bezirk, …) — see the
-			// "region-highlight" source above for why this exists separately
-			// from the municipalities feature-state highlighting.
+			// Selected-region outline (Gemeinde, Bezirk, Bundesland) — drawn from
+			// the municipalities vector tiles, filtered by GKZ prefix.
+			//
+			// NOT from the `outline` geometry of the regions API. Those polygons
+			// used to be uniformly offset by ~208 m west and ~78 m north (MGI →
+			// WGS84 without the datum shift) — that is what made the Rußbach zone
+			// look as if it reached into Hausleiten. Corrected in Directus on
+			// 2026-09-09 (flow: manual/wip/fix-at-outlines), so the API geometry is
+			// now accurate; the tileset stays the source here because it carries
+			// the full-resolution boundary, while `outline` is simplified to ~200
+			// vertices for transport.
+			//
+			// A Bezirk highlights as the bundle of its municipalities, since the
+			// tileset carries municipality features only.
 			map.addLayer({
 				id: "region-highlight-fill",
 				type: "fill",
-				source: "region-highlight",
+				source: "municipalities",
+				"source-layer": "municipalities",
+				filter: NO_REGION_FILTER,
 				paint: { "fill-color": "#1d4ed8", "fill-opacity": 0.06 },
 			}, B);
 			map.addLayer({
 				id: "region-highlight-outline",
 				type: "line",
-				source: "region-highlight",
+				source: "municipalities",
+				"source-layer": "municipalities",
+				filter: NO_REGION_FILTER,
 				paint: {
 					"line-color": "#1d4ed8",
 					"line-width": 2.5,
@@ -466,23 +461,21 @@
 				}
 			}
 
-			// Detail band layers — opacity-based show/hide. For the settlement band
-			// (variantSlugs set), only the slug matching the selected variant may
-			// ever be visible — every other variant's slug always stays at 0.
+			// Detail band layers — opacity-based show/hide.
 			if (get(detailLayersReady)) {
-				const variant = get(settlementVariant);
 				if (expert) {
-					try { activateBandLayers(variant); } catch(e) {
+					try { activateBandLayers(); } catch(e) {
 						console.warn('[bands] activateBandLayers failed, resetting:', e);
 						activatedSlugs.clear(); // allow retry on next toggle
 					}
 				}
 				const hidden = get(hiddenBands);
 				for (const def of BAND_DEFS) {
-					const activeSlug = activeSlugForDef(def, variant);
+					const activeSlug = def.slug;
 					const baseOpacity = (parseInt(def.color.slice(7,9),16) / 255) * 0.6;
 					const showThisBand = expert && !hidden.has(def.band);
-					for (const slug of allSlugsForDef(def)) {
+					{
+						const slug = def.slug;
 						const id = bandLayerId(slug);
 						if (!map.getLayer(id)) continue;
 						const isActiveSlug = slug === activeSlug;
@@ -502,13 +495,12 @@
 			}
 		}
 
-		// Bbox of the currently selected region in geo coords — used by computeRegionStats
-		// to restrict queryRenderedFeatures to just that area.
-		let currentRegionBbox: [number, number, number, number] | null = null;
 		// True once addSources() has run inside the "load" handler — map.isStyleLoaded()
 		// can report true before our custom sources (e.g. "municipalities") exist, so it
 		// is not a reliable readiness check on its own.
 		let sourcesReady = false;
+		// The precomputed per-Gemeinde table (geodata/region_stats.json).
+		let statsTable: RegionStatsTable | null = null;
 
 		// Drives map-level contextual notices (e.g. the NÖ Mindestabstand hint) that
 		// depend on the viewport rather than a selected region.
@@ -521,126 +513,68 @@
 			centerBundesland.set(ags ? (BUNDESLAND_BY_AGS_PREFIX[ags[0]] ?? null) : null);
 		}
 
+		// The GKZ is hierarchical: 1st digit = Bundesland, first 3 = Bezirk. So a
+		// Bezirk or Bundesland is exactly the set of municipalities whose GKZ starts
+		// with its code, and a prefix comparison selects them all.
 		function setRegionHighlight(region: Region | null) {
-			const src = map.getSource("region-highlight") as maplibregl.GeoJSONSource | undefined;
-			if (!src) return;
-			src.setData(
-				region?.outline
-					? { type: "Feature", geometry: region.outline, properties: {} }
-					: { type: "FeatureCollection", features: [] },
-			);
+			const code = region ? String(region.code ?? "").trim() : "";
+			const filter: maplibregl.FilterSpecification = !code
+				? NO_REGION_FILTER
+				: region!.layer === "municipality"
+					? ["==", ["get", "AGS"], code]
+					: ["==", ["slice", ["get", "AGS"], 0, code.length], code];
+			for (const id of ["region-highlight-fill", "region-highlight-outline"]) {
+				if (map.getLayer(id)) map.setFilter(id, filter);
+			}
 		}
 
 		function highlightRegion(region: Region) {
 			if (!sourcesReady) return;
 			setRegionHighlight(region);
 
-			// Zoom to the region using its outline bbox
-			if (!region.outline) {
-				// No outline geometry available — can't scope the query to this region's
-				// bounds, but still resolve stats for the current viewport rather than
-				// leaving the Inspector stuck on "wird geladen" forever.
-				currentRegionBbox = null;
-				computeRegionStats();
-				return;
-			}
-			const allCoords: [number, number][] =
+			// Fit to the official bounds from the stats table, falling back to the
+			// region's own `outline` (see regionStats.ts on why the table leads).
+			const bounds = boundsForRegion(region, statsTable) ?? outlineBounds(region);
+			if (bounds) map.fitBounds(bounds, { padding: fitPadding(), duration: 1200 });
+		}
+
+		// Einpass-Rand, abhängig von der Kartengröße. Feste 160 px waren auf
+		// kleinen Karten mehr als die halbe Höhe: MapLibre bricht dann mit
+		// "Map cannot fit within canvas with the given bounds, padding, and/or
+		// offset" ab und lässt die Kamera stehen — auf dem Telefon sprang die
+		// Karte damit bei einer Suche überhaupt nicht zur gewählten Gemeinde.
+		function fitPadding(): number {
+			const { width, height } = map.getCanvas().getBoundingClientRect();
+			return Math.max(24, Math.min(160, Math.floor(Math.min(width, height) * 0.18)));
+		}
+
+		function outlineBounds(region: Region): [number, number, number, number] | null {
+			if (!region.outline) return null;
+			const coords: [number, number][] =
 				region.outline.type === "Polygon"
 					? (region.outline.coordinates[0] as [number, number][])
 					: region.outline.coordinates.flatMap((poly) => poly[0] as [number, number][]);
 			let minLon = Infinity, minLat = Infinity, maxLon = -Infinity, maxLat = -Infinity;
-			for (const [lon, lat] of allCoords) {
+			for (const [lon, lat] of coords) {
 				if (lon < minLon) minLon = lon;
 				if (lat < minLat) minLat = lat;
 				if (lon > maxLon) maxLon = lon;
 				if (lat > maxLat) maxLat = lat;
 			}
-			currentRegionBbox = [minLon, minLat, maxLon, maxLat];
-			map.fitBounds(currentRegionBbox, { padding: 160, duration: 1200 });
-			// Use idle (not moveend) so tiles at the new zoom are fully loaded first
-			map.once("idle", computeRegionStats);
+			return Number.isFinite(minLon) ? [minLon, minLat, maxLon, maxLat] : null;
 		}
 
 		function clearRegionHighlight() {
 			if (!sourcesReady) return;
 			setRegionHighlight(null);
-			currentRegionBbox = null;
 			regionStats.set(null);
 		}
 
-		function computeRegionStats() {
-			// Convert geo bbox → pixel bbox so we query only features inside the region,
-			// not everything else visible in the wider viewport
-			let queryArea: [maplibregl.PointLike, maplibregl.PointLike] | undefined;
-			if (currentRegionBbox) {
-				const sw = map.project([currentRegionBbox[0], currentRegionBbox[1]]);
-				const ne = map.project([currentRegionBbox[2], currentRegionBbox[3]]);
-				queryArea = [
-					[Math.floor(sw.x), Math.floor(ne.y)],
-					[Math.ceil(ne.x), Math.ceil(sw.y)],
-				];
-			}
-			// Use the always-visible hit layer so stats are correct regardless of
-			// story step or viz mode (possible-zones-fill may be visibility:none).
-			const features = map.queryRenderedFeatures(queryArea, {
-				layers: ["possible-zones-hit"],
-			});
-
-			// Query official zones — use hit layer so it works even when fill is hidden
-			const officialFeatures = map.queryRenderedFeatures(queryArea, {
-				layers: ["official-zones-hit"],
-			});
-			const officialZoneCount = officialFeatures.length;
-			// Determine zone type: use `zone_type` property if present, otherwise
-			// treat all current zones as positive (NÖ Windkraftzonen).
-			let officialZoneType: OfficialZoneType = null;
-			if (officialZoneCount > 0) {
-				const rawType = officialFeatures[0].properties?.zone_type as string | undefined;
-				if (rawType === 'ausschluss') officialZoneType = 'ausschluss';
-				else if (rawType === 'vorrang') officialZoneType = 'vorrang';
-				else if (rawType === 'eignung') officialZoneType = 'eignung';
-				else officialZoneType = 'positive';
-			}
-
-			if (!features.length) {
-				regionStats.set({
-					count: 0,
-					totalAreaHa: 0,
-					meanPdWm2: 0,
-					turbineCount: 0,
-					officialZoneCount,
-					officialZoneType,
-				});
-				return;
-			}
-			const seen = new Set<number>();
-			const unique = features.filter((f) => {
-				const id = f.properties?.zone_id as number;
-				if (seen.has(id)) return false;
-				seen.add(id);
-				return true;
-			});
-			regionStats.set({
-				count: unique.length,
-				totalAreaHa: Math.round(
-					unique.reduce(
-						(s, f) => s + ((f.properties?.area_ha as number) || 0),
-						0,
-					),
-				),
-				meanPdWm2: Math.round(
-					unique.reduce(
-						(s, f) => s + ((f.properties?.pd_mean_w_m2 as number) || 0),
-						0,
-					) / unique.length,
-				),
-				turbineCount: unique.reduce(
-					(s, f) => s + ((f.properties?.n_existing_turbines as number) || 0),
-					0,
-				),
-				officialZoneCount,
-				officialZoneType,
-			});
+		// Looks the region's figures up in the precomputed table instead of
+		// querying the map. See src/lib/data/regionStats.ts for why.
+		function publishRegionStats(region: Region | null) {
+			if (!region) { regionStats.set(null); return; }
+			regionStats.set(statsForRegion(region, statsTable));
 		}
 
 		let hoveredZoneId: number | null = null;
@@ -704,10 +638,9 @@
 					// Band hover in expert mode — collect ALL bands at cursor
 					if (currentExpert && get(detailLayersReady)) {
 						const hidden = get(hiddenBands);
-						const variant = get(settlementVariant);
 						const visibleBandLayers = BAND_DEFS
 							.filter(d => !hidden.has(d.band))
-							.map(d => bandLayerId(activeSlugForDef(d, variant)));
+							.map(d => bandLayerId(d.slug));
 						if (visibleBandLayers.length > 0) {
 							const bandFeats = map.queryRenderedFeatures(
 								[[e.point.x - 3, e.point.y - 3], [e.point.x + 3, e.point.y + 3]],
@@ -795,15 +728,14 @@
 		// MapLibre does not fetch tiles for layers added with fill-opacity:0.
 		// On first activation of a given slug we remove-and-readd its layer with
 		// real opacity so MapLibre starts loading tiles. After that,
-		// setPaintProperty works fine from the tile cache. Tracked per-slug (not
-		// one global flag) because the settlement band's 6 variant slugs only
-		// need activating once the user actually selects them via the slider.
+		// setPaintProperty works fine from the tile cache. Tracked per-slug so a
+		// band that is switched on later still gets its one-time activation.
 		let activatedSlugs = new Set<string>();
 
-		function activateBandLayers(variant: SettlementVariant) {
+		function activateBandLayers() {
 			const hidden = get(hiddenBands);
 			for (const def of BAND_DEFS) {
-				const slug = activeSlugForDef(def, variant);
+				const slug = def.slug;
 				if (activatedSlugs.has(slug)) continue;
 				activatedSlugs.add(slug);
 
@@ -829,7 +761,12 @@
 		// ── Wire everything up ──────────────────────────────────────────────────
 		let currentExpert: boolean = false;
 		let currentViz: VizMode = "zones";
-		let currentStoryStep: number = 0;
+		// Aus dem Store initialisiert, nicht mit 0: der Store steht auf Nicht-Ebenen
+		// bereits auf -1, und ein hartes 0 hätte beim ersten Abo einen Übergang
+		// "Story beendet" vorgetäuscht, den es nie gab. Auf dem Telefon löste das
+		// den Rückflug zur Österreich-Übersicht aus und überschrieb damit das
+		// Einpassen auf die gesuchte Gemeinde.
+		let currentStoryStep: number = get(storyStep);
 
 		function applyStoryVisibility(step: number) {
 			if (!map.isStyleLoaded()) return;
@@ -920,10 +857,8 @@
 			["zones-heatmap", "classification-raster"].forEach((id) => show(id, false));
 			if (get(detailLayersReady)) {
 				for (const def of BAND_DEFS) {
-					for (const slug of allSlugsForDef(def)) {
-						const id = bandLayerId(slug);
-						if (map.getLayer(id)) map.setPaintProperty(id, 'fill-opacity', 0);
-					}
+					const id = bandLayerId(def.slug);
+					if (map.getLayer(id)) map.setPaintProperty(id, 'fill-opacity', 0);
 				}
 			}
 		}
@@ -980,10 +915,9 @@
 				return;
 			}
 			const hidden = get(hiddenBands);
-			const variant = get(settlementVariant);
 			const visibleLayers = BAND_DEFS
 				.filter(d => !hidden.has(d.band))
-				.map(d => bandLayerId(activeSlugForDef(d, variant)))
+				.map(d => bandLayerId(d.slug))
 				.filter(id => map.getLayer(id));
 			if (visibleLayers.length === 0) return;
 			const features = map.queryRenderedFeatures(undefined, { layers: visibleLayers });
@@ -993,10 +927,6 @@
 
 		const unsubExpert = expertMode.subscribe((expert) => {
 			currentExpert = expert;
-			// The settlement-distance switch/slider only exists in the expert-mode
-			// panel — leaving expert mode always falls back to the legally-accurate
-			// Bundesland-specific default scenario.
-			if (!expert) settlementVariant.set("default");
 			if (currentStoryStep < 0) updateLayers(currentExpert, currentViz);
 		});
 
@@ -1008,7 +938,21 @@
 			}
 		});
 
+		// Not inside the "load" handler: the region figures come from a JSON
+		// table, not from the map, and must resolve even if the style is slow
+		// or fails. Otherwise a region page can sit on "Daten werden geladen …".
+		loadRegionStats().then((table) => {
+			statsTable = table;
+			publishRegionStats(get(selectedRegion));
+		});
+
 		const unsubRegion = selectedRegion.subscribe((region) => {
+			// Stats first, and unconditionally: they come from the precomputed
+			// table, not from the map, so they must not wait for style/source
+			// readiness. On a direct load of /regions/[id] the region arrives
+			// before the map is ready, and the old map-gated path left the
+			// Inspector stuck on "Daten werden geladen …" for good.
+			publishRegionStats(region);
 			if (!map || !sourcesReady) return;
 			if (region) highlightRegion(region);
 			else clearRegionHighlight();
@@ -1019,7 +963,8 @@
 			currentStoryStep = step;
 			// Mobile: when the story ends (step goes from ≥0 to -1), the container
 			// CSS-transitions from 100vh → 60vh over 0.85s.  Wait for that to finish,
-			// then resize the canvas and fly to the proper Austria view.
+			// then resize the canvas and fly to the proper Austria view. Greift nur
+			// nach einer tatsächlich gelaufenen Story — siehe currentStoryStep oben.
 			if (isMobile && step < 0 && prev >= 0) {
 				setTimeout(() => {
 					map.resize();
@@ -1035,29 +980,12 @@
 			}
 		});
 
-		// Settlement-distance slider: swap the zones/centroids source data and
-		// the active settlement-band slug, then recompute the region stats.
-		let firstVariantEmit = true;
-		const unsubSettlementVariant = settlementVariant.subscribe((variant) => {
-			if (firstVariantEmit) {
-				// Skip the initial value — addSources() already loaded it.
-				firstVariantEmit = false;
-				return;
-			}
-			if (!map || !sourcesReady) return;
-			(map.getSource("possible-zones") as maplibregl.GeoJSONSource)?.setData(possibleZonesUrl(variant));
-			(map.getSource("zone-centroids") as maplibregl.GeoJSONSource)?.setData(zoneCentroidsUrl(variant));
-			if (currentStoryStep < 0) updateLayers(currentExpert, currentViz);
-			if (get(selectedRegion)) map.once("idle", computeRegionStats);
-		});
-
 		return () => {
 			unsubExpert();
 			unsubViz();
 			unsubRegion();
 			unsubStory();
 			unsubBands();
-			unsubSettlementVariant();
 			// Reset per-map state so the next map instance starts clean
 			activatedSlugs.clear();
 			expertMode.set(false);

@@ -1,47 +1,44 @@
 #!/usr/bin/env python3
 """
-Extract possible_zones / zone_centroids GeoJSONs for all 6 settlement-distance
-variants from osm_wka_distance_zones_widmung.tif.
+Extract possible_zones / zone_centroids GeoJSONs from the Abschichtung raster.
 
-Reads the available_cleaned_min_10ha_<variant> band for each of the 6 settlement-
-distance scenarios (default / 800m / 1000m / 1200m / 1500m / 2000m) — the
-authoritative set of available wind areas after all exclusions, ≥10 ha — and
-vectorizes each to produce the zone polygons used by the app's map layers,
-inspector, and the interactive settlement-distance slider.
+Liest das Ergebnisband (verfügbare Flächen nach allen Ausschlüssen, ≥ 10 ha) und
+vektorisiert es zu den Zonenpolygonen für Kartenlayer, Inspector und Heatmap.
 
-For each non-default variant, writes:
-  geodata/possible_zones_<variant>.geojson
-  geodata/zone_centroids_<variant>.geojson
+Schreibt:
+  geodata/possible_zones.geojson
+  geodata/zone_centroids.geojson
+  geodata/zone_stats.json   — {count, totalHa, perBundesland}, gelesen von
+                              Inspector und Scrollytelling
 
-The "default" variant is written unsuffixed instead (possible_zones.geojson /
-zone_centroids.geojson) — those two names are the same file, aliased in
-src/routes/data/[name]/+server.ts, so there is exactly one copy of the default
-scenario's data on disk (not a byte-identical duplicate under two filenames).
+Es gibt genau einen Datensatz. Bis 10.9.2026 wurden zusätzlich fünf uniforme
+Siedlungsabstands-Szenarien (800/1000/1200/1500/2000 m) erzeugt; die Lieferung
+widmung_v2 enthält sie nicht mehr (`SETTLEMENT_BUFFER_VARIANTS` ist leer) und sie
+waren im UI nie erreichbar. Sie wurden deshalb ersatzlos entfernt.
 
-Also writes geodata/variant_stats.json — per-variant {count, totalHa, perBundesland}
-— consumed by the frontend (Inspector zone count, Scrollytelling constants).
+Eigenschaften je Fläche in possible_zones.geojson:
+  zone_id          — fortlaufende Ganzzahl
+  area_ha          — Fläche in Hektar (in EPSG:31287 gerechnet)
+  pd_mean_w_m2     — 0; das Raster liefert die Windleistungsdichte nur binär,
+                     ein kontinuierliches Band ist beim Anbieter angefragt.
+                     Alle Flächen liegen garantiert über der Windschwelle.
+  n_existing_turbines — aus dem räumlichen Join mit existing_turbines.geojson
+  bundesland       — Zentroid-in-Polygon gegen geodata/austria_states.geojson
+  centroid_lat/lon — Zentroid in WGS84
 
-Properties written to each possible_zones_<variant>.geojson:
-  zone_id          — sequential integer (per variant)
-  area_ha          — polygon area in hectares (native EPSG:31287 projection)
-  pd_mean_w_m2     — 0 (actual value not available in this raster;
-                       all cleaned zones are guaranteed >= the variant's wind threshold)
-  n_existing_turbines — count from spatial join with existing_turbines.geojson
-  bundesland       — assigned via centroid-in-polygon against geodata/austria_states.geojson
-  centroid_lat/lon — WGS84 centroid
+zone_centroids.geojson:
+  w — Heatmap-Gewicht (über den Logarithmus der Fläche normiert, damit große
+      Flächen die Darstellung nicht dominieren)
 
-zone_centroids_<variant>.geojson:
-  w — heatmap weight (normalised by log-area so large zones don't dominate)
+Braucht geodata/austria_states.geojson (GADM Österreich Ebene 1, wird beim ersten
+Lauf heruntergeladen).
 
-Requires geodata/austria_states.geojson (GADM Austria level-1, downloaded once by this script).
+Gewässer: widmung_v2 enthält das Band geography_water_bodies, die externe Maske
+aus scripts/fetch_water_bodies.py wird dann übersprungen. Ältere Lieferungen ohne
+dieses Band brauchen sie weiterhin, sonst tauchen große Seen als Eignungsflächen auf.
 
-Also masks out scripts/raster/water_bodies.geojson (OSM natural=water lakes/reservoirs,
-see scripts/fetch_water_bodies.py) — the source raster has no water exclusion at
-all, so without this, lakes large enough to exceed the 10 ha threshold (e.g. parts
-of the Bodensee) were showing up as potential wind zones.
-
-Usage:
-  python scripts/extract_possible_zones.py
+Aufruf:
+  python scripts/extract_possible_zones.py [--src <raster.tif>]
 """
 
 import json
@@ -58,26 +55,48 @@ from rasterio.crs import CRS
 from shapely.geometry import shape, mapping, Point
 from shapely.strtree import STRtree
 
-SRC           = "scripts/raster/osm_wka_distance_zones_widmung.tif"
+# Default source. widmung_v2 ("abschichtung.tif", 44 Bänder) wird bevorzugt,
+# sobald sie vorliegt; sonst die ältere widmung_v1-Lieferung mit 54 Bändern.
+# Über --src überschreibbar.
+SRC_CANDIDATES = [
+    "scripts/raster/abschichtung.tif",
+    "scripts/raster/osm_wka_distance_zones_widmung.tif",
+]
+SRC           = next((p for p in SRC_CANDIDATES if Path(p).exists()), SRC_CANDIDATES[-1])
 TURBINES      = "geodata/existing_turbines.geojson"
 STATES        = "geodata/austria_states.geojson"
 AUSTRIA_OUTLINE = "geodata/austria_outline.geojson"
 WATER_BODIES  = "scripts/raster/water_bodies.geojson"  # gitignored, see fetch_water_bodies.py
 OUT_DIR       = "geodata"
-STATS_OUT     = "geodata/variant_stats.json"
+STATS_OUT     = "geodata/zone_stats.json"
 
 MIN_HA = 5.0  # cleaned bands guarantee ≥10 ha; 5 ha is a safety floor
 
-# Variant id → source band description. "default" is written unsuffixed
-# (possible_zones.geojson, not possible_zones_default.geojson) — see process_variant().
-VARIANTS = {
-    "default": "available_cleaned_min_10ha_default",
-    "800":     "available_cleaned_min_10ha_800m",
-    "1000":    "available_cleaned_min_10ha_1000m",
-    "1200":    "available_cleaned_min_10ha_1200m",
-    "1500":    "available_cleaned_min_10ha_1500m",
-    "2000":    "available_cleaned_min_10ha_2000m",
-}
+# Ergebnisband der aktuellen Lieferung. widmung_v2 liefert genau ein Szenario:
+# der gesetzliche, bundeslandspezifische Siedlungsabstand. Die fünf uniformen
+# Vergleichsszenarien aus widmung_v1 (800/1000/1200/1500/2000 m) wurden am
+# 10.9.2026 ersatzlos gestrichen — sie waren nie im UI erreichbar und kommen
+# laut Datenanbieter nicht zurück.
+RESULT_BANDS = ["available_cleaned_min_10ha", "available_cleaned_min_10ha_default"]
+
+
+def result_band(src_path: str) -> str:
+    """Findet das Ergebnisband, egal ob widmung_v1 oder v2."""
+    with rasterio.open(src_path) as src:
+        names = {d for d in src.descriptions if d}
+    for candidate in RESULT_BANDS:
+        if candidate in names:
+            return candidate
+    sys.exit(
+        f"{src_path}: kein Ergebnisband gefunden. Erwartet eines von {RESULT_BANDS}, "
+        f"vorhanden: {sorted(n for n in names if 'available' in n)}"
+    )
+
+
+def raster_has_water_band(src_path: str) -> bool:
+    """widmung_v2 schließt Gewässer bereits im Raster aus (Band geography_water_bodies)."""
+    with rasterio.open(src_path) as src:
+        return "geography_water_bodies" in {d for d in src.descriptions if d}
 
 STATES_URL = (
     "https://geodata.ucdavis.edu/gadm/gadm4.1/json/gadm41_AUT_1.json"
@@ -258,21 +277,17 @@ def bundesland_totals(zones: list[dict]) -> dict:
     return {bl: round(ha) for bl, ha in sorted(totals.items(), key=lambda x: -x[1])}
 
 
-def process_variant(
-    variant: str, band_name: str, states: list[dict], turbines: list,
+def process(
+    band_name: str, states: list[dict], turbines: list,
     austria_mask_arr: np.ndarray, water_mask_arr: np.ndarray,
 ) -> dict:
-    print(f"\n=== Variante '{variant}' (Band: {band_name}) ===")
+    print(f"\n=== Eignungsflächen (Band: {band_name}) ===")
     with rasterio.open(SRC) as src:
-        descriptions = list(src.descriptions)
-        if band_name not in descriptions:
-            sys.exit(f"Band '{band_name}' not found in {SRC}")
-        band_idx = descriptions.index(band_name) + 1
+        band_idx = list(src.descriptions).index(band_name) + 1
 
     zones = extract_zones(SRC, band_idx, austria_mask_arr, water_mask_arr)
     if not zones:
-        print(f"  [warn] no zones extracted for variant '{variant}'")
-        return {"count": 0, "totalHa": 0, "perBundesland": {}}
+        sys.exit("Keine Flächen extrahiert — das deutet auf ein leeres Ergebnisband hin.")
 
     assign_turbine_counts(zones, turbines)
     assign_bundesland(zones, states)
@@ -282,15 +297,8 @@ def process_variant(
     print(f"  Summary: {len(zones)} zones, {total_ha:,.0f} ha total, "
           f"{with_turbines} zones with existing turbines")
 
-    # "default" is written unsuffixed only — possible_zones.geojson IS the
-    # default variant, so a separate possible_zones_default.geojson would just
-    # be a byte-identical ~15 MB duplicate (same for zone_centroids).
-    if variant == "default":
-        write_zones(zones, f"{OUT_DIR}/possible_zones.geojson")
-        write_centroids(zones, f"{OUT_DIR}/zone_centroids.geojson")
-    else:
-        write_zones(zones, f"{OUT_DIR}/possible_zones_{variant}.geojson")
-        write_centroids(zones, f"{OUT_DIR}/zone_centroids_{variant}.geojson")
+    write_zones(zones, f"{OUT_DIR}/possible_zones.geojson")
+    write_centroids(zones, f"{OUT_DIR}/zone_centroids.geojson")
 
     return {
         "count": len(zones),
@@ -300,33 +308,43 @@ def process_variant(
 
 
 def main():
+    band_name = result_band(SRC)
+    print(f"Quelle: {SRC}")
+    print(f"Ergebnisband: {band_name}")
+
     states = ensure_states(STATES)
     turbines = load_turbines(TURBINES)
 
     with rasterio.open(SRC) as src:
         austria_mask_arr = load_austria_mask(src.shape, src.transform, src.crs)
-        water_mask_arr = load_water_mask(src.shape, src.transform, src.crs)
+        if raster_has_water_band(SRC):
+            # Gewässer stecken bereits in exclusion_geography und damit im
+            # Ergebnisband — die externe Maske wäre nur eine zweite Ausführung
+            # derselben Bedingung.
+            print("  Gewässer: im Raster enthalten, externe Maske übersprungen")
+            water_mask_arr = np.zeros(src.shape, dtype=np.uint8)
+        else:
+            water_mask_arr = load_water_mask(src.shape, src.transform, src.crs)
 
-    stats = {}
-    for variant, band_name in VARIANTS.items():
-        stats[variant] = process_variant(
-            variant, band_name, states, turbines, austria_mask_arr, water_mask_arr,
-        )
+    stats = process(band_name, states, turbines, austria_mask_arr, water_mask_arr)
 
     with open(STATS_OUT, "w") as f:
         json.dump(stats, f, indent=2, ensure_ascii=False)
     print(f"\n→ {STATS_OUT} written")
-
-    print("\n=== Übersicht aller Varianten ===")
-    for variant, s in stats.items():
-        print(f"  {variant:8s}: {s['count']:5d} Zonen, {s['totalHa']:>10,.0f} ha")
-
-    print("\nDone. Update Scrollytelling.svelte constants with the 'default' values above.")
+    print(f"  {stats['count']} Flächen, {stats['totalHa']:,} ha")
+    print("\nDone. Konstanten in Scrollytelling.svelte und Inspector.svelte prüfen.")
 
 
 if __name__ == "__main__":
+    import argparse
     import os
+
     os.chdir(Path(__file__).parent.parent)
+    ap = argparse.ArgumentParser(description="Potenzialflächen aus dem Abschichtungsraster")
+    ap.add_argument("--src", help=f"Quellraster (Default: {SRC})")
+    args = ap.parse_args()
+    if args.src:
+        SRC = args.src
     if not Path(SRC).exists():
         sys.exit(f"Source not found: {SRC}")
     main()

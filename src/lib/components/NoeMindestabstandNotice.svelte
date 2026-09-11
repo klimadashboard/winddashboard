@@ -1,14 +1,26 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { fade } from "svelte/transition";
-	import { mapZoom, centerBundesland } from "$lib/stores/windStore";
-	import { NÖ_TURBINE_LEGACY_NOTE } from "$lib/data/regionIntro";
+	import { mapZoom, centerBundesland, selectedRegion } from "$lib/stores/windStore";
+	import { NÖ_TURBINE_LEGACY_NOTE, getStateId, STATE } from "$lib/data/regionIntro";
 
 	// "Nah rangezoomt" — close enough that individual municipalities/zones are
 	// legible, roughly the zoom level a Gemeinde/Bezirk search lands on.
 	const ZOOM_THRESHOLD = 9;
 
-	const visible = $derived($mapZoom >= ZOOM_THRESHOLD && $centerBundesland === "Niederösterreich");
+	// Whenever a NÖ region is selected the notice is pinned: it explains why
+	// turbines can sit outside the zones, which is exactly the question a
+	// Gemeinde view raises. Without this it depended on the viewport-centre
+	// probe (queryRenderedFeatures on the municipalities tiles), which drops
+	// out whenever that probe finds no feature under the map centre — so the
+	// hint disappeared on precisely the Gemeinden that need it.
+	const regionIsNÖ = $derived(
+		$selectedRegion ? getStateId($selectedRegion) === STATE.NIEDERÖSTERREICH : false,
+	);
+
+	const visible = $derived(
+		regionIsNÖ || ($mapZoom >= ZOOM_THRESHOLD && $centerBundesland === "Niederösterreich"),
+	);
 
 	// Closed by default; onMount opens on desktop (mirrors MapControlPanel).
 	let open = $state(false);
