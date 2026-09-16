@@ -22,7 +22,7 @@
 		const [{ Deck }, { HexagonLayer }, geo] = await Promise.all([
 			import('@deck.gl/core'),
 			import('@deck.gl/aggregation-layers'),
-			fetch('/data/zone_centroids').then(r => r.json()),
+			fetch('/data/zone_centroids.json').then(r => r.json()),
 		]);
 
 		const features: any[] = geo.features;

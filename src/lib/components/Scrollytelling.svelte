@@ -162,8 +162,8 @@
 	// ── Data loading ──────────────────────────────────────────────────────────
 	async function loadData() {
 		const [offGj, turbGj] = await Promise.all([
-			fetch("/data/official_zoning").then((r) => r.json()),
-			fetch("/data/existing_turbines").then((r) => r.json()),
+			fetch("/data/official_zoning.json").then((r) => r.json()),
+			fetch("/data/existing_turbines.json").then((r) => r.json()),
 		]);
 		officialAreaHa = offGj.features.reduce(
 			(s: number, f: any) => s + (f.properties.area_ha ?? 0),

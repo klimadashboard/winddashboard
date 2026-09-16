@@ -69,7 +69,7 @@ export async function load({
 	// Schlägt es fehl, bleibt es beim Ladezustand — der Client holt es ohnehin.
 	let stats: ZoneStats | null = null;
 	try {
-		const statsRes = await fetch('/data/region_stats');
+		const statsRes = await fetch('/data/region_stats.json');
 		if (statsRes.ok) {
 			stats = statsForRegion(region, (await statsRes.json()) as RegionStatsTable);
 		}

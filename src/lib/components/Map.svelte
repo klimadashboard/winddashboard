@@ -29,6 +29,10 @@
 		CLASSIFICATION_TILES,
 		CLASSIFICATION_TILES_MIN_ZOOM,
 		CLASSIFICATION_TILES_MAX_ZOOM,
+		POSSIBLE_ZONES_TILES,
+		POSSIBLE_ZONES_LAYER,
+		POSSIBLE_ZONES_MIN_ZOOM,
+		POSSIBLE_ZONES_MAX_ZOOM,
 	} from "$lib/config/tiles";
 	import type { Region } from "$lib/stores/windStore";
 	import {
@@ -111,26 +115,34 @@
 		// ── Helpers (defined inside onMount so they close over `map` and `maplibregl`) ──
 
 		function addSources() {
-			map.addSource("exclusion-schutz", { type: "geojson", data: "/data/exclusion_schutz" });
-			map.addSource("exclusion-siedlung", { type: "geojson", data: "/data/exclusion_siedlung" });
-			map.addSource("exclusion-sonstige", { type: "geojson", data: "/data/exclusion_sonstige" });
-			map.addSource("exclusion-wind", { type: "geojson", data: "/data/exclusion_wind" });
+			map.addSource("exclusion-schutz", { type: "geojson", data: "/data/exclusion_schutz.json" });
+			map.addSource("exclusion-siedlung", { type: "geojson", data: "/data/exclusion_siedlung.json" });
+			map.addSource("exclusion-sonstige", { type: "geojson", data: "/data/exclusion_sonstige.json" });
+			map.addSource("exclusion-wind", { type: "geojson", data: "/data/exclusion_wind.json" });
 
+			// Vektorkacheln statt GeoJSON: die 15-MB-Datei wurde bei jedem Aufruf
+			// vollständig geladen, jetzt kommt nur der sichtbare Ausschnitt.
+			// `promoteId` auf zone_id, damit setFeatureState über Kachelgrenzen
+			// hinweg dieselbe Fläche trifft — mit generierten IDs bekäme dieselbe
+			// Zone in jeder Kachel eine andere und der Hover würde zerreißen.
 			map.addSource("possible-zones", {
-				type: "geojson",
-				data: "/data/possible_zones",
-				generateId: true,
+				type: "vector",
+				tiles: [POSSIBLE_ZONES_TILES],
+				minzoom: POSSIBLE_ZONES_MIN_ZOOM,
+				maxzoom: POSSIBLE_ZONES_MAX_ZOOM,
+				promoteId: { [POSSIBLE_ZONES_LAYER]: "zone_id" },
+				attribution: "© Klimadashboard",
 			});
 
 			map.addSource("official-zones", {
 				type: "geojson",
-				data: "/data/official_zoning",
+				data: "/data/official_zoning.json",
 				generateId: true,
 			});
 
 			map.addSource("turbines", {
 				type: "geojson",
-				data: "/data/existing_turbines",
+				data: "/data/existing_turbines.json",
 				generateId: true,
 			});
 
@@ -145,7 +157,7 @@
 
 			map.addSource("zone-centroids", {
 				type: "geojson",
-				data: "/data/zone_centroids",
+				data: "/data/zone_centroids.json",
 			});
 
 			map.addSource("municipalities", {
@@ -178,7 +190,7 @@
 		// ── Austria mask: loaded from static GeoJSON ───────────────────────────────
 		async function addAustriaMask() {
 			try {
-				const res = await fetch("/data/austria_outline");
+				const res = await fetch("/data/austria_outline.json");
 				const feature: GeoJSON.Feature = await res.json();
 				const outline = feature.geometry as
 					| GeoJSON.Polygon
@@ -291,6 +303,7 @@
 				id: "possible-zones-fill",
 				type: "fill",
 				source: "possible-zones",
+				"source-layer": POSSIBLE_ZONES_LAYER,
 				paint: { "fill-color": "#2563eb", "fill-opacity": ["case", ["boolean", ["feature-state", "hover"], false], 0.72, 0.48] },
 			}, B);
 
@@ -298,6 +311,7 @@
 				id: "possible-zones-border",
 				type: "line",
 				source: "possible-zones",
+				"source-layer": POSSIBLE_ZONES_LAYER,
 				paint: { "line-color": "#1d4ed8", "line-width": 1.5, "line-blur": 0, "line-opacity": 0.55 },
 			}, B);
 
@@ -391,7 +405,7 @@
 			}, B);
 
 			// Invisible hit layers — float above everything; opacity 0 so invisible
-			map.addLayer({ id: "possible-zones-hit", type: "fill", source: "possible-zones", paint: { "fill-opacity": 0 } });
+			map.addLayer({ id: "possible-zones-hit", type: "fill", source: "possible-zones", "source-layer": POSSIBLE_ZONES_LAYER, paint: { "fill-opacity": 0 } });
 			map.addLayer({ id: "official-zones-hit",  type: "fill", source: "official-zones",  paint: { "fill-opacity": 0 } });
 			// GL basemap labels are already on top — no separate carto-labels needed
 		}
@@ -621,12 +635,12 @@
 					if (zone) {
 						if (hoveredZoneId !== null)
 							map.setFeatureState(
-								{ source: "possible-zones", id: hoveredZoneId },
+								{ source: "possible-zones", sourceLayer: POSSIBLE_ZONES_LAYER, id: hoveredZoneId },
 								{ hover: false },
 							);
 						hoveredZoneId = zone.id as number;
 						map.setFeatureState(
-							{ source: "possible-zones", id: hoveredZoneId },
+							{ source: "possible-zones", sourceLayer: POSSIBLE_ZONES_LAYER, id: hoveredZoneId },
 							{ hover: true },
 						);
 					}
@@ -641,7 +655,7 @@
 					// Clear zone hover
 					if (hoveredZoneId !== null) {
 						map.setFeatureState(
-							{ source: "possible-zones", id: hoveredZoneId },
+							{ source: "possible-zones", sourceLayer: POSSIBLE_ZONES_LAYER, id: hoveredZoneId },
 							{ hover: false },
 						);
 						hoveredZoneId = null;
@@ -726,7 +740,7 @@
 				map.getCanvas().style.cursor = "";
 				if (hoveredZoneId !== null) {
 					map.setFeatureState(
-						{ source: "possible-zones", id: hoveredZoneId },
+						{ source: "possible-zones", sourceLayer: POSSIBLE_ZONES_LAYER, id: hoveredZoneId },
 						{ hover: false },
 					);
 					hoveredZoneId = null;

@@ -9,7 +9,9 @@
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"stage-data": "python3 scripts/stage_static_data.py",
+		"prebuild": "python3 scripts/stage_static_data.py"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^7.0.1",
