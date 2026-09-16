@@ -16,7 +16,7 @@
 		if (q.length < 2) { results = []; open = false; return; }
 		loading = true;
 		try {
-			const fields = 'id,name,code,layer,layer_label,postcodes,center,outline,parents';
+			const fields = 'id,name,slug,code,layer,layer_label,postcodes,center,outline,parents';
 			const base   = `https://base.klimadashboard.org/items/regions?filter[country][_eq]=AT&limit=8&fields=${fields}`;
 
 			// Always search by name; additionally search by postcode when query has digits
@@ -88,7 +88,7 @@
 
 	function selectRegion(r: Region) {
 		selectedRegion.set(r);
-		goto('/regions/' + r.id, { noScroll: true });
+		goto('/regions/' + r.slug, { noScroll: true });
 		open = false;
 		activeIndex = -1;
 		inputEl?.blur();

@@ -3,15 +3,13 @@
 	// nicht aus einer abgetippten Liste — sonst beschreibt die Methodik-Seite nach
 	// jeder Lieferung ein Schema, das es nicht mehr gibt.
 	import manifest from "$lib/data/abschichtung.bands.json";
+	import SeoHead from "$lib/components/SeoHead.svelte";
 </script>
 
-<svelte:head>
-	<title>Methodik – Windkraft Österreich</title>
-	<meta
-		name="description"
-		content="Wie die Windkraft-Potenzialflächen für Österreich berechnet werden: Datenquellen, Ausschlusskriterien und Vorgehen, verständlich erklärt."
-	/>
-</svelte:head>
+<SeoHead
+	title="Methodik: Wie wir Windkraft-Potenzialflächen berechnen"
+	description="Datenquellen, Ausschlusskriterien und Rechenweg hinter der Windkraft-Potenzialkarte für Österreich — Mindestabstände, Schutzgebiete, Gelände und Windhöffigkeit, Schritt für Schritt erklärt."
+/>
 
 <!-- Nav -->
 <nav class="border-b border-slate-200 bg-white sticky top-0 z-10">

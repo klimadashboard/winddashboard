@@ -42,13 +42,12 @@ export const GET: RequestHandler = async ({ params, request }) => {
 		throw error(404, 'Not found');
 	}
 
-	// Block cross-origin fetches (hotlinking from other domains).
-	const origin = request.headers.get('origin');
-	const host   = request.headers.get('host') ?? '';
-	if (origin && !origin.includes(host.split(':')[0])) {
-		throw error(403, 'Forbidden');
-	}
-
+	// Kein Hotlink-Schutz mehr. Vorher stand hier eine Origin-Prüfung zusammen mit
+	// `Cache-Control: private` — beides zusammen hieß: das CDN durfte nichts
+	// zwischenspeichern, also zog jeder Besucher die 15 MB Potenzialflächen durch
+	// die Serverless-Funktion, während die Prüfung ohnehin nur Browser bremste
+	// (ohne Origin-Header kam jedes Skript durch). Der Tausch ist bewusst: offene
+	// Daten öffentlich cachen statt sie mit einer Scheinsperre teuer auszuliefern.
 	const response = read(assetUrl);
 	const contentType = params.name === 'zone_stats' || params.name === 'region_stats'
 		? 'application/json; charset=utf-8'
@@ -57,7 +56,11 @@ export const GET: RequestHandler = async ({ params, request }) => {
 	return new Response(response.body, {
 		headers: {
 			'Content-Type':  contentType,
-			'Cache-Control': 'private, max-age=3600',
+			// `s-maxage` lässt das CDN zwischenspeichern, `stale-while-revalidate`
+			// liefert währenddessen weiter aus, wenn der Eintrag altert. Die Dateien
+			// ändern sich nur bei einem neuen Datensatz, und der geht ohnehin mit
+			// einem Deploy einher.
+			'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
 		},
 	});
 };

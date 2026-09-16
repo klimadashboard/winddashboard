@@ -5,6 +5,7 @@
 	import { getRegionIntro } from "$lib/data/regionIntro";
 	import { AUSTRIA_HA } from "$lib/config/austria";
 	import { goto } from "$app/navigation";
+	import { page } from "$app/stores";
 	import WegZumWindrad from "./WegZumWindrad.svelte";
 	import RichText from "./RichText.svelte";
 	import Lightbox from "./Lightbox.svelte";
@@ -37,8 +38,20 @@
 		"repowering": "/images/repowering.jpg",
 	};
 
-	const region = $derived($selectedRegion);
-	const stats = $derived($regionStats);
+	// Die URL ist die Quelle der Wahrheit: jede Auswahl — Karte, Suche, Zurücksetzen
+	// — setzt den Store und navigiert gleich darauf. Aus den Seitendaten zu lesen
+	// heißt deshalb, dass die Gemeindeseite schon serverseitig ihren echten Inhalt
+	// hat statt der allgemeinen Startseitenansicht.
+	//
+	// Der Store bleibt als Rückfall, weil `goto` asynchron ist: zwischen Klick und
+	// abgeschlossener Navigation trägt er die neue Auswahl bereits. Bewusst wird
+	// der Store beim Rendern nur gelesen, nie gesetzt — Stores auf Modulebene sind
+	// beim serverseitigen Rendern über Requests hinweg geteilt, ein Schreibzugriff
+	// würde die Auswahl eines Besuchers an den nächsten weiterreichen.
+	const region = $derived($page.data?.region ?? $selectedRegion);
+	// Wie bei `region`: serverseitig aus den Seitendaten, im Client aus dem Store,
+	// den die Karte nach dem Laden der Tabelle aktualisiert.
+	const stats = $derived($regionStats ?? $page.data?.stats ?? null);
 	const intro = $derived(region ? getRegionIntro(region, stats) : null);
 	// Fällt auf die zuletzt bekannten Zahlen zurück, solange zone_stats.json lädt.
 	// Stand widmung_v2 (abschichtung.tif, Schema clean-44, 9.9.2026).
@@ -87,19 +100,19 @@
 
 	<!-- Region intro text -->
 	<div class="mb-8">
-		<h2
+		<h1
 			class="font-extrabold text-3xl tracking-tight mb-5"
 			style="color: var(--text-dark); letter-spacing: -0.03em;"
 		>
 			{region.name}
-		</h2>
+		</h1>
 		{#if intro}
-			<p
+			<h2
 				class="text-2xl font-extrabold tracking-tight mb-3"
 				style="color: var(--blue-sky);"
 			>
 				Was zeigt die Karte?
-			</p>
+			</h2>
 			{#each intro.paragraphs as para, i}
 				<p class="text-base leading-relaxed text-slate-700 {i > 0 ? 'mt-3' : ''}">{para}</p>
 			{/each}
@@ -136,12 +149,12 @@
 	<!-- ── Default view ── -->
 
 	<div class="mb-10">
-		<h2
+		<h1
 			class="font-extrabold text-3xl tracking-tight mb-3"
 			style="color: var(--text-dark); letter-spacing: -0.03em;"
 		>
 			Wo der Wind weht
-		</h2>
+		</h1>
 		<p class="text-base leading-relaxed text-slate-600 max-w-2xl">
 			Unsere Landkarte zeigt, wo in Österreich Windräder gebaut werden können.
 			Insgesamt gibt es <span class="font-semibold" style="color: var(--text-dark);"
@@ -217,12 +230,12 @@
 <!-- ── Hintergrundwissen Bento Grid (snippet) ── -->
 {#snippet bentoGrid()}
 	<div class="mb-12">
-		<p
+		<h2
 			class="text-2xl font-extrabold tracking-tight mb-4"
 			style="color: var(--blue-sky);"
 		>
 			Hintergrundwissen
-		</p>
+		</h2>
 		<!--
 			3-col bento on sm+:
 			  Row 1: [Card 0: col-span-2] [Card 1]
@@ -287,12 +300,12 @@
 <!-- ── FAQ Section (snippet) ── -->
 {#snippet faqSection()}
 	<div>
-		<p
+		<h2
 			class="text-2xl font-extrabold tracking-tight mb-4"
 			style="color: var(--blue-sky);"
 		>
 			Häufig gestellte Fragen
-		</p>
+		</h2>
 
 		<div class="flex flex-wrap gap-1.5 mb-4">
 			{#each faqCategories as cat}
