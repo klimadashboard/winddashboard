@@ -31,11 +31,11 @@ export const LEGEND_CODES: LegendCode[] = [
 	// `POWER_LINES` steht im Manifest auf "kein Ausschlusskriterium". Die Nummern
 	// bleiben unbesetzt, damit ältere Kacheln und Screenshots lesbar bleiben.
 	{ code: 11, name: 'Wind zu gering',          group: 'wind',      color: '#94a3b896', description: 'Windleistungsdichte unter 150 W/m² (@130 m) oder keine Winddaten verfügbar' },
-	{ code: 12, name: 'Allgemeine Gebäude (25 m)', group: 'exclusion', color: '#fdba7482', description: 'Pufferzone um sonstige Gebäude (vorläufige Kategorie, genaue Definition folgt)' },
-	{ code: 13, name: 'Gebäude an Seilbahnen (50 m)', group: 'exclusion', color: '#c2410c8c', description: 'Pufferzone um Gebäude an Seilbahnen (vorläufige Kategorie, genaue Definition folgt)' },
+	{ code: 12, name: 'Allgemeine Gebäude (25 m)', group: 'exclusion', color: '#fdba7482', description: 'Abstand von 25 m um sonstige Gebäude und Einzellagen — entspricht praktisch dem Gebäudefußabdruck' },
+	{ code: 13, name: 'Gebäude an Seilbahnen (50 m)', group: 'exclusion', color: '#c2410c8c', description: 'Abstand von 50 m um Gebäude an Seilbahnlinien, etwa Stationsgebäude' },
 	{ code: 14, name: 'Geeignet (≥150 W/m²)',   group: 'suitable',  color: '#93c5fddc', description: 'Potenziell geeignete Fläche: kein Ausschlussgrund, Windleistungsdichte ≥ 150 W/m² @130 m, zusammenhängende Zone ≥ 10 ha' },
-	{ code: 15, name: 'Nicht-Wohn-Hüllen (25 m)', group: 'exclusion', color: '#b45309a6', description: 'Pufferzone um Gebäudehüllen ohne Wohnnutzung (Betriebs- und Nebengebäude)' },
-	{ code: 16, name: 'Größere Gewässer',       group: 'terrain',   color: '#0891b28c', description: 'Stehende und fließende Gewässer ab 1 ha Fläche' },
+	{ code: 15, name: 'Nicht-Wohn-Hüllen (25 m)', group: 'exclusion', color: '#b45309a6', description: 'Abstand von 25 m um unbewohnte und industrieartige Kataster-Hüllen — entspricht praktisch dem Gebäudefußabdruck' },
+	{ code: 16, name: 'Größere Gewässer',       group: 'terrain',   color: '#0891b28c', description: 'Seen, Stauseen und Flüsse ab 1 ha zusammenhängender Wasserfläche (OpenStreetMap)' },
 ];
 
 export const SUITABLE_CODES = [14];

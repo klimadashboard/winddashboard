@@ -4,6 +4,7 @@ import type { Map } from 'maplibre-gl';
 export interface Region {
 	id: string;
 	name: string;
+	slug: string;
 	code: string;
 	layer: string;
 	layer_label: string;

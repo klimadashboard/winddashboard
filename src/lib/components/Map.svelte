@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from "svelte";
+	import { onMount, onDestroy } from "svelte";
 	import { get } from "svelte/store";
 	import { goto } from "$app/navigation";
 	import {
@@ -68,6 +68,18 @@
 
 	// Matches nothing — the resting state of the selected-region highlight layers.
 	const NO_REGION_FILTER = ["==", ["get", "AGS"], "\u0000"] as const;
+
+	// Aufräumen läuft über onDestroy, nicht über den Rückgabewert von onMount:
+	// die Mount-Funktion ist `async`, Svelte bekommt also ein Promise statt einer
+	// Funktion und ruft den Rückgabewert nie auf. Ohne das blieben fünf
+	// Store-Abos und die MapLibre-Instanz samt WebGL-Kontext liegen — sichtbar,
+	// sobald jemand zur Methodik-Seite und zurück navigiert, denn die liegt
+	// außerhalb der (app)-Gruppe und zerstört die Karte.
+	let cleanup: (() => void) | null = null;
+	onDestroy(() => {
+		cleanup?.();
+		cleanup = null;
+	});
 
 	onMount(async () => {
 		// Dynamic import keeps maplibre-gl out of SSR bundle
@@ -699,7 +711,7 @@
 				if (muniFeat.length === 0) return;
 				const ags = muniFeat[0].properties?.AGS as string | undefined;
 				if (!ags) return;
-				const fields = "id,name,code,layer,layer_label,postcodes,center,outline,parents";
+				const fields = "id,name,slug,code,layer,layer_label,postcodes,center,outline,parents";
 				const res = await fetch(
 					`https://base.klimadashboard.org/items/regions?filter[country][_eq]=AT&filter[code][_eq]=${encodeURIComponent(ags)}&fields=${fields}&limit=1`,
 				);
@@ -707,7 +719,7 @@
 				const region = json.data?.[0] as Region | undefined;
 				if (!region) return;
 				selectedRegion.set(region);
-				goto("/regions/" + region.id, { noScroll: true });
+				goto("/regions/" + region.slug, { noScroll: true });
 			});
 
 			map.on("mouseleave", () => {
@@ -980,7 +992,7 @@
 			}
 		});
 
-		return () => {
+		cleanup = () => {
 			unsubExpert();
 			unsubViz();
 			unsubRegion();
