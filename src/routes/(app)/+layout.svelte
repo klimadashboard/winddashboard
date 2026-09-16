@@ -25,7 +25,7 @@
 			storyComplete.set(true);
 		}
 		if (browser) {
-			fetch("/data/zone_stats")
+			fetch("/data/zone_stats.json")
 				.then((r) => r.json())
 				.then((stats) => zoneStats.set(stats))
 				.catch(() => {});

@@ -25,3 +25,12 @@ export const CARTO_RASTER_CONTEXT = `https://basemaps.cartocdn.com/rastertiles/l
 export const AUSTRIA_BOUNDS: [number, number, number, number] = [9.5, 46.3, 17.2, 49.0];
 export const AUSTRIA_CENTER: [number, number] = [13.4, 47.5];
 export const AUSTRIA_ZOOM = 6.8;
+
+// Potenzialflächen als Vektorkacheln statt als 15-MB-GeoJSON. Der Layername in
+// den Kacheln ist `possible_zones`; `zone_id` dient als promoteId, damit der
+// Hover-Zustand über Kachelgrenzen hinweg stabil bleibt.
+export const POSSIBLE_ZONES_TILES =
+	`${TILE_SERVER_BASE}/data/windkraft_possible_zones/{z}/{x}/{y}.pbf`;
+export const POSSIBLE_ZONES_LAYER = 'possible_zones';
+export const POSSIBLE_ZONES_MIN_ZOOM = 5;
+export const POSSIBLE_ZONES_MAX_ZOOM = 14;

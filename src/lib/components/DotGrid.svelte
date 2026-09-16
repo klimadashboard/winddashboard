@@ -39,7 +39,7 @@
 	// ── Austria outline ────────────────────────────────────────────────────────
 	async function loadOutline() {
 		try {
-			const feat = await fetch('/data/austria_outline').then(r => r.json()) as
+			const feat = await fetch('/data/austria_outline.json').then(r => r.json()) as
 				GeoJSON.Feature<GeoJSON.Polygon | GeoJSON.MultiPolygon>;
 			const geo = feat.geometry;
 			outlineRings = geo.type === 'Polygon'

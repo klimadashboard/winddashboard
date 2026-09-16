@@ -40,7 +40,7 @@ export interface RegionStatsTable {
 let cache: Promise<RegionStatsTable | null> | null = null;
 
 export function loadRegionStats(): Promise<RegionStatsTable | null> {
-	cache ??= fetch('/data/region_stats')
+	cache ??= fetch('/data/region_stats.json')
 		.then((r) => (r.ok ? (r.json() as Promise<RegionStatsTable>) : null))
 		.catch(() => null);
 	return cache;
