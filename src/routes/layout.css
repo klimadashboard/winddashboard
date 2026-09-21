@@ -10,3 +10,32 @@
   --text-dark: #1a1a2e;
   --off-white: #f8f9fc;
 }
+
+/*
+  Attribution auf schmalen Bildschirmen.
+
+  MapLibre klappt die Attributionszeile beim Start auf; auf 375 px braucht sie
+  zwei Zeilen. Die Suchleiste ragt über die Kartenunterkante hinaus und
+  verdeckte die zweite — die Nennung von OpenStreetMap war damit nicht mehr
+  lesbar. Hier wird sie so weit angehoben, dass beide Zeilen frei stehen.
+
+  `!important` ist nötig, weil maplibre-gl.css erst zur Laufzeit nachgeladen
+  wird (dynamischer Import in Map.svelte) und damit nach diesem Stylesheet im
+  Dokument steht — bei gleicher Spezifität gewinnt sonst die Bibliothek.
+*/
+@media (max-width: 767px) {
+  .maplibregl-ctrl-bottom-right .maplibregl-ctrl-attrib {
+    margin-bottom: 2.25rem !important;
+    max-width: calc(100vw - 3.5rem);
+  }
+  .maplibregl-ctrl-attrib-inner {
+    font-size: 10px;
+    line-height: 1.35;
+  }
+
+  /* Zoomknöpfe: 29 px ist am Finger knapp, 40 px war optisch zu dominant. */
+  .maplibregl-ctrl-group button {
+    width: 34px !important;
+    height: 34px !important;
+  }
+}

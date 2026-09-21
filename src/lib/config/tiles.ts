@@ -22,8 +22,16 @@ export const CARTO_LABELS_STYLE  = `https://basemaps.cartocdn.com/gl/positron-gl
 // Semi-transparent street/building raster context layer (see Map.svelte).
 export const CARTO_RASTER_CONTEXT = `https://basemaps.cartocdn.com/rastertiles/light_nolabels/{z}/{x}/{y}.png${cartoKeyParam}`;
 
-export const AUSTRIA_BOUNDS: [number, number, number, number] = [9.5, 46.3, 17.2, 49.0];
+// Nur noch als Rückfall gedacht; die Karte passt sich über AUSTRIA_BOUNDS ein.
 export const AUSTRIA_CENTER: [number, number] = [13.4, 47.5];
+// Amtliche Ausdehnung Österreichs (Statistik Austria). Die Karte wird darauf
+// eingepasst statt auf feste Mittelpunkt/Zoom-Werte: nur so sitzt der Ausschnitt
+// auf jedem Seitenverhältnis richtig — ein fester Zoom, der am Schreibtisch
+// passt, schneidet auf dem Telefon Vorarlberg und das Burgenland ab.
+export const AUSTRIA_BOUNDS: [[number, number], [number, number]] = [
+	[9.53, 46.37],
+	[17.16, 49.02],
+];
 export const AUSTRIA_ZOOM = 6.8;
 
 // Potenzialflächen als Vektorkacheln statt als 15-MB-GeoJSON. Der Layername in

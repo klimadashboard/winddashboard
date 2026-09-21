@@ -137,6 +137,26 @@
 		{/if}
 	</div>
 
+	<!--
+		Methodik-Link auch in der Gemeindeansicht: bisher stand er nur in der
+		Startansicht und in der Fußzeile. Wer gerade den Text zu seinem Ort gelesen
+		hat, will als Nächstes wissen, wie das gerechnet wurde — dort gehört er hin.
+	-->
+	<a
+		href="/methodik"
+		class="inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-3 py-1.5 transition-colors mb-8"
+		style="background: #eef3ff; color: var(--blue-dark);"
+	>
+		<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+			<path
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M12 17.25h.008v.008H12v-.008z M12 21a9 9 0 100-18 9 9 0 000 18z"
+			/>
+		</svg>
+		Wie wir das berechnen: Methodik
+	</a>
+
 	<!-- Weg zum Windrad (hidden if no state content — WegZumWindrad renders nothing when content is null) -->
 	<WegZumWindrad {region} />
 

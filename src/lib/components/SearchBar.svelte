@@ -150,7 +150,12 @@
 				<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
 			</svg>
 		{:else if $selectedRegion}
-			<button onclick={clearSelection} class="text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0" aria-label="Auswahl löschen">
+			<!--
+				-m-2 p-2: vergrößert die Trefferfläche auf 40 px, ohne das Symbol
+				oder das Layout zu verändern. Vorher waren es 16 × 16 px — auf dem
+				Telefon kaum zu treffen.
+			-->
+			<button onclick={clearSelection} class="text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0 -m-2 p-2" aria-label="Auswahl löschen">
 				<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 				</svg>
