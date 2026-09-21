@@ -62,8 +62,12 @@
 			<div class="absolute top-4 left-4 z-10">
 				<MapControlPanel />
 			</div>
-			<!-- bottom-14 clears the search bar, which straddles the map's bottom edge -->
-			<div class="absolute bottom-14 left-4 z-10">
+			<!--
+				bottom-14 hält die Suchleiste frei, die über die Kartenunterkante ragt.
+				Auf dem Telefon zusätzlich höher, weil die Attributionszeile dort
+				angehoben ist (siehe layout.css) und sonst dahinter verschwände.
+			-->
+			<div class="absolute bottom-24 sm:bottom-14 left-4 z-10">
 				<NoeMindestabstandNotice />
 			</div>
 		{/if}

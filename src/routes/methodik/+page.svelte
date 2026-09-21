@@ -55,9 +55,8 @@
 			Wie berechnen wir die Windkraft-Potenzialflächen?
 		</h1>
 		<p class="text-lg text-slate-600 leading-relaxed max-w-2xl">
-			Diese Seite erklärt in normaler Sprache, wie die blauen Flächen auf der
-			Karte entstehen: welche Daten wir verwenden, welche Flächen wir
-			ausschließen und warum.
+			Diese Seite, welche Daten wir verwenden, wie wir Potentialflächen rechnen
+			und wie sich unsere Visualisierungen zusammensetzen
 		</p>
 	</div>
 
@@ -102,11 +101,12 @@
 			<p class="text-sm text-amber-700 leading-relaxed">
 				Diese Karte zeigt, wo eine Windkraftanlage grundsätzlich <em>denkbar</em
 				>
-				wäre — sie ersetzt keine rechtsverbindliche Standortprüfung. Themen wie Flugkorridore,
-				Radar- und Richtfunkstrecken, Gasleitungen, vertragliche Abstände zwischen
-				Betreibern, tatsächliche Windmessungen die tatsächliche Flächenwidmung der
-				Gemeinde und eine detaillierte Umweltprüfung müssen für jedes konkrete Projekt
-				gesondert untersucht werden.
+				wäre — sie ersetzt keine rechtsverbindliche Standortprüfung. Für jedes konkrete
+				Projekt kommen Themen dazu, die wir hier nicht abbilden: Flugkorridore, Radar-
+				und Richtfunkstrecken, Gasleitungen, vertragliche Abstände zwischen Betreibern,
+				Windmessungen vor Ort und eine detaillierte Umweltprüfung. Auch die Flächenwidmung
+				ändert sich laufend; wir rechnen mit einem Datenstand vom Sommer 2026, maßgeblich
+				ist immer der aktuelle Plan der Gemeinde.
 			</p>
 		</div>
 	</div>
@@ -118,27 +118,33 @@
 			<h2 class="font-bold text-xl mb-4" style="color: var(--text-dark);">
 				Wie erkennen wir Siedlungen?
 			</h2>
-			<p class="text-sm text-slate-700 leading-relaxed mb-3">
-				Damit die Karte weiß, wo Menschen wohnen, greifen wir auf
-				<strong>OpenStreetMap (OSM)</strong> zurück — eine frei zugängliche, von
-				Freiwilligen gepflegte digitale Landkarte, die für Österreich sehr detailliert
-				und aktuell ist. Jedes darin verzeichnete Gebäude mit einer hinterlegten
-				Postadresse gilt als bewohnt. Liegen mehrere solcher Gebäude näher als 150
-				Meter beieinander, fassen wir sie zu einer zusammenhängenden Siedlungsfläche
-				zusammen.
+			<p class="text-base text-slate-700 leading-relaxed mb-3">
+				Wo Menschen wohnen, entnehmen wir der <strong>Flächenwidmung</strong> — dem
+				amtlichen Plan, in dem jede Gemeinde festlegt, wofür ein Grundstück genutzt
+				werden darf. Als Siedlung zählt, was dort als Wohngebiet, Mischgebiet, Kerngebiet
+				oder Dorfgebiet ausgewiesen ist.
 			</p>
-			<p class="text-sm text-slate-700 leading-relaxed mb-3">
-				Damit nicht schon ein einzelnes Gehöft mitten im Wald als „Siedlung"
-				durchgeht, muss diese Gebäudegruppe zusätzlich eine echte Ortschaft
-				berühren — also einen Ort, der in OpenStreetMap als Stadt, Dorf, Weiler,
-				Vorort oder Ortsteil eingetragen ist. Erst dann zählt die gesamte
-				verbundene Fläche als Siedlungsgebiet, um das wir den gesetzlich
-				vorgeschriebenen Mindestabstand ziehen (siehe Tabelle unten).
+			<p class="text-base text-slate-700 leading-relaxed mb-3">
+				Diese Pläne liegen uns für <strong>alle neun Bundesländer</strong> vor. Damit
+				richtet sich die Karte nach dem, was rechtlich gilt, und nicht danach, wo
+				zufällig Häuser eingezeichnet sind. Um jede so erkannte Siedlung ziehen wir
+				den Mindestabstand, den das jeweilige Bundesland vorschreibt (siehe Tabelle
+				unten).
+			</p>
+			<p class="text-base text-slate-700 leading-relaxed mb-3">
+				Einzelne Wohnhäuser außerhalb der Siedlungen — im Plan oft als „Häuser
+				im Grünen" bezeichnet — behandeln wir gesondert: Liegen mindestens fünf
+				Adressen in einer Kette von je höchstens 200 Metern beieinander, gilt
+				die Gruppe als bewohnte Lage und bekommt einen eigenen Abstand von 750
+				Metern. Grundlage sind die amtliche Widmung, das Adressregister des
+				Bundesamts für Eich- und Vermessungswesen und die Gebäudeumrisse des
+				Katasters.
 			</p>
 			<p class="text-sm text-slate-500 leading-relaxed">
-				Die gesamte Berechnung läuft auf einem sehr feinen Raster von 25 mal 25
-				Metern — jedes einzelne Feld wird einzeln bewertet, damit die
-				Abstandsgrenzen auf der Karte möglichst genau der Realität entsprechen.
+				Die Berechnung läuft auf einem Raster von 25 mal 25 Metern. Österreich
+				wird also in rund 13 Millionen Quadrate zerlegt, und für jedes einzelne
+				wird geprüft, ob dort ein Windrad stehen könnte — deshalb folgen die
+				Abstandsgrenzen auf der Karte so genau dem Gelände.
 			</p>
 		</section>
 
@@ -147,14 +153,10 @@
 			<h2 class="font-bold text-xl mb-4" style="color: var(--text-dark);">
 				Mindestabstände je Bundesland
 			</h2>
-			<p class="text-sm text-slate-700 leading-relaxed mb-3">
+			<p class="text-base text-slate-700 leading-relaxed mb-3">
 				Wie weit ein Windrad von der nächsten Siedlung entfernt sein muss, legt
-				jedes Bundesland selbst fest. Wo verfügbar, verwenden wir dafür die
-				amtliche <strong>Flächenwidmung</strong> — also die rechtlich festgelegte
-				Nutzung von Grundstücken (z. B. als „Wohngebiet") — statt der oben beschriebenen
-				OSM-Methode, weil sie die tatsächliche Rechtslage genauer wiedergibt. Nur
-				für Wien und Burgenland gibt es keine passende amtliche Quelle; dort verwenden
-				wir ersatzweise die OSM-Methode.
+				jedes Bundesland selbst fest. Die folgende Tabelle zeigt die Abstände,
+				mit denen unsere Karte rechnet.
 			</p>
 			<div class="overflow-x-auto">
 				<table class="w-full text-sm border-collapse">
@@ -195,12 +197,11 @@
 			</div>
 			<p class="text-xs text-slate-500 mt-3 leading-relaxed">
 				<strong class="text-slate-600">Hinweis:</strong> Die Tabelle zeigt die Abstände,
-				mit denen unsere Karte tatsächlich rechnet. In der Datenlieferung vom
-				September 2026 wurden sie für das Burgenland von 1.200 m und für Kärnten von
-				1.500 m auf jeweils 1.000 m vereinheitlicht. Ob das den landesrechtlichen
-				Vorgaben entspricht, klären wir gerade mit dem Datenanbieter — in einzelnen
-				Bundesländern können die gesetzlichen Mindestabstände höher liegen als hier
-				gerechnet.
+				mit denen unsere Karte tatsächlich rechnet. In der Datenlieferung vom September
+				2026 wurden sie für das Burgenland von 1.200 m und für Kärnten von 1.500
+				m auf jeweils 1.000 m vereinheitlicht. Ob das den landesrechtlichen Vorgaben
+				entspricht, klären wir gerade mit dem Datenanbieter — in einzelnen Bundesländern
+				können die gesetzlichen Mindestabstände höher liegen als hier gerechnet.
 			</p>
 			<p class="text-xs text-slate-500 mt-3 leading-relaxed">
 				„Einzelgebäude" sind einzelne Wohnhäuser außerhalb von Siedlungen — etwa
@@ -220,10 +221,11 @@
 				sicherheitsrelevanten Objekten einen Mindestabstand ein.
 			</p>
 			<p class="text-xs text-slate-500 leading-relaxed mb-3">
-				Die Kategorie „Wichtige Objekte" (250 m um Kirchen, Schlösser und ähnliche
-				Landmarken) ist mit der Datenlieferung vom September 2026 entfallen. Ebenso
-				entfallen ist der Abstand zu Hochspannungsfreileitungen — Freileitungen sind
-				derzeit kein Ausschlusskriterium. Beides ist beim Datenanbieter angefragt.
+				Die Kategorie „Wichtige Objekte" (250 m um Kirchen, Schlösser und
+				ähnliche Landmarken) ist mit der Datenlieferung vom September 2026
+				entfallen. Ebenso entfallen ist der Abstand zu
+				Hochspannungsfreileitungen — Freileitungen sind derzeit kein
+				Ausschlusskriterium. Beides ist beim Datenanbieter angefragt.
 			</p>
 			<div class="space-y-3">
 				{#each [{ title: "Einzelgebäude im Grünland", buffer: "750 m", note: "Einzelne Wohngebäude außerhalb von Siedlungsflächen (siehe Tabelle oben)." }, { title: "Gebäude an Seilbahnen", buffer: "50 m", note: "Gebäude im unmittelbaren Umfeld von Seilbahnanlagen, etwa Stationsgebäude." }, { title: "Nicht-Wohn-Hüllen", buffer: "25 m", note: "Gebäudehüllen ohne Wohnnutzung, etwa Betriebs- und Nebengebäude." }, { title: "Sonstige Gebäude", buffer: "25 m", note: "Alle übrigen Gebäude, die keiner anderen Kategorie zugeordnet sind." }] as cat}
@@ -320,11 +322,11 @@
 						130 m Nabenhöhe lohnen sich wirtschaftlich in aller Regel nicht und
 						sind daher ausgeschlossen. Die Daten stammen aus dem European Wind
 						Atlas, der die Leistungsdichte für 150 m Höhe ausweist — dort
-						entspricht die Schwelle rund 160 W/m².
-						Fehlen für einen Standort Winddaten, wird er sicherheitshalber
-						ebenfalls ausgeschlossen. Wichtig: eine Windmessung vor Ort ist auf
-						jeden Fall dennoch notwendig und liefert detailliertere Daten als
-						die Modelle, die unserer Karte zu Grunde liegen.
+						entspricht die Schwelle rund 160 W/m². Fehlen für einen Standort
+						Winddaten, wird er sicherheitshalber ebenfalls ausgeschlossen.
+						Wichtig: eine Windmessung vor Ort ist auf jeden Fall dennoch
+						notwendig und liefert detailliertere Daten als die Modelle, die
+						unserer Karte zu Grunde liegen.
 					</p>
 				</div>
 			</div>
@@ -332,6 +334,30 @@
 	</div>
 
 	<!-- Technischer Anhang -->
+	<!-- Woher die Daten kommen -->
+	<section class="mt-12">
+		<h2 class="font-bold text-xl mb-4" style="color: var(--text-dark);">
+			Woher die Daten kommen
+		</h2>
+		<p class="text-base text-slate-700 leading-relaxed mb-4">
+			Die Karte rechnet nicht mit einer einzigen Quelle, sondern kombiniert
+			mehrere. Welche wofür zuständig ist:
+		</p>
+		<div class="space-y-3">
+			{#each [{ q: "Amtliche Flächenwidmung der neun Bundesländer", w: "Wo Siedlungen liegen und welcher Mindestabstand dort gilt. Stand der Pläne: Sommer 2026." }, { q: "Adressregister und Kataster", w: "Einzelne Wohnhäuser außerhalb der Siedlungen sowie Gebäudeumrisse. Vom Bundesamt für Eich- und Vermessungswesen." }, { q: "OpenStreetMap", w: "Straßen, Bahnstrecken, Seilbahnen und größere Gewässer — eine frei zugängliche, von Freiwilligen gepflegte Landkarte, die für Österreich sehr detailliert ist. Stand: 30.3.2026." }, { q: "Digitales Geländemodell", w: "Hangneigung und Seehöhe, in einer Auflösung von 25 Metern." }, { q: "Globaler Windatlas", w: "Wie viel Wind an einem Standort weht, ausgedrückt als Leistungsdichte." }, { q: "Schutzgebietsverzeichnisse", w: "Nationalparks, Naturschutzgebiete, Natura-2000- und Ramsar-Gebiete." }, { q: "Zonierungspläne der Bundesländer", w: "Die amtlich ausgewiesenen Windkraftzonen, die wir als eigene Ebene zeigen — sie schränken die berechneten Flächen nicht zusätzlich ein." }] as row}
+				<div class="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+					<p
+						class="text-sm font-semibold mb-1"
+						style="color: var(--text-dark);"
+					>
+						{row.q}
+					</p>
+					<p class="text-sm text-slate-600 leading-relaxed">{row.w}</p>
+				</div>
+			{/each}
+		</div>
+	</section>
+
 	<details class="mt-14 group rounded-2xl border border-slate-200 open:pb-1">
 		<summary
 			class="cursor-pointer list-none px-5 py-4 flex items-center gap-3 select-none focus-visible:ring-2 focus-visible:ring-blue-400 rounded-2xl"
@@ -361,8 +387,8 @@
 				Die gesamte Berechnung basiert auf einer einzigen Rasterdatei namens
 				<code class="bg-slate-100 rounded px-1.5 py-0.5 font-mono text-xs"
 					>abschichtung.tif</code
-				>: {manifest.band_count} Bänder (Ebenen), Datentyp {manifest.raster.dtype},
-				Koordinatensystem {manifest.raster.crs} (österreichisches amtliches
+				>: {manifest.band_count} Bänder (Ebenen), Datentyp {manifest.raster
+					.dtype}, Koordinatensystem {manifest.raster.crs} (österreichisches amtliches
 				Bezugssystem), Auflösung {manifest.raster.pixel_size_m} m pro Rasterzelle.
 				Jedes Band entspricht einer Zwischenstufe oder einem Teilergebnis der oben
 				beschriebenen Ausschlusskriterien:
@@ -398,7 +424,9 @@
 								<td class="px-4 py-2 font-mono text-xs text-slate-700">
 									{band.name}
 									{#if band.label_de}
-										<span class="font-sans text-slate-400"> — {band.label_de}</span>
+										<span class="font-sans text-slate-400">
+											— {band.label_de}</span
+										>
 									{/if}
 								</td>
 							</tr>

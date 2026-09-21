@@ -26,6 +26,7 @@
 		CARTO_RASTER_CONTEXT,
 		AUSTRIA_CENTER,
 		AUSTRIA_ZOOM,
+		AUSTRIA_BOUNDS,
 		CLASSIFICATION_TILES,
 		CLASSIFICATION_TILES_MIN_ZOOM,
 		CLASSIFICATION_TILES_MAX_ZOOM,
@@ -90,15 +91,71 @@
 		const { default: maplibregl } = await import("maplibre-gl");
 		await import("maplibre-gl/dist/maplibre-gl.css");
 
-		const isMobile = window.innerWidth < 768;
+		const isMobile = () => window.innerWidth < 768;
+
+		/**
+		 * Passt den Ausschnitt auf Österreich ein und lässt dabei den Platz frei,
+		 * den Überlagerungen verdecken.
+		 *
+		 * Vorher stand hier ein fester Mittelpunkt auf Breitengrad 50 — rund 280 km
+		 * nördlich von Österreich, etwa an der bayerisch-tschechischen Grenze.
+		 * Damit sollte Österreich unter die Story-Karte rutschen, die auf dem
+		 * Telefon die obere Hälfte einnimmt; der Preis war ein Kartenstart mitten
+		 * in Bayern, und weil Mittelpunkt und Zoom fest waren, schnitt der
+		 * Ausschnitt je nach Seitenverhältnis West- oder Ostösterreich ab.
+		 *
+		 * Gerechnet wird gegen die tatsächliche Leinwandgröße, nicht gegen
+		 * `window.innerHeight`: beim Erzeugen der Karte steht die Containerhöhe
+		 * noch nicht fest, und MapLibre verwirft ein Einpassen, dessen Ränder
+		 * nicht in die Leinwand passen ("Map cannot fit within canvas").
+		 */
+		function fitAustria(duration = 0) {
+			const { width, height } = map.getCanvas().getBoundingClientRect();
+			if (width < 50 || height < 50) return;
+
+			let padding: { top: number; bottom: number; left: number; right: number };
+			if (isMobile()) {
+				const storyActive = get(storyStep) >= 0;
+				padding = {
+					// 52 % deckt die Story-Karte der meisten Schritte ab. Bei den
+					// längsten Schritten (Zonierung) ist die Karte höher und
+					// verdeckt Österreich teilweise — dort ist die Karte ohnehin
+					// Hintergrund und der Text die Hauptsache.
+					top: storyActive ? Math.round(height * 0.52) : 24,
+					// Platz für Attributionszeile und, während der Story, die
+					// Schritt-Navigation darüber.
+					bottom: storyActive ? 120 : 76,
+					left: 16,
+					right: 16,
+				};
+			} else {
+				padding = { top: 40, bottom: 40, left: 40, right: 40 };
+			}
+
+			// Ränder so stutzen, dass in beiden Achsen mindestens ein Drittel der
+			// Leinwand für die Karte übrig bleibt — sonst lehnt MapLibre ab und
+			// lässt die Kamera einfach stehen, was als leere Karte erscheint.
+			const maxV = height / 3, maxH = width / 3;
+			const scaleV = (padding.top + padding.bottom) > maxV * 2
+				? (maxV * 2) / (padding.top + padding.bottom) : 1;
+			const scaleH = (padding.left + padding.right) > maxH * 2
+				? (maxH * 2) / (padding.left + padding.right) : 1;
+			padding = {
+				top: Math.floor(padding.top * scaleV),
+				bottom: Math.floor(padding.bottom * scaleV),
+				left: Math.floor(padding.left * scaleH),
+				right: Math.floor(padding.right * scaleH),
+			};
+
+			map.fitBounds(AUSTRIA_BOUNDS, { padding, duration, maxZoom: 9 });
+		}
+
 		const map = new maplibregl.Map({
 			container: mapContainer,
 			style: CARTO_BASEMAP,
-			// On mobile the story card covers the top ~half of the viewport.
-			// Centering further north pushes Austria into the visible lower half.
-			center: isMobile ? [13.4, 50.0] : AUSTRIA_CENTER,
-			zoom: isMobile ? 5.5 : AUSTRIA_ZOOM,
-			minZoom: isMobile ? 4.5 : 6.5,
+			center: AUSTRIA_CENTER,
+			zoom: AUSTRIA_ZOOM,
+			minZoom: isMobile() ? 4.5 : 6,
 			maxZoom: 16,
 			attributionControl: false,
 		});
@@ -107,6 +164,7 @@
 			new maplibregl.AttributionControl({ compact: true }),
 			"bottom-right",
 		);
+
 		map.addControl(
 			new maplibregl.NavigationControl({ showCompass: false }),
 			"top-right",
@@ -173,7 +231,8 @@
 				type: "raster",
 				tiles: [CARTO_RASTER_CONTEXT],
 				tileSize: 256,
-				attribution: "© CARTO",
+				// Keine eigene Attribution: der Basemap-Style nennt CARTO bereits,
+				// sonst stand "© CARTO" zweimal in derselben Zeile.
 			});
 
 			// Single vector-tile source for all 16 exclusion band layers.
@@ -323,12 +382,18 @@
 			map.addLayer({ id: "official-zones-fill",    type: "fill", source: "official-zones", paint: { "fill-color": "#7c3aed", "fill-opacity": 1 } }, B);
 			map.addLayer({ id: "official-zones-outline", type: "line", source: "official-zones", paint: { "line-color": "#6d28d9", "line-width": 1.5, "line-dasharray": [4, 2], "line-opacity": 0.8 } }, B);
 
+			// minzoom 4.5 statt 7, also gleich dem Mindestzoom der Karte: die
+			// Übersicht landet je nach Bildschirmgröße zwischen Zoom 4,7 und 7,4.
+			// Mit minzoom 7 stand "Bestehende Anlage" in der Legende, ohne dass
+			// auf der Karte eine einzige zu sehen war — gemessen: 0 gerenderte
+			// Anlagen bei Zoom 4,99. Der Radius beginnt klein, damit die 1.396
+			// Anlagen in der Übersicht als feine Punkte lesbar bleiben.
 			map.addLayer({
 				id: "turbines",
 				type: "circle",
 				source: "turbines",
-				minzoom: 7,
-				paint: { "circle-radius": ["interpolate", ["linear"], ["zoom"], 7, 2, 10, 3.5, 13, 5], "circle-color": "#1e3a8a", "circle-stroke-color": "#ffffff", "circle-stroke-width": 1, "circle-opacity": 0.85 },
+				minzoom: 4.5,
+				paint: { "circle-radius": ["interpolate", ["linear"], ["zoom"], 4.5, 1.2, 7, 2, 10, 3.5, 13, 5], "circle-color": "#1e3a8a", "circle-stroke-color": "#ffffff", "circle-stroke-width": ["interpolate", ["linear"], ["zoom"], 4.5, 0.3, 8, 1], "circle-opacity": 0.85 },
 			}, B);
 
 			// Heatmap layer — used by 'heatmap' viz mode
@@ -822,9 +887,9 @@
 					(id) => show(id, true),
 				);
 				if (map.getLayer("turbines")) {
-					map.setLayerZoomRange("turbines", 7, 24);
+					map.setLayerZoomRange("turbines", 4.5, 24);
 					map.setPaintProperty("turbines", "circle-radius", [
-						"interpolate", ["linear"], ["zoom"], 7, 2, 10, 3.5, 13, 5,
+						"interpolate", ["linear"], ["zoom"], 4.5, 1.2, 7, 2, 10, 3.5, 13, 5,
 					]);
 					map.setPaintProperty("turbines", "circle-color", "#1e3a8a");
 					map.setPaintProperty("turbines", "circle-stroke-color", "#ffffff");
@@ -927,6 +992,8 @@
 			// Highlight region that was set before the map finished loading (URL navigation)
 			const initialRegion = get(selectedRegion);
 			if (initialRegion) highlightRegion(initialRegion);
+			// Erst hier einpassen: jetzt steht die Containergröße fest.
+			else fitAustria();
 			updateCenterInfo();
 		});
 
@@ -991,10 +1058,12 @@
 			// CSS-transitions from 100vh → 60vh over 0.85s.  Wait for that to finish,
 			// then resize the canvas and fly to the proper Austria view. Greift nur
 			// nach einer tatsächlich gelaufenen Story — siehe currentStoryStep oben.
-			if (isMobile && step < 0 && prev >= 0) {
+			if (isMobile() && step < 0 && prev >= 0) {
 				setTimeout(() => {
 					map.resize();
-					map.flyTo({ center: AUSTRIA_CENTER, zoom: 6.0, duration: 800 });
+					// Nach dem Ende der Story ist die Karte nur noch 60vh hoch und
+					// die Story-Karte weg — neu einpassen statt fester Zoomwert.
+					if (!get(selectedRegion)) fitAustria(800);
 				}, 920);
 			}
 			applyStoryVisibility(step);

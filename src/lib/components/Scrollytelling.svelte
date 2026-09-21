@@ -277,6 +277,17 @@
 			segment marks how much of the Potenzial is actually zoned.
 		-->
 		{#snippet revealBarHeader()}
+			<!--
+				Beschriftung, solange der Balken noch leer ist: ohne sie ist nicht
+				erkennbar, dass er die Gesamtfläche Österreichs darstellt und sich
+				Schritt für Schritt mit den Ausschlussgründen füllt.
+			-->
+			{#if step === 0}
+				<p class="text-[10px] text-slate-400 mb-1.5">
+					Die Gesamtfläche Österreichs — sie füllt sich Schritt für Schritt mit
+					den Flächen, auf denen kein Windrad stehen kann.
+				</p>
+			{/if}
 			<div
 				class="w-full flex rounded-full overflow-hidden"
 				style="height:0.5rem; background:#e2e8f0;"
@@ -321,15 +332,26 @@
 			maxWidth = "max-w-sm",
 			padding = "p-6",
 		)}
+			<!--
+				pb-48 hält unten Platz für den gesamten Navigationsblock frei —
+				Schritt-Knöpfe, Zähler und Sprunglink zusammen. Ohne das lag er auf
+				kurzen Telefonen mitten im Diagramm: beim Zonierungsschritt
+				verdeckten Punkte und Sprunglink die Balken von Kärnten abwärts.
+
+				max-h + overflow-y-auto statt overflow-hidden auf der Hülle: der
+				längste Schritt braucht 697 px, ein iPhone SE bietet 667. Vorher
+				wurde der Rest wortlos abgeschnitten und war nicht erreichbar.
+			-->
 			<div
-				class="absolute inset-0 flex flex-col
+				class="absolute inset-0 flex flex-col pb-48 sm:pb-4
 					{align === 'center'
 					? 'p-4 items-center justify-start sm:justify-center'
-					: 'pt-[8%] pl-4 pb-4 pr-16 sm:pr-4 items-start justify-start'}"
+					: 'pt-[8%] pl-4 pr-16 sm:pr-4 items-start justify-start'}"
 				transition:fade={{ duration: 300 }}
 			>
 				<div
-					class="bg-white/95 backdrop-blur-sm rounded-md overflow-hidden w-full {maxWidth} shadow-lg pointer-events-auto"
+					class="bg-white/95 backdrop-blur-sm rounded-md w-full {maxWidth} shadow-lg pointer-events-auto
+						max-h-full overflow-y-auto overscroll-contain"
 					in:fly={{ y: 20, duration: 400, delay: 80 }}
 					onwheel={(e) => scrollEl?.scrollBy({ top: e.deltaY })}
 				>
@@ -425,7 +447,7 @@
 						Siedlungsabstand
 					</p>
 				</div>
-				<p class="text-sm leading-relaxed text-slate-700 mb-3">
+				<p class="text-sm sm:text-base leading-relaxed text-slate-700 mb-3">
 					Je nach Bundesland gilt ein Mindestabstand von <strong
 						class="text-slate-900">1 bis 1,2&thinsp;km</strong
 					>
@@ -460,7 +482,7 @@
 						Naturschutzgebiete
 					</p>
 				</div>
-				<p class="text-sm leading-relaxed text-slate-700 mb-3">
+				<p class="text-sm sm:text-base leading-relaxed text-slate-700 mb-3">
 					Weitere <strong class="text-slate-900"
 						>{fmt(SCHUTZ_HA)}&thinsp;ha</strong
 					> entfallen auf Naturschutzgebiete — Nationalparks, Naturparks, Natura-2000-Gebiete
@@ -493,7 +515,7 @@
 						Weitere Ausschlüsse
 					</p>
 				</div>
-				<p class="text-sm leading-relaxed text-slate-700 mb-3">
+				<p class="text-sm sm:text-base leading-relaxed text-slate-700 mb-3">
 					Bestehende Infrastruktur (Straßen, Bahnen, Gebäude) sowie ungeeignetes
 					Gelände (Hangneigung, Seehöhe, Gewässer) schließen weitere
 					<strong class="text-slate-900">{fmt(SONSTIGE_HA)}&thinsp;ha</strong> aus.
@@ -525,7 +547,7 @@
 						Zu wenig Wind
 					</p>
 				</div>
-				<p class="text-sm leading-relaxed text-slate-700 mb-3">
+				<p class="text-sm sm:text-base leading-relaxed text-slate-700 mb-3">
 					Auf Basis des European Wind Atlas wurden Standorte mit zu geringem
 					Wind ausgeschlossen — weitere <strong class="text-slate-900"
 						>{fmt(WIND_HA)}&thinsp;ha</strong
@@ -564,12 +586,19 @@
 						<span class="w-2 h-2 rounded-sm" style="background:{COLOR_WIND};"
 						></span>Wind zu gering
 					</div>
-					<div class="flex items-center gap-1.5">
-						<span
-							class="w-2 h-2 rounded-sm"
-							style="background:{COLOR_POTENTIAL};"
-						></span>Windpotenzial
-					</div>
+					<!--
+						Erst ab Schritt 5: vorher gibt es das Windpotenzial weder auf der
+						Karte noch im Balken. Eine Legende, die eine Kategorie nennt, die
+						nirgends zu sehen ist, lässt Leute danach suchen.
+					-->
+					{#if step >= 5}
+						<div class="flex items-center gap-1.5">
+							<span
+								class="w-2 h-2 rounded-sm"
+								style="background:{COLOR_POTENTIAL};"
+							></span>Windpotenzial
+						</div>
+					{/if}
 				</div>
 			{/snippet}
 			{@render slidePanel(step4)}
@@ -590,7 +619,7 @@
 						Potentialflächen
 					</p>
 				</div>
-				<p class="text-sm leading-relaxed text-slate-700 mb-3">
+				<p class="text-sm sm:text-base leading-relaxed text-slate-700 mb-3">
 					Somit bleiben <strong class="text-slate-900"
 						>~{fmt(POTENTIAL_VECTOR_HA)}&thinsp;ha</strong
 					>
@@ -692,7 +721,7 @@
 						Zonierungsflächen
 					</p>
 				</div>
-				<p class="text-sm leading-relaxed text-slate-700 mb-4">
+				<p class="text-sm sm:text-base leading-relaxed text-slate-700 mb-4">
 					Einige Bundesländer haben für den Bau von Windrädern eigene
 					Windkraft-Eignungszonen ausgewiesen. Hier seht ihr diese
 					„Zonierungsflächen".
@@ -707,6 +736,18 @@
 					solchen Windkraft-Eignungszonen. In Oberösterreich wird momentan an
 					einer solchen Zonierung gearbeitet und in der Steiermark wird die
 					derzeitige Zonierung gerade überarbeitet.
+				</p>
+				<!--
+					Datenstand je Bundesland, wie ihn der Datenanbieter im Manifest
+					ausweist. Für drei Länder ist er dort ausdrücklich unbekannt, und
+					zwei Datensätze sind handdigitalisiert statt amtlich bezogen — das
+					gehört dazugesagt, sonst wirken alle fünf gleich belastbar.
+				-->
+				<p class="text-[10px] text-slate-400 leading-relaxed mb-3">
+					Datenstand: Niederösterreich 30.4.2026 (LGBl. 47/2024), Burgenland
+					21.7.2026. Für Kärnten, Steiermark und Salzburg liegt uns kein
+					Datenstand vor; die steirischen und Salzburger Zonen sind
+					handdigitalisiert und nicht amtlich bezogen.
 				</p>
 
 				<!-- Bundesland bars: potential (light blue) + zoned (purple) overlay,
@@ -794,7 +835,7 @@
 					</p>
 				</div>
 				{#if dataReady}
-					<p class="text-sm leading-relaxed text-slate-700 mb-3">
+					<p class="text-sm sm:text-base leading-relaxed text-slate-700 mb-3">
 						In den vergangenen Jahren hat Österreich seine Windenergie
 						ausgebaut:
 						<strong class="text-slate-900">{fmt(turbineCount)} Windräder</strong
@@ -848,7 +889,7 @@
 					Erkunde die Windpotentiale
 				</h2>
 				{#if dataReady}
-					<p class="text-sm leading-relaxed text-slate-700 mb-3 text-left">
+					<p class="text-sm sm:text-base leading-relaxed text-slate-700 mb-3 text-left">
 						Die bestehenden Windräder produzieren bereits rund
 						<strong class="text-slate-900">{fmt(turbineGWh)}&thinsp;GWh</strong>
 						Strom pro Jahr. Für die Energiewende und den völligen Umstieg von
@@ -873,11 +914,46 @@
 			{@render slidePanel(step8, "center", "max-w-sm", "p-8 text-center")}
 		{/if}
 
-		<!-- ── Bottom nav: pagination dots + skip link ── -->
+		<!--
+			Bottom nav: Schritt-Knöpfe, Punkte und Sprunglink.
+
+			Auf dem Telefon führt reines Scrollen durch die Story schlecht: Die
+			Karte liegt im Vollbild, jede Wischbewegung konkurriert mit dem
+			Verschieben der Karte, und wie weit man wischen muss, ist nicht
+			absehbar. Deshalb gibt es unter `sm` zwei ausdrückliche Knöpfe. Am
+			Schreibtisch bleibt es beim Scrollen, dort funktioniert es.
+		-->
 		<div
-			class="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-auto"
+			class="absolute bottom-20 sm:bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-auto"
 		>
-			<div class="flex gap-2">
+			<div class="flex sm:hidden items-center gap-3 mb-1">
+				<button
+					onclick={() => scrollTo(Math.max(step - 1, 0))}
+					disabled={step === 0}
+					class="flex items-center justify-center rounded-full transition-opacity disabled:opacity-30 shadow-md"
+					style="width:44px; height:44px; background:rgba(255,255,255,0.95); backdrop-filter:blur(4px);"
+					aria-label="Vorheriger Schritt"
+				>
+					<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="#1d4ed8" stroke-width="2.5">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+					</svg>
+				</button>
+				<span class="text-xs font-semibold tabular-nums" style="color:#1d4ed8;">
+					{step + 1} / {NUM_STEPS}
+				</span>
+				<button
+					onclick={() =>
+						step === NUM_STEPS - 1 ? complete() : scrollTo(Math.min(step + 1, NUM_STEPS - 1))}
+					class="flex items-center justify-center rounded-full transition-opacity shadow-md"
+					style="width:44px; height:44px; background:#1d4ed8;"
+					aria-label={step === NUM_STEPS - 1 ? "Zur Karte" : "Nächster Schritt"}
+				>
+					<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="#ffffff" stroke-width="2.5">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+					</svg>
+				</button>
+			</div>
+			<div class="hidden sm:flex gap-2">
 				{#each Array(NUM_STEPS) as _, i (i)}
 					<button
 						class="rounded-full transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
