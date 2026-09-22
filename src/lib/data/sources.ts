@@ -144,6 +144,12 @@ export const sources: Source[] = [
 		citation:
 			'S. Holzheu, „Infraschall im Auto (Turbodiesel)", BayCEER, Universität Bayreuth, 2020. Zugegriffen: 10. August 2026.',
 		url: 'https://www.bayceer.uni-bayreuth.de/infraschall/de/forschung/gru/html.php?id_obj=157452'
+	},
+	{
+		id: 29,
+		citation:
+			'E. Katovich, „Quantifying the Effects of Energy Infrastructure on Bird Populations and Biodiversity", Environ. Sci. Technol., Bd. 58, Nr. 1, S. 323–332, Jan. 2024, doi: 10.1021/acs.est.3c03899.',
+		url: 'https://www.researchgate.net/publication/376925751_Quantifying_the_Effects_of_Energy_Infrastructure_on_Bird_Populations_and_Biodiversity'
 	}
 ];
 
