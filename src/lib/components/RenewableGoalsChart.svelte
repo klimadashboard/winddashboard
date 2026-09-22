@@ -6,6 +6,18 @@
 		twh: number;
 	}
 
+	/**
+	 * `onLatest` meldet den jüngsten gemessenen Jahreswert nach oben.
+	 *
+	 * Der Satz über dem Diagramm nannte die heutige Produktion früher selbst —
+	 * gerechnet aus der Nennleistung des Anlagenregisters mit 30 % Volllast. Das
+	 * ergab 10,6 TWh, während die Linie darunter bei 7,0 TWh endete. Solange der
+	 * Satz in GWh stand, fiel der Widerspruch nicht auf; in derselben Einheit
+	 * stünden zwei verschiedene Zahlen direkt übereinander. Beide kommen jetzt
+	 * aus dieser einen Reihe.
+	 */
+	let { onLatest }: { onLatest?: (d: DataPoint) => void } = $props();
+
 	let data = $state<DataPoint[]>([]);
 	let loading = $state(true);
 	let error = $state(false);
@@ -78,6 +90,7 @@
 			data = Array.from(byYear.entries())
 				.sort((a, b) => a[0] - b[0])
 				.map(([year, twh]) => ({ year, twh }));
+			if (data.length) onLatest?.(data[data.length - 1]);
 		} catch {
 			error = true;
 		} finally {

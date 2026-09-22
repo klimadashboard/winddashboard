@@ -26,13 +26,33 @@
 	// ── State ─────────────────────────────────────────────────────────────────
 	let scrollEl = $state<HTMLDivElement | null>(null);
 	let step = $state(0);
+	/**
+	 * Unter `sm` führen ausschließlich die Knöpfe durch die Geschichte, der
+	 * Scroll-Spacer ist dort abgeschaltet.
+	 *
+	 * Vorher lagen zwei Gesten übereinander: die Karte füllt den Bildschirm und
+	 * will verschoben werden, gleichzeitig blätterte jede vertikale Wischbewegung
+	 * die Geschichte weiter. Wer die Karte ansehen wollte, sprang ungewollt einen
+	 * Schritt vor. Die Knöpfe gab es schon, sie waren nur nicht die einzige Art
+	 * weiterzukommen. Am Schreibtisch bleibt Scrollen, dort gibt es keine
+	 * konkurrierende Geste.
+	 *
+	 * 640 px ist Tailwinds `sm` — derselbe Wert, an dem die Knöpfe sichtbar und
+	 * die Punkte unsichtbar werden.
+	 */
+	let buttonNav = $state(false);
 	let exiting = $state(false);
 	let dataReady = $state(false);
 
 	// ── Live stats (fetched) ──────────────────────────────────────────────────
 	let officialAreaHa = $state(0);
 	let turbineCount = $state(0);
-	let turbineGWh = $state(0);
+	// Jüngste gemessene Jahresproduktion (E-Control), gemeldet vom Diagramm —
+	// siehe `onLatest` in RenewableGoalsChart.svelte. Ersetzt die frühere
+	// Hochrechnung aus der Nennleistung: sie stand in GWh über einem Diagramm in
+	// TWh und lag zugleich rund 50 % über dem gemessenen Wert.
+	let productionTwh = $state<number | null>(null);
+	let productionYear = $state<number | null>(null);
 	let zoningByBL = $state<Record<string, number>>({});
 	let turbinesByBL = $state<Record<string, number>>({});
 
@@ -177,11 +197,6 @@
 		zoningByBL = byBL;
 		turbineCount = turbGj.features.length;
 		turbinesByBL = await turbinesPerBundesland(turbGj);
-		const totalKW: number = turbGj.features.reduce(
-			(s: number, f: any) => s + (f.properties.power_kw ?? 0),
-			0,
-		);
-		turbineGWh = Math.round((totalKW * 0.3 * 8760) / 1_000_000);
 		dataReady = true;
 	}
 
@@ -191,11 +206,25 @@
 		setTimeout(onComplete, 600);
 	}
 
-	function scrollTo(s: number) {
-		scrollEl?.scrollTo({ top: s * window.innerHeight, behavior: "smooth" });
+	/**
+	 * Der einzige Weg, den Schritt zu wechseln — von Knöpfen, Punkten und
+	 * Tastatur aus. Ohne Scroll-Navigation gibt es keinen Spacer, an dem sich
+	 * `step` ablesen ließe, also wird er direkt gesetzt.
+	 */
+	function goTo(s: number) {
+		const target = Math.max(0, Math.min(s, NUM_STEPS - 1));
+		if (buttonNav) {
+			if (target !== step) {
+				step = target;
+				storyStep.set(target);
+			}
+			return;
+		}
+		scrollEl?.scrollTo({ top: target * window.innerHeight, behavior: "smooth" });
 	}
 
 	function handleScroll() {
+		if (buttonNav) return;
 		if (!scrollEl) return;
 		const newStep = Math.min(
 			Math.round(scrollEl.scrollTop / window.innerHeight),
@@ -218,21 +247,21 @@
 			case "PageDown":
 			case " ":
 				e.preventDefault();
-				scrollTo(Math.min(step + 1, NUM_STEPS - 1));
+				goTo(Math.min(step + 1, NUM_STEPS - 1));
 				break;
 			case "ArrowUp":
 			case "ArrowLeft":
 			case "PageUp":
 				e.preventDefault();
-				scrollTo(Math.max(step - 1, 0));
+				goTo(Math.max(step - 1, 0));
 				break;
 			case "Home":
 				e.preventDefault();
-				scrollTo(0);
+				goTo(0);
 				break;
 			case "End":
 				e.preventDefault();
-				scrollTo(NUM_STEPS - 1);
+				goTo(NUM_STEPS - 1);
 				break;
 			case "Escape":
 				e.preventDefault();
@@ -244,6 +273,34 @@
 	onMount(() => {
 		storyStep.set(0);
 		loadData();
+
+		// matchMedia statt eines resize-Listeners mit Breitenvergleich: der
+		// Browser meldet nur den Wechsel über die Grenze, nicht jedes Pixel.
+		const mq = window.matchMedia("(max-width: 639px)");
+		const sync = () => {
+			buttonNav = mq.matches;
+			// Zurück am Schreibtisch: der Spacer steht noch dort, wo er beim
+			// letzten Scrollen stand. Ohne Nachführen würde die nächste
+			// Scrollbewegung zum zuletzt gescrollten Schritt zurückspringen.
+			if (!buttonNav && scrollEl) {
+				scrollEl.scrollTop = step * window.innerHeight;
+			}
+		};
+		sync();
+		mq.addEventListener("change", sync);
+
+		// Dokument feststellen, solange die Geschichte den Bildschirm ausfüllt.
+		// Bisher fing der Scroll-Spacer jede Wischbewegung ab; ohne ihn würde auf
+		// dem Telefon stattdessen die Seite hinter dem Vollbild wegscrollen — der
+		// Nutzer sieht nichts davon und findet die Seite nach dem Schließen an
+		// einer anderen Stelle wieder.
+		const prevOverflow = document.body.style.overflow;
+		document.body.style.overflow = "hidden";
+
+		return () => {
+			mq.removeEventListener("change", sync);
+			document.body.style.overflow = prevOverflow;
+		};
 	});
 </script>
 
@@ -258,9 +315,9 @@
 		bind:this={scrollEl}
 		onscroll={handleScroll}
 		class="absolute inset-0"
-		style="overflow-y:scroll; z-index:0;"
+		style="overflow-y:{buttonNav ? 'hidden' : 'scroll'}; z-index:0;"
 	>
-		<div style="height:{NUM_STEPS * 100}vh;"></div>
+		<div style="height:{buttonNav ? 100 : NUM_STEPS * 100}vh;"></div>
 	</div>
 
 	<!-- ── Slide cards ── -->
@@ -390,11 +447,20 @@
 					<button
 						class="w-full flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity"
 						style="background:#1d4ed8;"
-						onclick={() => scrollTo(1)}
+						onclick={() => goTo(1)}
 						onwheel={(e) => scrollEl?.scrollBy({ top: e.deltaY })}
 					>
-						Scrolle, um mehr zu erfahren
-						<svg class="w-4 h-5" viewBox="0 0 16 24" fill="none">
+						<!--
+							Auf dem Telefon führt kein Scrollen mehr durch die Geschichte,
+							also darf der Knopf auch nicht dazu auffordern. Das Mausrad-
+							Symbol entfällt dort aus demselben Grund.
+						-->
+						{buttonNav ? "Los geht's" : "Scrolle, um mehr zu erfahren"}
+						<svg
+							class="w-4 h-5 {buttonNav ? 'hidden' : ''}"
+							viewBox="0 0 16 24"
+							fill="none"
+						>
 							<rect
 								x="1"
 								y="1"
@@ -890,13 +956,28 @@
 				</h2>
 				{#if dataReady}
 					<p class="text-sm sm:text-base leading-relaxed text-slate-700 mb-3 text-left">
-						Die bestehenden Windräder produzieren bereits rund
-						<strong class="text-slate-900">{fmt(turbineGWh)}&thinsp;GWh</strong>
-						Strom pro Jahr. Für die Energiewende und den völligen Umstieg von
-						fossiler auf erneuerbare Energie braucht es deutlich mehr.
+						{#if productionTwh !== null}
+							Österreichs Windräder haben zuletzt rund
+							<strong class="text-slate-900"
+								>{productionTwh.toLocaleString("de-AT", {
+									maximumFractionDigits: 1,
+								})}&thinsp;TWh</strong
+							>
+							Strom pro Jahr erzeugt ({productionYear}).
+						{:else}
+							Österreichs Windräder erzeugen schon heute einen erheblichen Teil
+							des Stroms.
+						{/if}
+						Für die Energiewende und den völligen Umstieg von fossiler auf
+						erneuerbare Energie braucht es deutlich mehr.
 					</p>
 					<div class="text-left mb-5">
-						<RenewableGoalsChart />
+						<RenewableGoalsChart
+							onLatest={(d) => {
+								productionTwh = d.twh;
+								productionYear = d.year;
+							}}
+						/>
 					</div>
 				{/if}
 				<p class="text-sm text-slate-500 leading-relaxed mb-6">
@@ -928,7 +1009,7 @@
 		>
 			<div class="flex sm:hidden items-center gap-3 mb-1">
 				<button
-					onclick={() => scrollTo(Math.max(step - 1, 0))}
+					onclick={() => goTo(Math.max(step - 1, 0))}
 					disabled={step === 0}
 					class="flex items-center justify-center rounded-full transition-opacity disabled:opacity-30 shadow-md"
 					style="width:44px; height:44px; background:rgba(255,255,255,0.95); backdrop-filter:blur(4px);"
@@ -943,7 +1024,7 @@
 				</span>
 				<button
 					onclick={() =>
-						step === NUM_STEPS - 1 ? complete() : scrollTo(Math.min(step + 1, NUM_STEPS - 1))}
+						step === NUM_STEPS - 1 ? complete() : goTo(Math.min(step + 1, NUM_STEPS - 1))}
 					class="flex items-center justify-center rounded-full transition-opacity shadow-md"
 					style="width:44px; height:44px; background:#1d4ed8;"
 					aria-label={step === NUM_STEPS - 1 ? "Zur Karte" : "Nächster Schritt"}
@@ -962,7 +1043,7 @@
 							: '7px'}; height:7px; background:{step === i
 							? '#1d4ed8'
 							: 'rgba(0,0,0,0.2)'};"
-						onclick={() => scrollTo(i)}
+						onclick={() => goTo(i)}
 						onwheel={(e) => scrollEl?.scrollBy({ top: e.deltaY })}
 						aria-label="Zu Schritt {i + 1}"
 						aria-current={step === i ? "step" : undefined}
