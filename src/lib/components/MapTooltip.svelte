@@ -15,7 +15,12 @@
 	}
 
 	const visible = $derived(
-		info && (info.zone || info.official || info.turbine || (info.bands && info.bands.length > 0)),
+		info &&
+			(info.zone ||
+				info.official ||
+				info.hull ||
+				info.turbine ||
+				(info.bands && info.bands.length > 0)),
 	);
 	const style = $derived(
 		info ? `left:${info.x + 14}px; top:${info.y - 10}px;` : "",
@@ -120,6 +125,52 @@
 							{info.official.communities}
 						</div>
 					{/if}
+				</div>
+			</div>
+		{/if}
+
+		<!--
+			Bestandsfläche: bewusst mit dem Zusatz "keine amtliche Zone". Ohne ihn
+			steht hier eine violette und eine türkise Fläche nebeneinander, beide
+			mit Flächenangabe, und nichts sagt, dass nur eine davon ein Rechtsakt
+			ist.
+		-->
+		{#if info.hull}
+			<div class="px-3 py-2 border-b border-slate-100">
+				<div class="flex items-center gap-2 mb-1">
+					<span
+						class="inline-block w-2.5 h-2.5 rounded flex-shrink-0"
+						style="background:#0891b2; border:1px solid #0e7490;"
+					></span>
+					<span
+						class="font-semibold text-slate-800 text-xs uppercase tracking-wide"
+						>Bestehender Windpark</span
+					>
+				</div>
+			<div class="text-slate-600 text-xs space-y-0.5">
+					<!--
+						Der Zähler bleibt abgesichert, obwohl seit der Lieferung vom
+						26.9.2026 jede Hülle mindestens eine Anlage enthält: die Hüllen
+						werden aus denselben Standorten gebildet wie die Kartenpunkte.
+					-->
+					{#if Number(info.hull.turbines ?? 0) > 0}
+						<div>
+							<span class="text-slate-400">Anlagen</span>
+							<span class="font-medium text-slate-700"
+								>{Number(info.hull.turbines).toLocaleString("de-AT")}</span
+							>
+						</div>
+					{/if}
+					<div>
+						<span class="text-slate-400">Fläche</span>
+						<span class="font-medium text-slate-700"
+							>{Number(info.hull.area_ha).toLocaleString("de-AT")} ha</span
+						>
+					</div>
+					<p class="text-slate-400 text-[10px] leading-snug mt-1">
+						Keine amtliche Eignungszone: die Fläche umschließt die
+						bestehenden Anlagen, das Land hat sie nicht ausgewiesen.
+					</p>
 				</div>
 			</div>
 		{/if}

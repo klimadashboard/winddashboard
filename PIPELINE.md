@@ -434,6 +434,40 @@ Feld aktuell noch, wodurch deren zonenspezifische Text-Zweige in
 `regionIntro.ts` faktisch nie greifen (Map.svelte liefert ohne `zone_type`
 immer `'positive'` zurück).
 
+### Bestandsflächen (Band 38) extrahieren
+
+```bash
+python scripts/extract_wka_bestand_hulls.py
+```
+
+Schreibt `geodata/wka_bestand_ausserhalb_zonen.geojson` aus Band 38
+(`wka_bestand_ausserhalb_zonen`) der Abschichtung: die Park-Hüllen um die
+bestehenden Windräder, soweit sie **außerhalb** der amtlichen Zonen liegen
+(Anlagen unter 750 m Abstand = ein Park, konvexe Hülle + 200 m Rand, danach
+`official_wind_zoning` abgezogen — Überschneidung mit Band 37 im gelieferten
+Raster geprüft: 0 Pixel).
+
+Warum nicht über `extract_band_geojson.py`: dessen Auswahl nimmt laut Manifest
+nur Bänder mit `rolle: "bedingung"`. Band 38 hat `rolle: "referenz"` und fiel
+deshalb durch die gesamte Pipeline — ohne GeoJSON, ohne Kachel, ohne Layer.
+Dieselbe Sonderbehandlung braucht Band 37.
+
+Aktueller Stand (Lieferung 26.9.2026): 121 Hüllen, 14.756 ha, 615 Anlagen darin.
+Verteilung: Burgenland 11.380 ha (398 Anlagen), NÖ 2.450 ha (164), OÖ 601 ha (31),
+Steiermark 194 ha (12), Wien 117 ha (9), Kärnten 15 ha (1). Im Burgenland stehen
+damit 397 von 423 Anlagen außerhalb der ausgewiesenen Zonen — der Grund, warum
+der Zonierungsschritt ohne diesen Layer irreführend war.
+
+**Erledigt:** In der Lieferung vom 9.9.2026 bildete der Datenanbieter die Hüllen
+noch aus OSM-Standorten, die von `existing_turbines.geojson` abwichen: 76 der
+damals 185 Hüllen (1.455 ha) enthielten keinen einzigen Punkt unseres Registers,
+zwei davon großflächig. Seit der Lieferung vom 26.9.2026 liegt derselbe
+Standortsatz zugrunde — geprüft: **0 von 121 Hüllen ohne registrierte Anlage**.
+Die Zahl der Anlagen in Hüllen stieg dabei von 601 auf 615, obwohl es 64 Hüllen
+weniger sind; die entfallenen waren Einzelpunkte aus OSM, die es im Register nie
+gab (je ~14 ha in Tirol, Vorarlberg und Salzburg — Länder ohne nennenswerte
+Windkraft).
+
 ### Optional – Bundesland-Flächen zur Konsistenzprüfung berechnen
 
 ```bash
