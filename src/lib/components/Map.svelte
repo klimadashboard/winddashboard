@@ -46,6 +46,7 @@
 	export interface HoverInfo {
 		zone?: Record<string, unknown>;
 		official?: Record<string, unknown>;
+		hull?: Record<string, unknown>;
 		turbine?: Record<string, unknown>;
 		bands?: Array<{ label: string; description: string; color: string }>;
 		x: number;
@@ -195,6 +196,16 @@
 			map.addSource("official-zones", {
 				type: "geojson",
 				data: "/data/official_zoning.json",
+				generateId: true,
+			});
+
+			// Band 38 der Lieferung: die Park-Hüllen um die bestehenden Windräder,
+			// soweit sie AUSSERHALB der amtlichen Zonen liegen. Ohne diesen Layer
+			// sah das Burgenland aus wie ein Land fast ohne Windkraft-Flächen —
+			// dort stehen 397 von 423 Anlagen außerhalb der ausgewiesenen Zonen.
+			map.addSource("wka-hulls", {
+				type: "geojson",
+				data: "/data/wka_bestand_ausserhalb_zonen.json",
 				generateId: true,
 			});
 
@@ -379,6 +390,16 @@
 			// at the old 0.12 the blue underneath (0.48/0.72) still showed through
 			// and read as "on top" even though this layer is stacked above it.
 			// Deep purple (was amber) — pairs better with the blue potential zones.
+			// Bestandsflächen: deutlich andere Handschrift als die amtlichen Zonen —
+			// Teal statt Violett, durchgezogene statt gestrichelter Kante und nur
+			// halb deckend. Sie sind kein Rechtsakt, sondern eine Beobachtung, und
+			// dürfen nicht wie eine Ausweisung des Landes gelesen werden.
+			map.addLayer({ id: "wka-hulls-fill",    type: "fill", source: "wka-hulls", paint: { "fill-color": "#0891b2", "fill-opacity": 0.4 } }, B);
+			// Kante zoomabhängig: in der Übersicht sind die Hüllen nur wenige Pixel
+			// groß und lebten allein von der Füllung, im Detail trägt die Kante die
+			// Unterscheidung zur gestrichelten violetten Zonengrenze.
+			map.addLayer({ id: "wka-hulls-outline", type: "line", source: "wka-hulls", paint: { "line-color": "#0e7490", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1, 9, 2], "line-opacity": 0.9 } }, B);
+
 			map.addLayer({ id: "official-zones-fill",    type: "fill", source: "official-zones", paint: { "fill-color": "#7c3aed", "fill-opacity": 1 } }, B);
 			map.addLayer({ id: "official-zones-outline", type: "line", source: "official-zones", paint: { "line-color": "#6d28d9", "line-width": 1.5, "line-dasharray": [4, 2], "line-opacity": 0.8 } }, B);
 
@@ -472,6 +493,7 @@
 			// Invisible hit layers — float above everything; opacity 0 so invisible
 			map.addLayer({ id: "possible-zones-hit", type: "fill", source: "possible-zones", "source-layer": POSSIBLE_ZONES_LAYER, paint: { "fill-opacity": 0 } });
 			map.addLayer({ id: "official-zones-hit",  type: "fill", source: "official-zones",  paint: { "fill-opacity": 0 } });
+			map.addLayer({ id: "wka-hulls-hit",       type: "fill", source: "wka-hulls",       paint: { "fill-opacity": 0 } });
 			// GL basemap labels are already on top — no separate carto-labels needed
 		}
 
@@ -682,7 +704,7 @@
 		}
 
 		function setupHoverEvents() {
-			const zoneLayers = ["possible-zones-fill", "official-zones-fill", "turbines"];
+			const zoneLayers = ["possible-zones-fill", "official-zones-fill", "wka-hulls-fill", "turbines"];
 
 			map.on("mousemove", (e) => {
 				const bbox = [
@@ -696,6 +718,7 @@
 					clearRegionHover();
 					const zone = zoneFeatures.find((f) => f.layer.id === "possible-zones-fill");
 					const official = zoneFeatures.find((f) => f.layer.id === "official-zones-fill");
+					const hull = zoneFeatures.find((f) => f.layer.id === "wka-hulls-fill");
 					const turbine = zoneFeatures.find((f) => f.layer.id === "turbines");
 					if (zone) {
 						if (hoveredZoneId !== null)
@@ -712,6 +735,7 @@
 					onHover({
 						zone: zone?.properties ?? undefined,
 						official: official?.properties ?? undefined,
+						hull: hull?.properties ?? undefined,
 						turbine: turbine?.properties ?? undefined,
 						x: e.point.x,
 						y: e.point.y,
@@ -883,7 +907,7 @@
 					(id) => show(id, false),
 				);
 				updateLayers(currentExpert, currentViz);
-				["official-zones-fill", "official-zones-outline", "turbines"].forEach(
+				["official-zones-fill", "official-zones-outline", "wka-hulls-fill", "wka-hulls-outline", "turbines"].forEach(
 					(id) => show(id, true),
 				);
 				if (map.getLayer("turbines")) {
@@ -918,9 +942,13 @@
 			show("possible-zones-fill",   step >= 5);
 			show("possible-zones-border", step >= 5);
 
-			// Official zoning: step 6+
+			// Official zoning und Bestandsflächen: step 6+. Beide gehören in denselben
+			// Schritt — die Aussage "hier darf gebaut werden" ist ohne "und hier steht
+			// schon etwas, ohne dass es ausgewiesen wurde" unvollständig.
 			show("official-zones-fill",    step >= 6);
 			show("official-zones-outline", step >= 6);
+			show("wka-hulls-fill",         step >= 6);
+			show("wka-hulls-outline",      step >= 6);
 			if (step >= 6) {
 				if (map.getLayer("official-zones-fill"))
 					map.setPaintProperty("official-zones-fill", "fill-opacity", 1);

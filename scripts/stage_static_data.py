@@ -45,6 +45,7 @@ SERVED = [
     "existing_turbines.geojson",
     "official_zoning.geojson",
     "region_stats.json",
+    "wka_bestand_ausserhalb_zonen.geojson",
     "zone_centroids.geojson",
     "zone_stats.json",
 ]

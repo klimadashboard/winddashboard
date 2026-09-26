@@ -144,6 +144,19 @@
 					></span>
 					Offiz. Eignungszone
 				</span>
+				<!--
+					Bestandsfläche statt "Eignungszone": die Fläche ist keine Ausweisung
+					des Landes, sondern die Hülle um bestehende Anlagen. Sie steht
+					unter der Eignungszone in der Legende, weil beide Flächen auf der
+					Karte nebeneinander liegen und sonst verwechselt werden.
+				-->
+				<span class="flex items-center gap-2">
+					<span
+						class="w-3 h-3 rounded-sm flex-shrink-0 inline-block"
+						style="background: #0891b2; opacity: 0.75; border: 1px solid #0e7490;"
+					></span>
+					Bestehender Windpark
+				</span>
 				<span class="flex items-center gap-2">
 					<span
 						class="w-3 h-3 rounded-full flex-shrink-0 inline-block"

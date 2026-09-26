@@ -55,6 +55,13 @@
 	let productionYear = $state<number | null>(null);
 	let zoningByBL = $state<Record<string, number>>({});
 	let turbinesByBL = $state<Record<string, number>>({});
+	// Band 38: Park-Hüllen um die bestehenden Anlagen außerhalb der amtlichen
+	// Zonen. Ohne diese Zahlen liest sich der Zonierungsschritt für das
+	// Burgenland falsch — dort sind 2.470 ha zoniert, aber 397 der 423
+	// Anlagen stehen in den gut 11.300 ha daneben.
+	let hullAreaHa = $state(0);
+	let hullTurbines = $state(0);
+	let hullByBL = $state<Record<string, number>>({});
 
 	// Potentialflächen step: absolute (ha, compared across states) vs. percent
 	// of each state's own area. Absolute is the default — the % view is an
@@ -86,6 +93,7 @@
 	const COLOR_WIND = "#db2777";
 	const COLOR_POTENTIAL = "#2563eb";
 	const COLOR_ZONIERT = "#6d28d9";
+	const COLOR_BESTAND_FLAECHE = "#0891b2";
 
 	// Each Bundesland's own total area in hectares — derived from the same
 	// classification raster as AUSTRIA_HA (rasterized per state; see
@@ -181,9 +189,10 @@
 
 	// ── Data loading ──────────────────────────────────────────────────────────
 	async function loadData() {
-		const [offGj, turbGj] = await Promise.all([
+		const [offGj, turbGj, hullGj] = await Promise.all([
 			fetch("/data/official_zoning.json").then((r) => r.json()),
 			fetch("/data/existing_turbines.json").then((r) => r.json()),
+			fetch("/data/wka_bestand_ausserhalb_zonen.json").then((r) => r.json()),
 		]);
 		officialAreaHa = offGj.features.reduce(
 			(s: number, f: any) => s + (f.properties.area_ha ?? 0),
@@ -195,6 +204,16 @@
 			byBL[bl] = (byBL[bl] ?? 0) + (f.properties.area_ha ?? 0);
 		}
 		zoningByBL = byBL;
+
+		const hullBL: Record<string, number> = {};
+		for (const f of hullGj.features) {
+			const bl: string = f.properties.bundesland ?? "";
+			hullBL[bl] = (hullBL[bl] ?? 0) + (f.properties.area_ha ?? 0);
+			hullAreaHa += f.properties.area_ha ?? 0;
+			hullTurbines += f.properties.turbines ?? 0;
+		}
+		hullByBL = hullBL;
+
 		turbineCount = turbGj.features.length;
 		turbinesByBL = await turbinesPerBundesland(turbGj);
 		dataReady = true;
@@ -787,21 +806,22 @@
 						Zonierungsflächen
 					</p>
 				</div>
+				<!--
+					Gekürzt, nicht gestrichen: der Satz "Folgende Bundesländer haben
+					aktuell Windkraft-Eignungszonen ausgewiesen" wiederholte den
+					ersten Satz wörtlich. Auf dem Telefon zählt jede Zeile — dieser
+					Schritt ist der längste der Geschichte und hat mit den
+					Bestandsflächen einen zweiten Flächentyp bekommen.
+				-->
 				<p class="text-sm sm:text-base leading-relaxed text-slate-700 mb-4">
-					Einige Bundesländer haben für den Bau von Windrädern eigene
-					Windkraft-Eignungszonen ausgewiesen. Hier seht ihr diese
-					„Zonierungsflächen".
-					{#if dataReady}
-						Das sind aktuell <strong class="text-slate-900"
+					Fünf Bundesländer haben eigene Windkraft-Eignungszonen ausgewiesen:
+					Niederösterreich, Burgenland, Steiermark, Kärnten und Salzburg.
+					Diese „Zonierungsflächen" seht ihr hier{#if dataReady}&nbsp;—
+						aktuell <strong class="text-slate-900"
 							>{fmt(Math.round(officialAreaHa))}&thinsp;ha</strong
-						>.
-					{/if}
-					Folgende Bundesländer haben aktuell Windkraft-Eignungszonen
-					ausgewiesen: Niederösterreich, Burgenland, Steiermark, Kärnten und
-					Salzburg. In Tirol, Vorarlberg und Wien gibt es aktuell keine
-					solchen Windkraft-Eignungszonen. In Oberösterreich wird momentan an
-					einer solchen Zonierung gearbeitet und in der Steiermark wird die
-					derzeitige Zonierung gerade überarbeitet.
+						>{/if}. In Tirol, Vorarlberg und Wien gibt es keine; in
+					Oberösterreich wird daran gearbeitet, in der Steiermark wird die
+					bestehende Zonierung gerade überarbeitet.
 				</p>
 				<!--
 					Datenstand je Bundesland, wie ihn der Datenanbieter im Manifest
@@ -809,11 +829,48 @@
 					zwei Datensätze sind handdigitalisiert statt amtlich bezogen — das
 					gehört dazugesagt, sonst wirken alle fünf gleich belastbar.
 				-->
+				<!--
+					Der zweite Flächentyp im selben Schritt. Ohne ihn war die Karte im
+					Burgenland irreführend: dort sind rund 2.470 ha zoniert, aber 397
+					der 423 Anlagen stehen außerhalb dieser Zonen. Wer nur die
+					violetten Flächen sah, musste schließen, dass im Burgenland kaum
+					Windkraft-Flächen existieren.
+				-->
+				<div
+					class="rounded-lg px-3 py-2.5 mb-3"
+					style="background:#ecfeff; border:1px solid #a5f3fc;"
+				>
+					<div class="flex items-center gap-2 mb-1.5">
+						<span
+							class="inline-block w-3 h-3 rounded-sm shrink-0"
+							style="background:{COLOR_BESTAND_FLAECHE}; opacity:0.75; border:1px solid #0e7490;"
+						></span>
+						<p
+							class="text-[10px] font-bold uppercase tracking-widest"
+							style="color:#155e75;"
+						>
+							Bestehende Windparks
+						</p>
+					</div>
+					<p class="text-xs sm:text-sm leading-relaxed text-slate-700">
+						Viele Windräder sind älter als die Zonierung und stehen außerhalb
+						dieser Zonen. Sie sind hier türkis umrandet{#if dataReady}&nbsp;—
+							zusammen <strong class="text-slate-900"
+								>{fmt(Math.round(hullAreaHa))}&thinsp;ha</strong
+							> mit {fmt(hullTurbines)} Anlagen{/if}. Am deutlichsten im
+						Burgenland: dort stehen 397 von 423 Anlagen außerhalb der
+						Eignungszonen.
+					</p>
+				</div>
+
 				<p class="text-[10px] text-slate-400 leading-relaxed mb-3">
 					Datenstand: Niederösterreich 30.4.2026 (LGBl. 47/2024), Burgenland
 					21.7.2026. Für Kärnten, Steiermark und Salzburg liegt uns kein
 					Datenstand vor; die steirischen und Salzburger Zonen sind
-					handdigitalisiert und nicht amtlich bezogen.
+					handdigitalisiert und nicht amtlich bezogen. Die Hüllen um die
+					bestehenden Windparks sind kein Rechtsakt, sondern berechnet:
+					Anlagen unter 750 m Abstand gelten als ein Park, um den 200 m Rand
+					gelegt werden.
 				</p>
 
 				<!-- Bundesland bars: potential (light blue) + zoned (purple) overlay,
@@ -825,6 +882,8 @@
 						{@const potPct = (bl.ha / BUNDESLAENDER[0].ha) * 100}
 						{@const zonedHa = zoningByBL[bl.name] ?? 0}
 						{@const zonedPct = (zonedHa / BUNDESLAENDER[0].ha) * 100}
+						{@const hullHa = hullByBL[bl.name] ?? 0}
+						{@const hullPct = (hullHa / BUNDESLAENDER[0].ha) * 100}
 						<div class="flex items-center gap-2">
 							<span class="w-6 text-[9px] text-slate-500 text-right shrink-0"
 								>{bl.short}</span
@@ -840,6 +899,19 @@
 									<div
 										class="absolute inset-y-0 left-0 rounded-sm"
 										style="width:{zonedPct}%; background:{COLOR_ZONIERT};"
+									></div>
+								{/if}
+								<!--
+									Hinter der zonierten Fläche angesetzt, nicht darüber: die
+									beiden Flächentypen überschneiden sich geometrisch nicht
+									(der Datenanbieter zieht die amtlichen Zonen von den
+									Hüllen ab), deshalb ist die Aneinanderreihung korrekt und
+									die Gesamtlänge die Summe beider.
+								-->
+								{#if hullHa > 0}
+									<div
+										class="absolute inset-y-0 rounded-sm"
+										style="left:{zonedPct}%; width:{hullPct}%; background:{COLOR_BESTAND_FLAECHE}; opacity:0.8;"
 									></div>
 								{/if}
 							</div>
@@ -870,6 +942,13 @@
 							style="background:{COLOR_ZONIERT};"
 						></span>
 						Zoniert (ha)
+					</div>
+					<div class="flex items-center gap-1">
+						<span
+							class="w-2.5 h-2.5 rounded-sm"
+							style="background:{COLOR_BESTAND_FLAECHE}; opacity:0.8;"
+						></span>
+						Bestehende Parks (ha)
 					</div>
 				</div>
 			{/snippet}

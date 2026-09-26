@@ -440,9 +440,25 @@
 				zusammenhängende Flächen ab 10 ha — das Hauptergebnisband, aus dem die
 				Potenzialflächen auf der Karte erzeugt werden.
 				<code class="font-mono">official_wind_zoning</code> ist ein Referenzlayer
-				(amtlich ausgewiesene Zonen in Niederösterreich, der Steiermark und Salzburg)
-				und schränkt die berechneten Flächen nicht zusätzlich ein — er wird separat
-				auf der Karte dargestellt.
+				(amtlich ausgewiesene Zonen in Niederösterreich, dem Burgenland, der
+				Steiermark, Kärnten und Salzburg) und schränkt die berechneten Flächen
+				nicht zusätzlich ein — er wird separat auf der Karte dargestellt.
+			</p>
+			<!--
+				Band 38 stand bis September 2026 in keiner Doku und in keinem Layer,
+				obwohl es 14.756 ha umfasst. Es gehört hierher, weil es das einzige
+				Band ist, das nicht aus dem Rasterverfahren stammt, sondern aus den
+				Anlagenstandorten.
+			-->
+			<p class="text-xs text-slate-500 leading-relaxed">
+				<code class="font-mono">wka_bestand_ausserhalb_zonen</code> ist der
+				zweite Referenzlayer: die Hüllen um die bestehenden Windparks, soweit
+				sie außerhalb der amtlichen Zonen liegen. Anlagen mit weniger als
+				750&nbsp;m Abstand zueinander gelten als ein Park; um dessen Umriss
+				werden 200&nbsp;m Rand gelegt, danach werden die amtlichen Zonen
+				abgezogen. Grundlage sind dieselben Anlagenstandorte, die auch als
+				Punkte auf der Karte liegen — jede Hülle enthält damit mindestens ein
+				Windrad. Auch dieser Layer schränkt die berechneten Flächen nicht ein.
 			</p>
 			<p class="text-xs text-slate-500 leading-relaxed">
 				Wasserflächen (Seen, Flüsse) werden separat aus zwei Quellen
