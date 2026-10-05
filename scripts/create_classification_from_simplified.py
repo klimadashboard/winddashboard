@@ -12,15 +12,20 @@ Klassencodes (stabil, weil sie in Legende, Kacheln und Tooltip stecken):
    1 Schutzgebiet            7 Hangneigung >15°      12 Allgemeine Gebäude (25 m)
    2 Siedlungsabstand        8 Seehöhe >2.500 m      13 Gebäude an Seilbahnen (50 m)
    3 Haus im Grünen (750 m)  9 (stillgelegt)         14 Geeignet
-   4 Sperrzone              10 (stillgelegt)         15 Nicht-Wohn-Hüllen (25 m)
+   4 Sperrzone              10 Freileitung ab 110 kV 15 Nicht-Wohn-Hüllen (25 m)
    5 Verkehrsweg (150 m)    11 Wind zu gering        16 Größere Gewässer
    6 Eisenbahn (150 m)
 
-Mit widmung_v2 stillgelegt: **9** (Wichtige Objekte) und **10** (Freileitung
-380/400 kV). Beide Kriterien gibt es in der Lieferung nicht mehr — `POWER_LINES`
-steht im Manifest ausdrücklich auf "kein Ausschlusskriterium". Die Nummern werden
-nicht neu vergeben, damit alte Kacheln und Screenshots interpretierbar bleiben.
-Neu hinzugekommen: **15** und **16**.
+Mit widmung_v2 stillgelegt: **9** (Wichtige Objekte). Neu hinzugekommen: **15**
+und **16**.
+
+Code **10** war in widmung_v1 "Freileitung 380/400 kV", lag in widmung_v2
+brach und ist mit dem Schema `clean-45-freileitungen-110kv-sep-2026` wieder
+belegt — jetzt mit `power_lines_110kv_plus`, also ab 110 kV statt erst ab 380 kV.
+Dieselbe Nummer für dieselbe Sache: Legende, Kacheln und Tooltip bleiben
+lesbar, nur die Spannungsschwelle ist niedriger. Ohne diesen Eintrag fielen die
+Leitungskorridore still durch die Klassifikation — die Bandzuordnung läuft über
+Namen, und ein unbekannter Name wird kommentarlos übersprungen.
 
 Priorität: letzter Treffer gewinnt (weiter unten in RULES = höhere Priorität).
   0 = außerhalb Österreichs / kein Datum
@@ -56,6 +61,7 @@ RULES = [
     ("nonresidential_hulls_buffer",       15),   # nur widmung_v2
     ("cableway_buildings_buffer",         13),
     ("power_380_400kv",                   10),   # nur widmung_v1
+    ("power_lines_110kv_plus",            10),   # ab clean-45
     ("rail_main",                          6),
     ("road_motorway_trunk",                5),
     ("road_federal_state",                 5),

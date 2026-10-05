@@ -223,12 +223,13 @@
 			<p class="text-xs text-slate-500 leading-relaxed mb-3">
 				Die Kategorie „Wichtige Objekte" (250 m um Kirchen, Schlösser und
 				ähnliche Landmarken) ist mit der Datenlieferung vom September 2026
-				entfallen. Ebenso entfallen ist der Abstand zu
-				Hochspannungsfreileitungen — Freileitungen sind derzeit kein
-				Ausschlusskriterium. Beides ist beim Datenanbieter angefragt.
+				entfallen und beim Datenanbieter angefragt. Der Abstand zu
+				Hochspannungsfreileitungen war zwischenzeitlich ebenfalls entfallen
+				und ist seit der Lieferung vom 30.&nbsp;September 2026 wieder
+				enthalten — siehe unten.
 			</p>
 			<div class="space-y-3">
-				{#each [{ title: "Einzelgebäude im Grünland", buffer: "750 m", note: "Einzelne Wohngebäude außerhalb von Siedlungsflächen (siehe Tabelle oben)." }, { title: "Gebäude an Seilbahnen", buffer: "50 m", note: "Gebäude im unmittelbaren Umfeld von Seilbahnanlagen, etwa Stationsgebäude." }, { title: "Nicht-Wohn-Hüllen", buffer: "25 m", note: "Gebäudehüllen ohne Wohnnutzung, etwa Betriebs- und Nebengebäude." }, { title: "Sonstige Gebäude", buffer: "25 m", note: "Alle übrigen Gebäude, die keiner anderen Kategorie zugeordnet sind." }] as cat}
+				{#each [{ title: "Einzelgebäude im Grünland", buffer: "750 m", note: "Einzelne Wohngebäude außerhalb von Siedlungsflächen (siehe Tabelle oben)." }, { title: "Gebäude an Seilbahnen", buffer: "50 m", note: "Gebäude im unmittelbaren Umfeld von Seilbahnanlagen, etwa Stationsgebäude." }, { title: "Nicht-Wohn-Hüllen", buffer: "25 m", note: "Gebäudehüllen ohne Wohnnutzung, etwa Betriebs- und Nebengebäude." }, { title: "Sonstige Gebäude", buffer: "25 m", note: "Alle übrigen Gebäude, die keiner anderen Kategorie zugeordnet sind." }, { title: "Hochspannungsfreileitungen", buffer: "116–136 m", note: "Abstand beiderseits der Leitungsachse, gemessen ab 110 kV: 116 m bei 110 kV, 136 m ab 220 kV. Die Werte ergeben sich aus dem halben Rotordurchmesser der Referenzanlage (86 m), dem Sicherheitsabstand zum äußersten Leiter und dem Versatz von der Mastachse. Erdkabel und Mittelspannung unter 110 kV erzeugen keinen Abstand." }] as cat}
 					<div class="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
 						<p
 							class="text-sm font-semibold mb-1"

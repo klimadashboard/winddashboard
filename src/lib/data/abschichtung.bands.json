@@ -1,10 +1,10 @@
 {
-  "schema_version": "2.2.1",
-  "generated_at": "2026-09-09T12:39:21Z",
+  "schema_version": "2.3.0",
+  "generated_at": "2026-09-30T21:10:15Z",
   "pipeline": "widmung_v2",
-  "band_schema": "clean-44-ohne-wichtige-objekte-aug-2026",
+  "band_schema": "clean-45-freileitungen-110kv-sep-2026",
   "raster_file": "abschichtung.tif",
-  "band_count": 44,
+  "band_count": 45,
   "raster": {
     "crs": "EPSG:31287",
     "width": 24001,
@@ -76,6 +76,12 @@
       "description_de": "Abstand entlang Straßen, Bahnen und Personenseilbahnen."
     },
     {
+      "key": "energieleitungen",
+      "category": "Mensch",
+      "label_de": "Energieleitungen",
+      "description_de": "Abstand entlang von Hochspannungsfreileitungen."
+    },
+    {
       "key": "militaer",
       "category": "Mensch",
       "label_de": "Militär",
@@ -141,7 +147,7 @@
       "key": "mensch",
       "category": "Mensch",
       "label_de": "Mensch",
-      "description_de": "Ausschlüsse wegen Nähe zu Menschen und ihrer Infrastruktur: Siedlungen, Häuser im Grünen, Gebäude, Verkehrswege, militärische Sperrgebiete und Luftfahrt. Quellen sind die Flächenwidmungen der neun Bundesländer, Kataster und Adressregister, OpenStreetMap sowie die niederösterreichischen Mindestabstandszonen."
+      "description_de": "Ausschlüsse wegen Nähe zu Menschen und ihrer Infrastruktur: Siedlungen, Häuser im Grünen, Gebäude, Verkehrswege, Hochspannungsfreileitungen, militärische Sperrgebiete und Luftfahrt. Quellen sind die Flächenwidmungen der neun Bundesländer, Kataster und Adressregister, OpenStreetMap sowie die niederösterreichischen Mindestabstandszonen."
     },
     {
       "key": "natur",
@@ -960,7 +966,7 @@
       "index": 27,
       "name": "exclusion_human",
       "label_de": "Ausschluss Mensch",
-      "description_de": "Vereinigung aller Ausschlüsse der Kategorie Mensch: Siedlungsabstand, Häuser im Grünen, Gebäude und Anlagen, Verkehr, Militär und Luftfahrt; auf das Staatsgebiet zugeschnitten.",
+      "description_de": "Vereinigung aller Ausschlüsse der Kategorie Mensch: Siedlungsabstand, Häuser im Grünen, Gebäude und Anlagen, Verkehr, Hochspannungsfreileitungen, Militär und Luftfahrt; auf das Staatsgebiet zugeschnitten.",
       "category": "Mensch",
       "value_type": "binary",
       "clipped_to_austria": true,
@@ -988,7 +994,8 @@
         "cableway_people_150m",
         "military_restricted_area",
         "airport_area_major",
-        "airport_runway_corridor_5km"
+        "airport_runway_corridor_5km",
+        "power_lines_110kv_plus"
       ],
       "familie": "summe",
       "stufe": "summe_zonen",
@@ -1279,7 +1286,7 @@
       "index": 38,
       "name": "wka_bestand_ausserhalb_zonen",
       "label_de": "WKA-Bestand außerhalb der Zonen",
-      "description_de": "Bestehende Windräder aus OpenStreetMap außerhalb der amtlichen Zonen, zu Park-Hüllen zusammengefasst: Anlagen mit weniger als 750 m Abstand bilden einen Park, dessen Hülle 200 m Rand erhält. Referenz, kein Ausschluss.",
+      "description_de": "Bestehende Windräder aus dem gelieferten österreichischen Standortverzeichnis außerhalb der amtlichen Zonen, zu Park-Hüllen zusammengefasst: Anlagen mit weniger als 750 m Abstand bilden einen Park, dessen Hülle 200 m Rand erhält. Referenz, kein Ausschluss.",
       "category": "Referenz (Zonen & WKA-Bestand)",
       "value_type": "binary",
       "clipped_to_austria": false,
@@ -1295,7 +1302,7 @@
       "puffer_m": null,
       "puffer_hinweis": null,
       "quelle": [
-        "osm_pbf"
+        "windkraft_standorte_at"
       ],
       "abgeleitet_von": [
         "official_wind_zoning"
@@ -1481,12 +1488,39 @@
       "familie": "summe",
       "stufe": "summe_quellen",
       "dashboard_layer": false
+    },
+    {
+      "index": 45,
+      "name": "power_lines_110kv_plus",
+      "label_de": "Hochspannungsfreileitungen",
+      "description_de": "Abstand beiderseits der Achse von Hochspannungsfreileitungen ab 110 kV (110, 220, 380 und 400 kV) aus OpenStreetMap, je nach Spannung: 116 m bei 110 kV, 136 m bei 220, 380 und 400 kV. Der Abstand ergibt sich für die Referenzanlage Vestas V172 aus dem halben Rotordurchmesser von 86 m und dem Sicherheitsabstand zum äußersten Leiter (20 m bei 110 kV, 30 m bei 220 und 380 kV), zusammen 106 m bzw. 116 m, zuzüglich des Versatzes von der Mastachse zum äußersten Leiter (10 m bzw. 20 m). Die 116 m bzw. 136 m ab der Leitungsachse stellen so mindestens 106 m bzw. 116 m zum Leiter sicher. Leitungen mit mehreren Spannungsebenen erhalten den größeren Puffer. Dieses Band wird an der Vektorgeometrie der Leitung gepuffert und mit allen berührten Zellen gerastert, sodass jede Zelle innerhalb des Nennabstands ausgeschlossen ist; der Rand überschießt um höchstens eine Zelle. Untergrenze ohne Kranarbeitsfläche und ohne Nachweis gegen nachlaufinduzierte Schwingungen. Mittelspannung unter 110 kV erzeugt keine Zone, ebenso wenig Erdkabel.",
+      "category": "Mensch",
+      "value_type": "binary",
+      "clipped_to_austria": false,
+      "is_total": false,
+      "color_rgba": [
+        150,
+        50,
+        220,
+        150
+      ],
+      "default_visible": false,
+      "rolle": "bedingung",
+      "puffer_m": 136.0,
+      "puffer_hinweis": null,
+      "quelle": [
+        "osm_pbf"
+      ],
+      "abgeleitet_von": [],
+      "familie": "energieleitungen",
+      "stufe": "zone",
+      "dashboard_layer": true
     }
   ],
   "parameters": {
     "MIN_FRAGMENT_AREA_HA": "10.0",
     "PIPELINE": "widmung_v2",
-    "BAND_SCHEMA": "clean-44-ohne-wichtige-objekte-aug-2026",
+    "BAND_SCHEMA": "clean-45-freileitungen-110kv-sep-2026",
     "SETTLEMENT_BUFFER_BY_BL": "{\"Burgenland\": 1000.0, \"Kärnten\": 1000.0, \"Niederösterreich\": 1200.0, \"Oberösterreich\": 1000.0, \"Salzburg\": 1000.0, \"Steiermark\": 1000.0, \"Tirol\": 1000.0, \"Vorarlberg\": 1000.0, \"Wien\": 1000.0}",
     "HIG_FAMILY_BUFFER_M": "750.0",
     "NONRESIDENTIAL_HULL_BUFFER_M": "25.0",
@@ -1498,7 +1532,7 @@
     "HIG_SOURCE": "amtliche Widmung + NÖ-SekROP-PDF + DKM-Hüllen + BEV-Adressregister (build_hig_sources.py); NÖ-Streusiedlung durch PDF ersetzt",
     "WICHTIGE_OBJEKTE": "in haeuser_im_gruenen (750 m); vorher eigenes 250-m-Band",
     "BEWOHNTE_EINZELLAGEN": "in general_buildings_source (25 m); vorher eigenes 25-m-Bandpaar",
-    "POWER_LINES": "kein Ausschlusskriterium (Clean-Schema Aug 2026)",
+    "POWER_LINES": "Freileitungen >= 110 kV (OSM power=line, voltage 110/220/380/400 kV) als Band 45 power_lines_110kv_plus, Puffer ab Leitungsachse 116 m bei 110 kV (0,5*D V172 86 m + a_LTG 20 m + 10 m Achse-Leiter), 136 m bei 220/380/400 kV (86 m + a_LTG 30 m + 20 m); gemischte Leitungen: groesserer Puffer; Vektorpuffer der Liniengeometrie, gerastert mit all_touched (jede Zelle innerhalb des Nennabstands gesetzt, Rand hoechstens eine Zelle zu weit); Mittelspannung nicht enthalten",
     "AIRPORT_CORRIDOR_LENGTH_M": "5000.0",
     "AIRPORT_CORRIDOR_HALF_ANGLE_DEG": "15.0",
     "WIEN": "amtliche Widmung Stadt Wien (GENFLWIDMUNGOGD), kein Vollausschluss mehr",
@@ -1530,7 +1564,12 @@
     "osm_pbf": {
       "pfad": "data/osm/austria-260330.osm.pbf",
       "stand": "30.03.2026",
-      "rolle": "Geofabrik-Extrakt Österreich: Straßen, Bahn, Seilbahnen, Militär, Flughäfen, Gebäude, Gewässer, Schutzgebiete, Bestands-WKA"
+      "rolle": "Geofabrik-Extrakt Österreich: Straßen, Bahn, Seilbahnen, Militär, Flughäfen, Gebäude, Gewässer und Schutzgebiete"
+    },
+    "windkraft_standorte_at": {
+      "pfad": "data/windkraft/windkraft_standorte_at.geojson",
+      "stand": "gelieferter Datensatz (kein crs-Member; RFC 7946 CRS84/EPSG:4326)",
+      "rolle": "Autoritative Bestands-WKA für Referenzband und Punkte-Export; exakte Koordinatduplikate werden in der Prep-Stufe entfernt"
     },
     "verwaltungsgrenzen_vgd": {
       "pfad": "data/admin/VGD_Oesterreich_gen_50_20221002/VGD_50_generalisiert.shp",

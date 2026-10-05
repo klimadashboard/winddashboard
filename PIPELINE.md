@@ -35,14 +35,50 @@ Danach in Schritt 6 die App-Konstanten aktualisieren.
 
 ---
 
-## Lieferung widmung_v2 (9.9.2026) — Teilstand
+## Lieferung clean-45 (30.9.2026) — Freileitungen zurück
 
-Neues Paket vom Datenanbieter: `abschichtung.tif` (153 MB, sha256
-`c1809c4cf9cb243d420efc949ff5543130ef3c5a75db9e948d2ea53c94416f37`),
-`abschichtung.bands.json` (Manifest 2.2.1), `LAYER.md`, `LAYER-MANIFEST.md`.
-Bandschema `clean-44-ohne-wichtige-objekte-aug-2026`, Pipeline `widmung_v2`,
-44 Bänder, EPSG:31287, 24001×14001, 25 m. Geprüft: alle 44 Bandnamen im TIF
-stimmen mit dem Manifest überein, Rasterblock im Manifest passt zum File.
+Aktuelles Paket: `abschichtung.tif` (161 MB, sha256
+`b596fd021dbc42eb4bfa19b9caf8fead78cad6489f6f91e344dd3e645cf87700`),
+`abschichtung.bands.json`, `LAYER.md`, `LAYER-MANIFEST.md`. Bandschema
+`clean-45-freileitungen-110kv-sep-2026`, **45 Bänder**, EPSG:31287,
+24001×14001, 25 m.
+
+Geprüft durch Band-für-Band-Vergleich gegen die Vorlieferung: Raster, CRS,
+Transform und die ersten 44 Bandnamen sind identisch, keine Indexverschiebung,
+kein Band entfallen. **Alle 26 Eingangsbänder sind unverändert** — die Lieferung
+fügt genau eine Bedingung hinzu.
+
+| | |
+|---|---|
+| Band 45 `power_lines_110kv_plus` | 277.544 ha Leitungskorridore, Rolle `bedingung` |
+| davon neu in `exclusion_human` | +14.271 ha (der Rest lag schon unter anderen Ausschlüssen) |
+| `all_exclusions` | +7.390 ha |
+| **`available_cleaned_min_10ha`** | **366.012 → 358.586 ha (−7.426 ha, −2,0 %)** |
+| Bänder 37 (Zonierung) und 38 (Bestandsflächen) | unverändert |
+
+Puffer ab der Leitungsachse: **116 m bei 110 kV, 136 m ab 220 kV**, hergeleitet
+aus der Referenzanlage Vestas V172 (halber Rotordurchmesser 86 m + Sicherheits-
+abstand zum äußersten Leiter + Versatz Mastachse–Leiter). Quelle OpenStreetMap
+(`austria-260330.osm.pbf`, Stand 30.3.2026). Erdkabel und Mittelspannung unter
+110 kV erzeugen keine Zone.
+
+**Achtung, Entscheidungsänderung:** Am 8.9.2026 war entschieden worden, nur
+380 kV auszuschließen. Dieses Band schließt **ab 110 kV** aus und ist damit
+weiter gefasst als die damalige Festlegung.
+
+### Was beim Einbau zu beachten war
+
+Die Bandzuordnung in `create_classification_from_simplified.py` und
+`extract_exclusion_geojson.py` läuft über **Namen**, und ein unbekannter Name
+wird kommentarlos übersprungen. Ohne die beiden folgenden Einträge wären die
+Leitungskorridore still durch die Klassifikation gefallen und hätten die
+Flächenbilanz der Story verfälscht:
+
+- `create_classification_from_simplified.py`: `("power_lines_110kv_plus", 10)`
+- `extract_exclusion_geojson.py`: Code `10` zurück in `SONSTIGE_CODES`
+
+Code 10 hieß in widmung_v1 „Freileitung 380/400 kV", lag in widmung_v2 brach und
+ist jetzt wieder belegt — dieselbe Sache, niedrigere Spannungsschwelle.
 
 **Stand: vollständig auf widmung_v2 umgestellt (10.9.2026)**
 
@@ -51,8 +87,8 @@ stimmen mit dem Manifest überein, Rasterblock im Manifest passt zum File.
 | 1 Klassifikationsraster | neu — Codes 9 und 10 stillgelegt, 15 (Nicht-Wohn-Hüllen) und 16 (Gewässer) neu |
 | 2 Rasterkacheln | **nicht gelaufen, bewusst** — der Layer `classification-raster` wird in der App nie sichtbar geschaltet |
 | 3 Ausschluss-GeoJSONs (Story) | neu |
-| 4 Detailansicht-Vektorkacheln | neu — 17 Layer statt 23, Layernamen sind jetzt die Bandnamen des Manifests |
-| 5 Potenzialflächen | neu — 3.812 Flächen, 365.161 ha (vorher 4.093 / 351.912) |
+| 4 Detailansicht-Vektorkacheln | neu — **18 Layer** (clean-45 bringt die Freileitungen dazu), Layernamen sind die Bandnamen des Manifests |
+| 5 Potenzialflächen | neu — 3.895 Flächen, 357.740 ha (clean-44: 3.812 / 365.161; widmung_v1: 4.093 / 351.912) |
 | 5b Gemeinde-Kennzahlen | neu |
 | 6 App-Konstanten | alle fünf Balkenwerte plus `POTENTIAL_VECTOR_HA` und `BUNDESLAENDER` |
 
@@ -62,8 +98,9 @@ dieselbe Auswahl, und die Methodik-Seite rendert die Bandtabelle direkt aus
 `src/lib/data/abschichtung.bands.json`. Nach einer neuen Lieferung genügt es, das
 Manifest zu ersetzen und die Skripte laufen zu lassen.
 
-**Klassencodes:** 9 (Wichtige Objekte) und 10 (Freileitung 380/400 kV) sind
-stillgelegt und werden nicht neu vergeben, damit ältere Kacheln lesbar bleiben.
+**Klassencodes:** 9 (Wichtige Objekte) ist stillgelegt und wird nicht neu
+vergeben, damit ältere Kacheln lesbar bleiben. 10 ist seit clean-45 wieder
+belegt (Freileitung ab 110 kV).
 
 **Was noch aussteht — und warum**
 
@@ -83,9 +120,9 @@ stillgelegt und werden nicht neu vergeben, damit ältere Kacheln lesbar bleiben.
 |---|---|
 | Siedlungsabstands-Varianten | `SETTLEMENT_BUFFER_VARIANTS` ist `{}`, die Kategorie „Siedlungsabstand-Varianten" hat 0 Bänder. **Am 10.9.2026 auf Entscheidung ersatzlos entfernt** — die zehn `possible_zones_*`/`zone_centroids_*`-Dateien, `variants.ts`, der `settlementVariant`-Store und die Variantenspalten in `region_stats.json` sind weg. Ein Szenario, ein Datensatz |
 | `wka_bestand_punkte.geojson` | in der Übergabetabelle des Manifests genannt, im Paket nicht enthalten; `existing_turbines.geojson` bleibt auf dem alten Stand |
-| Siedlungsabstand je Bundesland | neu NÖ 1.200 m, alle übrigen 1.000 m (vorher Kärnten 1.500, Burgenland/NÖ 1.200). Erklärt den Sprung in Burgenland (48.457 → 71.014 ha) und Kärnten (19.613 → 25.420 ha) |
+| Siedlungsabstand je Bundesland | neu NÖ 1.200 m, alle übrigen 1.000 m (vorher Kärnten 1.500, Burgenland/NÖ 1.200). Erklärt den Sprung in Burgenland (48.457 → 71.014 ha) und Kärnten (19.613 → 25.420 ha); mit clean-45 wieder leicht zurück auf 69.436 bzw. 25.615 ha |
 | Windschwelle | jetzt 150 W/m² bei **130 m** Nabenhöhe (≙ 159,5 W/m² @150 m), vorher @150 m. Legende und FAQ sagen noch „@150 m" |
-| **Freileitungen ganz entfallen** | `POWER_LINES = "kein Ausschlusskriterium (Clean-Schema Aug 2026)"`. Es gibt kein Band mehr — auch 380/400 kV sind raus, nicht nur die 110 kV. Damit ist die Entscheidung vom 8.9.2026, bei 380 kV zu bleiben, gegenstandslos, solange das Band nicht zurückkommt |
+| ~~Freileitungen ganz entfallen~~ | **Erledigt mit clean-45 (30.9.2026):** Band 45 `power_lines_110kv_plus` ist da, ab 110 kV statt erst ab 380 kV. Siehe Abschnitt oben |
 | Windleistungsdichte je Fläche | das Raster liefert nur ein binäres „Wind zu gering"-Band. Laut `LAYER.md` liegt beim Anbieter `data/gelaende/AUT_power-density_150m.tif` (Stand 29.3.2026) — genau das bräuchten wir für `pd_mean_w_m2` |
 
 ---

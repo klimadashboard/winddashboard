@@ -69,20 +69,22 @@
 	let potentialViewMode = $state<"absolute" | "percent">("absolute");
 
 	// ── Konstanten aus dem Klassifikationsraster ──────────────────────────────
-	// Stand widmung_v2 (abschichtung.tif, Schema clean-44), erzeugt von
-	// scripts/create_classification_from_simplified.py. Nach jedem neuen
-	// Rasterlauf hier aktualisieren — siehe PIPELINE.md §6.
-	// Die Codes 9 (Wichtige Objekte) und 10 (Freileitung) sind entfallen, 15
-	// (Nicht-Wohn-Hüllen) und 16 (Gewässer) neu hinzugekommen; beide zählen zu
-	// "Sonstige".
+	// Stand abschichtung.tif, Schema clean-45-freileitungen-110kv-sep-2026,
+	// erzeugt von scripts/create_classification_from_simplified.py. Nach jedem
+	// neuen Rasterlauf hier aktualisieren — siehe PIPELINE.md §6.
+	//
+	// Code 9 (Wichtige Objekte) ist entfallen, 15 (Nicht-Wohn-Hüllen) und 16
+	// (Gewässer) kamen mit widmung_v2 dazu. Code 10 (Freileitung) war in
+	// widmung_v2 leer und ist seit clean-45 wieder belegt — jetzt ab 110 kV
+	// statt erst ab 380 kV. Alle drei zählen zu "Sonstige".
 	const SCHUTZ_HA = 1_007_705; // code 1
 	const SIEDLUNG_HA = 4_569_390; // code 2
-	const SONSTIGE_HA = 2_342_789; // codes 3–8, 12, 13, 15, 16
-	const WIND_HA = 40_553; // code 11, Wind zu gering
-	const POTENTIAL_HA = 365_190; // code 14, raster-based
+	const SONSTIGE_HA = 2_350_851; // codes 3–8, 10, 12, 13, 15, 16
+	const WIND_HA = 39_879; // code 11, Wind zu gering
+	const POTENTIAL_HA = 357_769; // code 14, raster-based
 
 	// Vector-derived potential (used in the "final" headline)
-	const POTENTIAL_VECTOR_HA = 365_161;
+	const POTENTIAL_VECTOR_HA = 357_740;
 
 	// Colors for the persistent header bar — fixed left-to-right stacking
 	// order: each category's segment appears once its step is reached and
@@ -116,17 +118,17 @@
 	};
 
 	// ── Bundesland breakdown (vector data, sorted by potential area) ─────────
-	// Stand widmung_v2 (abschichtung.tif, 9.9.2026) — aus geodata/zone_stats.json.
+	// Stand clean-45 (abschichtung.tif, 30.9.2026) — aus geodata/zone_stats.json.
 	const BUNDESLAENDER = [
-		{ name: "Niederösterreich", short: "NÖ", ha: 145_712 },
-		{ name: "Burgenland", short: "B", ha: 71_014 },
-		{ name: "Steiermark", short: "ST", ha: 44_768 },
-		{ name: "Oberösterreich", short: "OÖ", ha: 37_288 },
-		{ name: "Kärnten", short: "K", ha: 25_420 },
-		{ name: "Tirol", short: "T", ha: 19_478 },
-		{ name: "Salzburg", short: "S", ha: 16_903 },
-		{ name: "Vorarlberg", short: "V", ha: 4_226 },
-		{ name: "Wien", short: "W", ha: 255 },
+		{ name: "Niederösterreich", short: "NÖ", ha: 140_876 },
+		{ name: "Burgenland", short: "B", ha: 69_436 },
+		{ name: "Steiermark", short: "ST", ha: 44_342 },
+		{ name: "Oberösterreich", short: "OÖ", ha: 37_126 },
+		{ name: "Kärnten", short: "K", ha: 25_615 },
+		{ name: "Tirol", short: "T", ha: 19_125 },
+		{ name: "Salzburg", short: "S", ha: 16_646 },
+		{ name: "Vorarlberg", short: "V", ha: 4_223 },
+		{ name: "Wien", short: "W", ha: 253 },
 	];
 
 	// 0 Titel · 1 Siedlung · 2 Schutz · 3 Sonstige · 4 Wind · 5 Potential ·
@@ -601,8 +603,9 @@
 					</p>
 				</div>
 				<p class="text-sm sm:text-base leading-relaxed text-slate-700 mb-3">
-					Bestehende Infrastruktur (Straßen, Bahnen, Gebäude) sowie ungeeignetes
-					Gelände (Hangneigung, Seehöhe, Gewässer) schließen weitere
+					Bestehende Infrastruktur (Straßen, Bahnen, Gebäude,
+					Hochspannungsleitungen) sowie ungeeignetes Gelände (Hangneigung,
+					Seehöhe, Gewässer) schließen weitere
 					<strong class="text-slate-900">{fmt(SONSTIGE_HA)}&thinsp;ha</strong> aus.
 				</p>
 				<div class="flex justify-between">
