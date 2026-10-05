@@ -27,7 +27,7 @@ export const sources: Source[] = [
 	},
 	{
 		id: 5,
-		citation: 'IG Windkraft, „Wie funktioniert ein Windrad?"',
+		citation: 'Windkraft Österreich, „Wie funktioniert ein Windrad?"',
 		url: 'https://www.windfakten.at/wind-energie/wie-funktioniert-ein-windrad'
 	},
 	{
@@ -47,8 +47,8 @@ export const sources: Source[] = [
 	},
 	{
 		id: 9,
-		citation: 'IG Windkraft, „Windkraft in Österreich: Zahlen und Statistiken".',
-		url: 'https://www.igwindkraft.at/aktuelles/windkraft-in-oesterreich'
+		citation: 'Windkraft Österreich, „Windkraft in Österreich: Zahlen und Statistiken", Jänner 2026.',
+		url: 'https://www.wind.at/aktuelles/windkraft-in-oesterreich'
 	},
 	{
 		id: 10,
