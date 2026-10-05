@@ -249,10 +249,13 @@
 			// Single vector-tile source for all 16 exclusion band layers.
 			// Uses tiles: directly so activateBandLayers() only needs to re-add
 			// the *layers* (not the source) — avoids the remove-source race condition.
+			// minzoom 4 statt 5 — siehe POSSIBLE_ZONES_MIN_ZOOM: die Karte darf auf
+			// dem Telefon bis 4,5 herauszoomen, und unterhalb der Quell-Minzoomstufe
+			// zeichnet MapLibre kommentarlos nichts.
 			map.addSource(EXCLUSION_BANDS_SOURCE, {
 				type: "vector",
 				tiles: [EXCLUSION_BANDS_TILES],
-				minzoom: 5,
+				minzoom: 4,
 				maxzoom: 14,
 			});
 		}
