@@ -26,10 +26,11 @@ export const LEGEND_CODES: LegendCode[] = [
 	{ code: 6,  name: 'Eisenbahn (150 m)',      group: 'exclusion', color: '#eab3088c', description: 'Pufferzone von 150 m entlang Eisenbahnstrecken' },
 	{ code: 7,  name: 'Hangneigung >15°',       group: 'terrain',   color: '#a8a29e9b', description: 'Gelände mit einer Neigung von mehr als 15 Grad' },
 	{ code: 8,  name: 'Seehöhe >2500 m',        group: 'terrain',   color: '#d6d3d191', description: 'Flächen über 2.500 m Seehöhe (topografische Grenze)' },
-	// Codes 9 (Wichtige Objekte) und 10 (Freileitung 380/400 kV) sind mit der
-	// Lieferung widmung_v2 stillgelegt: beide Kriterien gibt es nicht mehr,
-	// `POWER_LINES` steht im Manifest auf "kein Ausschlusskriterium". Die Nummern
-	// bleiben unbesetzt, damit ältere Kacheln und Screenshots lesbar bleiben.
+	// Code 9 (Wichtige Objekte) ist mit widmung_v2 stillgelegt; die Nummer bleibt
+	// unbesetzt, damit ältere Kacheln und Screenshots lesbar bleiben.
+	// Code 10 war in widmung_v1 "Freileitung 380/400 kV", lag in widmung_v2 brach
+	// und ist seit clean-45 wieder belegt — dieselbe Sache, niedrigere Schwelle.
+	{ code: 10, name: 'Freileitung (ab 110 kV)', group: 'exclusion', color: '#9632dc96', description: 'Abstand zur Leitungsachse von Hochspannungsfreileitungen: 116 m bei 110 kV, 136 m ab 220 kV' },
 	{ code: 11, name: 'Wind zu gering',          group: 'wind',      color: '#94a3b896', description: 'Windleistungsdichte unter 150 W/m² (@130 m) oder keine Winddaten verfügbar' },
 	{ code: 12, name: 'Allgemeine Gebäude (25 m)', group: 'exclusion', color: '#fdba7482', description: 'Abstand von 25 m um sonstige Gebäude und Einzellagen — entspricht praktisch dem Gebäudefußabdruck' },
 	{ code: 13, name: 'Gebäude an Seilbahnen (50 m)', group: 'exclusion', color: '#c2410c8c', description: 'Abstand von 50 m um Gebäude an Seilbahnlinien, etwa Stationsgebäude' },

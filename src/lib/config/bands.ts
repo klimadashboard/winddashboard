@@ -1,7 +1,7 @@
 // ⚠️ Erzeugt von scripts/generate_bands_config.py — nicht von Hand ändern.
 // Quelle: scripts/raster/abschichtung.bands.json
-// Bandschema: clean-44-ohne-wichtige-objekte-aug-2026
-// Manifest erzeugt: 2026-09-09T12:39:21Z
+// Bandschema: clean-45-freileitungen-110kv-sep-2026
+// Manifest erzeugt: 2026-09-30T21:10:15Z
 //
 // Layer sind alle Bänder mit `dashboard_layer: true` und `rolle: "bedingung"`,
 // plus `exclusion_nature` (widmung_v2 blendet die einzelnen Schutzgebietsbänder
@@ -180,6 +180,15 @@ export const BAND_DEFS: BandDef[] = [
 			"Amtliche Schutzgebiete, also Nationalparks, Naturschutzgebiete, Europaschutzgebiete nach Natura 2000 und Ramsar-Gebiete, sowie Schutzgebiete aus OpenStreetMap, vereinigt und auf das Staatsgebiet zugeschnitten. Ohne Abstandspuffer.",
 		color: "#00b40096",
 		group: "nature",
+	},
+	{
+		band: 45,
+		slug: "power_lines_110kv_plus",
+		label: "Hochspannungsfreileitungen (136 m)",
+		description:
+			"Abstand beiderseits der Achse von Hochspannungsfreileitungen ab 110 kV (110, 220, 380 und 400 kV) aus OpenStreetMap, je nach Spannung: 116 m bei 110 kV, 136 m bei 220, 380 und 400 kV. Der Abstand ergibt sich für die Referenzanlage Vestas V172 aus dem halben Rotordurchmesser von 86 m und dem Sicherheitsabstand zum äußersten Leiter (20 m bei 110 kV, 30 m bei 220 und 380 kV), zusammen 106 m bzw. 116 m, zuzüglich des Versatzes von der Mastachse zum äußersten Leiter (10 m bzw. 20 m). Die 116 m bzw. 136 m ab der Leitungsachse stellen so mindestens 106 m bzw. 116 m zum Leiter sicher. Leitungen mit mehreren Spannungsebenen erhalten den größeren Puffer. Dieses Band wird an der Vektorgeometrie der Leitung gepuffert und mit allen berührten Zellen gerastert, sodass jede Zelle innerhalb des Nennabstands ausgeschlossen ist; der Rand überschießt um höchstens eine Zelle. Untergrenze ohne Kranarbeitsfläche und ohne Nachweis gegen nachlaufinduzierte Schwingungen. Mittelspannung unter 110 kV erzeugt keine Zone, ebenso wenig Erdkabel.",
+		color: "#9632dc96",
+		group: "human",
 	},
 ];
 
