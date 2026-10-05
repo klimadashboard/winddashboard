@@ -40,5 +40,8 @@ export const AUSTRIA_ZOOM = 6.8;
 export const POSSIBLE_ZONES_TILES =
 	`${TILE_SERVER_BASE}/data/windkraft_possible_zones/{z}/{x}/{y}.pbf`;
 export const POSSIBLE_ZONES_LAYER = 'possible_zones';
-export const POSSIBLE_ZONES_MIN_ZOOM = 5;
+// 4, nicht 5: die Karte lässt auf schmalen Fenstern minZoom 4.5 zu. Mit einer
+// Quelle ab Zoom 5 war der Bereich 4,5–5 eine tote Zone — die Potenzialflächen
+// fehlten dort vollständig, ohne Fehlermeldung.
+export const POSSIBLE_ZONES_MIN_ZOOM = 4;
 export const POSSIBLE_ZONES_MAX_ZOOM = 14;

@@ -36,7 +36,12 @@ OUT = os.path.join(REPO, "scripts/raster/windkraft_exclusion_bands.mbtiles")
 
 TIPPECANOE_OPTS = [
     "--force",
-    "--minimum-zoom=5",
+    # Zoom 4, nicht 5: die Karte erlaubt auf schmalen Fenstern minZoom 4.5
+    # (Map.svelte), damit Österreich auf ein Telefon passt. Lagen die Kacheln
+    # erst ab 5, verschwanden zwischen 4,5 und 5 sämtliche Flächen spurlos —
+    # MapLibre zoomt unterhalb der Quell-Minzoomstufe nicht hoch und meldet
+    # auch keinen Fehler. Zoom 4 sind nur eine Handvoll Kacheln.
+    "--minimum-zoom=4",
     "--maximum-zoom=14",
     "--no-tile-size-limit",
     "--simplification=4",
