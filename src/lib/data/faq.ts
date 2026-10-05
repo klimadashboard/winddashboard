@@ -59,7 +59,7 @@ export const infoCards: InfoCard[] = [
 			"Windenergie ist außerdem sehr effizient: Ein Windrad erzeugt je nach Standort in 2,5 bis 11 Monaten die Energie, die es zur Herstellung braucht. [4]",
 		],
 		graphic: "rotor-growth",
-		graphicCaption: "Quelle: IG Windkraft [5]",
+		graphicCaption: "Quelle: Windkraft Österreich [5]",
 	},
 	{
 		id: "land-use",
@@ -114,7 +114,7 @@ export const faqCategories: FaqCategory[] = [
 				],
 				graphic: "bird-population",
 				graphicCaption:
-					"Windkraft: IG Windkraft [9] · Brütende Seeadler: WWF [10] · Brütende Kaiseradler: BirdLife [11] · Großtrappen: Nationalpark Donau-Auen [12] · Brütende Rotmilane: Nationalpark Donau-Auen [13] · Brütende Sakerfalken: ORF NÖ [14]",
+					"Windkraft: Windkraft Österreich [9] · Brütende Seeadler: WWF [10] · Brütende Kaiseradler: BirdLife [11] · Großtrappen: Nationalpark Donau-Auen [12] · Brütende Rotmilane: Nationalpark Donau-Auen [13] · Brütende Sakerfalken: ORF NÖ [14]",
 			},
 			{
 				id: 3,
