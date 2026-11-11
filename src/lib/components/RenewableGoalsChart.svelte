@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
+	import { fmtNumber } from "$lib/format";
 
 	interface DataPoint {
 		year: number;
@@ -74,16 +75,34 @@
 
 	onMount(async () => {
 		try {
+			// `Jahresproduktion` ist eine gleitende Zwölfmonatssumme, täglich
+			// fortgeschrieben. Am 31.12. (in der Reihe: 30.12. 23:00 UTC = 31.12.
+			// 00:00 MEZ) entspricht sie genau dem Kalenderjahr — also holen wir
+			// gezielt diesen einen Stichtag je Jahr statt der ganzen Tagesreihe.
+			//
+			// Vorher lief die Abfrage aufsteigend sortiert mit `limit=3000`. Die
+			// Reihe beginnt 2014-12-31 und umfasst inzwischen 13.519 Tage, der
+			// 3.000. Tag ist der 18.3.2023 — die Grenze schnitt also stillschweigend
+			// alles ab 2023 weg. Das Diagramm endete bei 7,0 TWh (2023), während
+			// Österreich 2025 tatsächlich 8,5 TWh erzeugt hat (gemeldet am
+			// 11.11.2026). Der Stichtagsfilter macht die Abfrage zugleich winzig:
+			// elf Zeilen statt 850 kB.
 			const base = "https://base.klimadashboard.org";
 			const prodRes = await fetch(
-				`${base}/items/ee_produktion?filter[Country][_eq]=AT&filter[Type][_contains]=windkraft&filter[Jahresproduktion][_nnull]=true&fields=DateTime,Jahresproduktion&sort=DateTime&limit=3000`,
+				`${base}/items/ee_produktion?filter[Country][_eq]=AT&filter[Type][_contains]=windkraft&filter[Jahresproduktion][_nnull]=true&filter[month(DateTime)][_eq]=12&filter[day(DateTime)][_eq]=30&fields=DateTime,Jahresproduktion&sort=DateTime&limit=200`,
 			);
 			const prodJson = await prodRes.json();
 
-			// Keep latest Jahresproduktion per calendar year
+			// Ein Wert je Kalenderjahr. Der Stichtag kommt je Jahr mehrfach vor
+			// (mehrere `Type`-Werte enthalten "windkraft"), die Werte sind dabei
+			// identisch — die Map entdoppelt. Das laufende Jahr kann gar nicht
+			// vorkommen, solange sein 31.12. nicht erreicht ist; der Vergleich
+			// bleibt als Schutz gegen vorausdatierte Zeilen stehen.
+			const currentYear = new Date().getFullYear();
 			const byYear = new Map<number, number>();
 			for (const item of prodJson.data ?? []) {
 				const yr = new Date(item.DateTime).getFullYear();
+				if (yr >= currentYear) continue;
 				const val = parseFloat(item.Jahresproduktion);
 				if (!isNaN(val)) byYear.set(yr, val);
 			}
@@ -200,7 +219,7 @@
 					text-anchor="end"
 					font-size="7.5"
 					fill="#2563eb"
-					font-weight="600">{GOAL_YEAR}: {GOAL_TWH} TWh</text
+					font-weight="600">{GOAL_YEAR}: {fmtNumber(GOAL_TWH, 1)} TWh</text
 				>
 			{/if}
 
@@ -224,13 +243,13 @@
 		</svg>
 		<p class="text-[9px] text-slate-400 mt-0.5">
 			Jahresproduktion Windenergie AT in TWh · Quelle: E-Control. Ausbauziel
-			{GOAL_YEAR}: {GOAL_TWH}&nbsp;TWh laut
+			{GOAL_YEAR}: {fmtNumber(GOAL_TWH, 1)}&nbsp;TWh laut
 			<a
 				href="https://www.unsereenergiewelt2040.at/energie/die-wichtigsten-zahlen-im-ueberblick"
 				target="_blank"
 				rel="noopener"
 				class="underline hover:text-slate-600"
-			>„Energiewelt 2040"</a
+			>„Energiewelt 2040“</a
 			>, Österreichische Energieagentur.
 		</p>
 	{/if}

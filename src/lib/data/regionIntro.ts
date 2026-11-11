@@ -1,4 +1,5 @@
 import type { Region, ZoneStats, OfficialZoneType } from '$lib/stores/windStore';
+import { fmtNumber } from '$lib/format';
 
 export interface RegionIntroContent {
 	paragraphs: string[];
@@ -36,14 +37,20 @@ const DETAIL_BULLETS = [
 export const NÖ_TURBINE_LEGACY_NOTE =
 	'Der Mindestabstand von 1,2 km für Windräder gilt in Niederösterreich erst seit 2004. Daher können auf dieser Karte Windräder teilweise außerhalb der ausgewiesenen Zonen oder Potenzialflächen liegen, sofern sie bereits vor 2004 entsprechend gewidmet oder genehmigt wurden.';
 
+// Bis zur Lieferung clean-44-ohne-lsg stand hier, die Zonierung werde "aktuell
+// überarbeitet". Das stimmt seit dem 13.10.2026 nicht mehr: das SAPRO
+// Windenergie 2026 (Stmk. LGBl. Nr. 87/2026) ist in Kraft, und die Karte zeigt
+// seine Zonen. Die Ausschlusszonen desselben Programms liegen uns nicht vor —
+// das gehört dazugesagt, sonst liest sich eine Gemeinde ohne eingezeichnete
+// Zone wie eine Gemeinde ohne Festlegung.
 const STEIERMARK_REVISION_NOTE =
-	'Aktuell werden die Windkraft-Zonen in der Steiermark von der Landesregierung überarbeitet – es werden voraussichtlich sowohl neue Vorrang- und Eignungszonen als auch neue Ausschlusszonen hinzukommen.';
+	'Grundlage ist das Sachprogramm Windenergie 2026 des Landes Steiermark (LGBl. Nr. 87/2026), in Kraft seit 13. Oktober 2026. Die Karte zeigt die darin festgelegten Vorrang- und Eignungszonen; die Ausschlusszonen des Programms liegen uns nicht als Datensatz vor und sind hier nicht eingezeichnet.';
 
 const KÄRNTEN_LEGAL_NOTE =
 	'Kärnten hat aktuell weniger als 0,1 % der Landesfläche als Beschleunigungsgebiete ausgewiesen; über 99,9 % sind Ausschlusszonen. Weil die ausgewiesenen Beschleunigungsgebiete die gesetzlichen Ausbauziele nicht erreichen, sind Windräder jedoch grundsätzlich auch außerhalb dieser Zonen möglich (§ 4a UVP-G).';
 
 function fmt(n: number): string {
-	return n.toLocaleString('de-AT');
+	return fmtNumber(n);
 }
 
 // Bestandsanlagen werden je Gemeinde ausgewiesen, nicht je Potenzialfläche.
@@ -118,17 +125,24 @@ function introNÖ(name: string, s: ZoneStats): RegionIntroContent {
 }
 
 function introPotentialOnly(name: string, hasPotential: boolean, turbineCount = 0): RegionIntroContent {
+	// Potenzialaussage und Überleitung zur Detailprüfung bewusst als zwei
+	// Absätze: `withTurbines` schiebt den Bestandssatz vor den letzten Absatz.
+	// Stünden beide in einem, landete "In X sind derzeit n Windräder in
+	// Betrieb." vor der Einleitung — zwei Sätze hintereinander, die beide mit
+	// "In X" beginnen.
 	if (!hasPotential) {
 		return withTurbines({
 			paragraphs: [
-				`In ${name} besteht laut Potenzialkarte grundsätzlich wenig Potenzial für Windkraft. Ob hier nicht doch ein Windrad errichtet werden kann, hängt jedoch von der Detailprüfung ab:`,
+				`In ${name} besteht laut Potenzialkarte grundsätzlich wenig Potenzial für Windkraft.`,
+				'Ob hier dennoch ein Windrad errichtet werden kann, hängt von der Detailprüfung ab:',
 			],
 			bullets: DETAIL_BULLETS,
 		}, name, turbineCount);
 	}
 	return withTurbines({
 		paragraphs: [
-			`In ${name} besteht laut Potenzialkarte grundsätzlich Potenzial für Windkraft. Ob hier tatsächlich ein Windrad errichtet werden kann, hängt jedoch von der Detailprüfung ab:`,
+			`In ${name} besteht laut Potenzialkarte grundsätzlich Potenzial für Windkraft.`,
+			'Ob hier tatsächlich ein Windrad errichtet werden kann, hängt von der Detailprüfung ab:',
 		],
 		bullets: DETAIL_BULLETS,
 	}, name, turbineCount);
@@ -174,7 +188,7 @@ function introSteiermark(name: string, s: ZoneStats): RegionIntroContent {
 	if (zoneType === 'vorrang') {
 		return {
 			paragraphs: [
-				`In ${name} befindet sich eine sogenannte „Vorrangzone". Diese Flächen sind vom Land Steiermark vorrangig für die Errichtung von Windkraftanlagen vorgesehen. Das bedeutet, dass diese Zone als besonders geeignet gilt und daher vorrangig für die Entwicklung von Windparks vorgesehen ist.`,
+				`In ${name} befindet sich eine sogenannte „Vorrangzone“. Diese Flächen sind vom Land Steiermark vorrangig für die Errichtung von Windkraftanlagen vorgesehen. Das bedeutet, dass diese Zone als besonders geeignet gilt und daher vorrangig für die Entwicklung von Windparks vorgesehen ist.`,
 			],
 			afterBullets: [STEIERMARK_REVISION_NOTE],
 		};
@@ -182,7 +196,7 @@ function introSteiermark(name: string, s: ZoneStats): RegionIntroContent {
 	if (zoneType === 'eignung') {
 		return {
 			paragraphs: [
-				`In ${name} befindet sich eine sogenannte „Eignungszone". Das bedeutet, dass das Land Steiermark diese Flächen grundsätzlich für Windkraft vorgesehen hat.`,
+				`In ${name} befindet sich eine sogenannte „Eignungszone“. Das bedeutet, dass das Land Steiermark diese Flächen grundsätzlich für Windkraft vorgesehen hat.`,
 			],
 			afterBullets: [STEIERMARK_REVISION_NOTE],
 		};
@@ -224,7 +238,7 @@ function introSteiermark(name: string, s: ZoneStats): RegionIntroContent {
 	if (!hasPotential) {
 		return {
 			paragraphs: [
-				`In ${name} befindet sich keine vom Land vorgesehene Fläche für den Windkraftausbau (sogenannte „Vorrang- oder Eignungszonen"). Das Land schließt den Bau für Windräder hier aber auch nicht aus.`,
+				`In ${name} befindet sich keine vom Land vorgesehene Fläche für den Windkraftausbau (sogenannte „Vorrang- oder Eignungszonen“). Das Land schließt den Bau von Windrädern hier aber auch nicht aus.`,
 				detailIntro,
 			],
 			bullets: DETAIL_BULLETS,
@@ -233,7 +247,7 @@ function introSteiermark(name: string, s: ZoneStats): RegionIntroContent {
 	}
 	return {
 		paragraphs: [
-			`In ${name} befindet sich keine vom Land vorgesehene Fläche für den Windkraftausbau (sogenannte „Vorrang- oder Eignungszonen"). Das Land schließt den Bau für Windräder hier aber auch nicht aus. Laut Potenzialkarte besteht in ${name} grundsätzlich Potenzial für Windkraft.`,
+			`In ${name} befindet sich keine vom Land vorgesehene Fläche für den Windkraftausbau (sogenannte „Vorrang- oder Eignungszonen“). Das Land schließt den Bau von Windrädern hier aber auch nicht aus. Laut Potenzialkarte besteht in ${name} grundsätzlich Potenzial für Windkraft.`,
 			detailIntro,
 		],
 		bullets: DETAIL_BULLETS,
@@ -241,44 +255,61 @@ function introSteiermark(name: string, s: ZoneStats): RegionIntroContent {
 	};
 }
 
+/**
+ * Kärnten kennt genau zwei Zustände: Beschleunigungsgebiet oder Ausschlusszone.
+ *
+ * Das Land veröffentlicht aber nur die vier Beschleunigungsgebiete als Datensatz
+ * (siehe scripts/add_ktn_bgld_zoning.py — „no separate exclusion layer
+ * published"). Für die übrigen 127 der 132 Gemeinden steht in der Tabelle
+ * deshalb gar keine Zone, und `officialZoneType` ist `null` — nicht etwa
+ * `'ausschluss'`. Die beiden Ausschluss-Zweige unten liefen dadurch ins Leere,
+ * und die Gemeinden fielen auf `genericDefault` durch: „In Villach gibt es 3
+ * potenzielle Windeignungsflächen mit insgesamt 1.025 Hektar." Das verschweigt
+ * genau die Aussage, auf die es in Kärnten ankommt — dass das Land diese Fläche
+ * für Windkraft ausgeschlossen hat.
+ *
+ * Keine ausgewiesene Zone heißt in Kärnten also: Ausschlusszone. Genau das sagt
+ * auch KÄRNTEN_LEGAL_NOTE mit den über 99,9 % der Landesfläche.
+ *
+ * Gesteuert wird über `officialZoneCount`, nicht über `officialZoneType`: der
+ * Typ ist auch dann `null`, wenn eine Zone zwar existiert, aber ohne
+ * Typangabe geliefert wird (so wie in der Steiermark). Sonst bekäme eine
+ * Gemeinde mit Zone den Ausschlusstext.
+ */
 function introKärnten(name: string, s: ZoneStats): RegionIntroContent {
 	const hasPotential = s.count > 0;
 	const hasTurbines = s.turbineCount > 0;
 	const zoneType: OfficialZoneType = s.officialZoneType;
+	const hasZone = s.officialZoneCount > 0 && zoneType !== 'ausschluss';
 
-	if (zoneType === 'positive' && hasTurbines) {
+	if (hasZone && hasTurbines) {
 		return withTurbines({
 			paragraphs: [
-				`In ${name} befindet sich eine der insgesamt 4 „Beschleunigungsgebiete" für Windkraft in Kärnten, in dem bereits Windräder errichtet wurden. Bestehende Anlagen könnten in Zukunft modernisiert und durch leistungsstärkere Windräder ersetzt oder neue, moderne Anlagen dazugebaut werden.`,
+				`In ${name} befindet sich eines der insgesamt 4 „Beschleunigungsgebiete“ für Windkraft in Kärnten, in dem bereits Windräder errichtet wurden. Bestehende Anlagen könnten in Zukunft modernisiert und durch leistungsstärkere Windräder ersetzt oder neue, moderne Anlagen dazugebaut werden.`,
 			],
 			afterBullets: [KÄRNTEN_LEGAL_NOTE],
 		}, name, s.turbineCount);
 	}
-	if (zoneType === 'positive') {
+	if (hasZone) {
 		return {
 			paragraphs: [
-				`In ${name} befindet sich eine der insgesamt 4 „Beschleunigungsgebiete" für Windkraft in Kärnten. Diese machen weniger als 0,1 % der Landesfläche aus. 99,9 % der Kärntner Landesfläche sind Wind-Ausschlusszonen. Die Beschleunigungsgebiete sind vom Land Kärnten für die Errichtung von Windkraftanlagen vorgesehen. Das bedeutet, dass diese Zone als besonders geeignet gilt und daher für die Entwicklung von Windrädern vorgesehen ist.`,
+				`In ${name} befindet sich eines der insgesamt 4 „Beschleunigungsgebiete“ für Windkraft in Kärnten. Diese machen weniger als 0,1 % der Landesfläche aus. 99,9 % der Kärntner Landesfläche sind Wind-Ausschlusszonen.`,
+				'Die Beschleunigungsgebiete sind vom Land Kärnten für die Errichtung von Windkraftanlagen vorgesehen. Das bedeutet, dass diese Zone als besonders geeignet gilt und daher für die Entwicklung von Windrädern vorgesehen ist.',
 			],
 		};
 	}
-	if (zoneType === 'ausschluss' && !hasPotential) {
-		return {
-			paragraphs: [
-				`${name} befindet sich derzeit in einer Ausschlusszone. Das bedeutet, dass das Land Kärnten diese Flächen für Windkraft ausgeschlossen hat. Falls das Land Kärnten die Windkraft-Zonierung in den nächsten Jahren überarbeitet, könnte sich dies jedoch ändern.`,
-			],
-			afterBullets: [KÄRNTEN_LEGAL_NOTE],
-		};
-	}
-	if (zoneType === 'ausschluss') {
-		return {
-			paragraphs: [
-				`${name} befindet sich derzeit in einer Ausschlusszone. Das bedeutet, dass das Land Kärnten diese Flächen für Windkraft ausgeschlossen hat. Falls das Land Kärnten die Windkraft-Zonierung in den nächsten Jahren überarbeitet, könnte sich dies jedoch ändern. Laut Potenzialkarte besteht in ${name} grundsätzlich Potenzial für Windkraft.`,
-			],
-			afterBullets: [KÄRNTEN_LEGAL_NOTE],
-		};
-	}
-	// No zone data yet — fall through to generic default
-	return genericDefault(name, s);
+
+	// Kein Beschleunigungsgebiet ⇒ Ausschlusszone (siehe Modulkommentar oben).
+	const ausschluss =
+		`${name} befindet sich derzeit in einer Ausschlusszone. Das bedeutet, dass das Land Kärnten diese Flächen für Windkraft ausgeschlossen hat. Falls das Land Kärnten die Windkraft-Zonierung in den nächsten Jahren überarbeitet, könnte sich dies jedoch ändern.`;
+	return withTurbines({
+		paragraphs: [
+			hasPotential
+				? `${ausschluss} Laut Potenzialkarte besteht in ${name} grundsätzlich Potenzial für Windkraft.`
+				: ausschluss,
+		],
+		afterBullets: [KÄRNTEN_LEGAL_NOTE],
+	}, name, s.turbineCount);
 }
 
 function introBurgenland(name: string, s: ZoneStats): RegionIntroContent {
@@ -328,7 +359,7 @@ function introSalzburg(name: string, s: ZoneStats): RegionIntroContent {
 	if (hasZone) {
 		return withTurbines({
 			paragraphs: [
-				`In ${name} befindet sich eine sogenannte Windkraft-„Vorrangzone". Die Errichtung von Windrädern soll gemäß der Raumordnung des Landes Salzburg bevorzugt in dieser Fläche stattfinden.`,
+				`In ${name} befindet sich eine sogenannte Windkraft-„Vorrangzone“. Die Errichtung von Windrädern soll gemäß der Raumordnung des Landes Salzburg bevorzugt auf dieser Fläche stattfinden.`,
 			],
 		}, name, s.turbineCount);
 	}
@@ -336,14 +367,16 @@ function introSalzburg(name: string, s: ZoneStats): RegionIntroContent {
 	if (!hasPotential) {
 		return withTurbines({
 			paragraphs: [
-				`In ${name} befindet sich aktuell keine Windkraft-„Vorrangzone". Das bedeutet, dass das Land Salzburg diese Flächen weder aktiv eingeplant, noch kategorisch ausgeschlossen hat. ${detailIntro}`,
+				`In ${name} befindet sich aktuell keine Windkraft-„Vorrangzone“. Das bedeutet, dass das Land Salzburg diese Flächen weder aktiv eingeplant noch kategorisch ausgeschlossen hat.`,
+				detailIntro,
 			],
 			bullets: DETAIL_BULLETS,
 		}, name, s.turbineCount);
 	}
 	return withTurbines({
 		paragraphs: [
-			`In ${name} befindet sich aktuell keine Windkraft-„Vorrangzone". Das bedeutet, dass das Land Salzburg diese Flächen weder aktiv eingeplant, noch kategorisch ausgeschlossen hat. Laut Potenzialkarte besteht in ${name} grundsätzlich Potenzial für Windkraft. ${detailIntro}`,
+			`In ${name} befindet sich aktuell keine Windkraft-„Vorrangzone“. Das bedeutet, dass das Land Salzburg diese Flächen weder aktiv eingeplant noch kategorisch ausgeschlossen hat. Laut Potenzialkarte besteht in ${name} grundsätzlich Potenzial für Windkraft.`,
+			detailIntro,
 		],
 		bullets: DETAIL_BULLETS,
 	}, name, s.turbineCount);
@@ -359,8 +392,13 @@ function genericDefault(name: string, s: ZoneStats): RegionIntroContent {
 			],
 		};
 	}
+	// Einzahl, wo es nur eine Fläche gibt (betrifft rund 20 Gemeinden): "1
+	// potenzielle Windeignungsflächen mit insgesamt 111 Hektar" las sich wie
+	// ein Platzhalter, der nie ausgefüllt wurde.
 	const parts: string[] = [
-		`In ${name} gibt es ${fmt(s.count)} potenzielle Windeignungsflächen mit insgesamt ${fmt(s.totalAreaHa)} Hektar.`,
+		s.count === 1
+			? `In ${name} gibt es eine potenzielle Windeignungsfläche mit ${fmt(s.totalAreaHa)} Hektar.`
+			: `In ${name} gibt es ${fmt(s.count)} potenzielle Windeignungsflächen mit insgesamt ${fmt(s.totalAreaHa)} Hektar.`,
 	];
 	if (s.turbineCount > 0) {
 		parts.push(`Bereits ${fmt(s.turbineCount)} ${s.turbineCount === 1 ? 'Windrad ist' : 'Windräder sind'} hier in Betrieb.`);

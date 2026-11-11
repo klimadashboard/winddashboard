@@ -45,3 +45,14 @@ export const POSSIBLE_ZONES_LAYER = 'possible_zones';
 // fehlten dort vollständig, ohne Fehlermeldung.
 export const POSSIBLE_ZONES_MIN_ZOOM = 4;
 export const POSSIBLE_ZONES_MAX_ZOOM = 14;
+
+// Bestandsanlagen ebenfalls als Vektorkacheln (scripts/build_turbine_tiles.py).
+// Hier geht es nicht um die Dateigröße — die Punkte sind nur 260 kB —, sondern
+// um die Lizenz: die Standorte dürfen gezeigt, der Datensatz aber nicht
+// weitergegeben werden. Als Datei unter static/data/ lag er im öffentlichen
+// Repository und ging bei jedem Aufruf am Stück an den Browser; als Kacheln
+// bekommt der Browser nur den sichtbaren Ausschnitt.
+export const TURBINE_TILES = `${TILE_SERVER_BASE}/data/windkraft_turbines/{z}/{x}/{y}.pbf`;
+export const TURBINE_LAYER = 'existing_turbines';
+export const TURBINE_MIN_ZOOM = 4;
+export const TURBINE_MAX_ZOOM = 14;

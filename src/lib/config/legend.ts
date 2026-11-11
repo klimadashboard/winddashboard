@@ -18,7 +18,7 @@ export interface LegendCode {
 //   Exclusion → semantic: green = nature, orange/red = infrastructure & safety
 export const LEGEND_CODES: LegendCode[] = [
 	{ code: 0,  name: 'Außerhalb',             group: 'none',      color: '#ffffff00', description: 'Außerhalb Österreichs' },
-	{ code: 1,  name: 'Schutzgebiet',           group: 'exclusion', color: '#4ade8096', description: 'Nationalpark, Naturschutzgebiet, Natura 2000 oder Ramsar-Gebiet' },
+	{ code: 1,  name: 'Schutzgebiet',           group: 'exclusion', color: '#4ade8096', description: 'Amtliches Schutzgebiet nach Naturschutzrecht: Nationalpark, Naturschutzgebiet, Natura 2000, Ramsar, geschützter Landschaftsteil, Naturdenkmal, Biotop oder Ruhegebiet. Ohne Landschaftsschutzgebiete' },
 	{ code: 2,  name: 'Siedlungsabstand',       group: 'exclusion', color: '#f9731696', description: 'Mindestabstand zu Wohngebäuden und Siedlungen (Niederösterreich 1.200 m, übrige Bundesländer 1.000 m)' },
 	{ code: 3,  name: 'Haus im Grünen',         group: 'exclusion', color: '#fb923c8c', description: 'Mindestabstand (750 m) zu Einzelgebäuden außerhalb von Siedlungen' },
 	{ code: 4,  name: 'Sperrzone',               group: 'exclusion', color: '#ef444496', description: 'Sperrzone rund um Flughäfen, Flugplätze und militärische Sperrbereiche' },

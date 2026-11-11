@@ -142,7 +142,7 @@
 						class="w-3 h-3 rounded-sm flex-shrink-0 inline-block"
 						style="background: #7c3aed; border: 1.5px dashed #6d28d9;"
 					></span>
-					Offiz. Eignungszone
+					Offiz. Windkraftzone
 				</span>
 				<!--
 					Bestandsfläche statt "Eignungszone": die Fläche ist keine Ausweisung
@@ -242,7 +242,7 @@
 								style="background:#7c3aed;border:1.5px dashed #6d28d9;display:inline-block;"
 							></span>
 							<span class="text-slate-600" style="font-size:11px;"
-								>Eignungszonen</span
+								>Windkraftzonen</span
 							>
 						</div>
 						<div class="flex items-center gap-2">

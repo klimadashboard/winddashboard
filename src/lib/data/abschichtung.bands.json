@@ -1,10 +1,10 @@
 {
-  "schema_version": "2.3.0",
-  "generated_at": "2026-09-30T21:10:15Z",
+  "schema_version": "2.5.0",
+  "generated_at": "2026-10-21T13:36:05Z",
   "pipeline": "widmung_v2",
-  "band_schema": "clean-45-freileitungen-110kv-sep-2026",
+  "band_schema": "clean-44-ohne-lsg-okt-2026",
   "raster_file": "abschichtung.tif",
-  "band_count": 45,
+  "band_count": 44,
   "raster": {
     "crs": "EPSG:31287",
     "width": 24001,
@@ -49,7 +49,7 @@
       "key": "haeuser_im_gruenen",
       "category": "Mensch",
       "label_de": "Häuser im Grünen",
-      "description_de": "Abstand um bewohnte Einzellagen außerhalb des Baulands."
+      "description_de": "Abstand um amtliche Sonderwidmungen außerhalb des Baulands und um bewohnte Streusiedlungen mit mindestens fünf Adressen."
     },
     {
       "key": "nichtwohn_huellen",
@@ -85,7 +85,7 @@
       "key": "militaer",
       "category": "Mensch",
       "label_de": "Militär",
-      "description_de": "Militärische Sperrgebiete."
+      "description_de": "Militärische Flächen aus OpenStreetMap: Übungsplätze, Kasernen, Militärflugplätze."
     },
     {
       "key": "luftfahrt",
@@ -103,7 +103,7 @@
       "key": "schutzgebiet",
       "category": "Natur",
       "label_de": "Schutzgebiete",
-      "description_de": "Amtliche und offene Schutzgebietsdaten, ohne Abstandspuffer."
+      "description_de": "Amtliche Schutzgebiete (ohne Landschaftsschutzgebiete; geschützte Landschaftsteile, Naturdenkmäler, Ruhegebiete) ohne Abstandspuffer; Schutzgebiete aus OpenStreetMap nur zur Information."
     },
     {
       "key": "summe",
@@ -147,13 +147,13 @@
       "key": "mensch",
       "category": "Mensch",
       "label_de": "Mensch",
-      "description_de": "Ausschlüsse wegen Nähe zu Menschen und ihrer Infrastruktur: Siedlungen, Häuser im Grünen, Gebäude, Verkehrswege, Hochspannungsfreileitungen, militärische Sperrgebiete und Luftfahrt. Quellen sind die Flächenwidmungen der neun Bundesländer, Kataster und Adressregister, OpenStreetMap sowie die niederösterreichischen Mindestabstandszonen."
+      "description_de": "Ausschlüsse wegen Nähe zu Menschen und ihrer Infrastruktur: Siedlungen, Häuser im Grünen, Gebäude, Verkehrswege, Hochspannungsfreileitungen, militärische Flächen und Luftfahrt. Quellen sind die Flächenwidmungen der neun Bundesländer, Kataster und Adressregister, OpenStreetMap sowie die niederösterreichischen Mindestabstandszonen."
     },
     {
       "key": "natur",
       "category": "Natur",
       "label_de": "Natur",
-      "description_de": "Amtliche Schutzgebiete und Schutzgebiete aus OpenStreetMap gelten als Ausschluss. In dieser Kategorie gibt es keine Abstandspuffer, Quellen und Zonen fallen daher zusammen."
+      "description_de": "Nur amtliche Schutzgebiete, die per Verordnung oder Bescheid festgelegt sind, gelten als Ausschluss. In dieser Kategorie gibt es keine Abstandspuffer, Quellen und Zonen fallen daher zusammen."
     },
     {
       "key": "geo",
@@ -419,7 +419,7 @@
       "index": 7,
       "name": "haeuser_im_gruenen",
       "label_de": "Häuser im Grünen",
-      "description_de": "Abstand von 750 m um bewohnte Einzellagen außerhalb des Baulands: Ferienhaus- und Tourismusgebiete, amtliche Widmungen für Hofstellen, Camping, Golf, Kleingärten und Auffüllungsgebiete sowie Streusiedlungen. In Niederösterreich gelten stattdessen die Mindestabstandszonen des Sektoralen Raumordnungsprogramms, die den Abstand bereits enthalten.",
+      "description_de": "Abstand von 750 m um amtliche Sonderwidmungen außerhalb des Baulands (die Liste der Widmungsarten unterscheidet sich je Bundesland) und um bewohnte Streusiedlungen mit mindestens fünf Adressen, erkannt aus Kataster und Adressregister. In Niederösterreich gelten stattdessen die amtlichen Mindestabstandszonen des Sektoralen Raumordnungsprogramms, die den Abstand bereits enthalten. Einzelne Häuser und Gruppen mit weniger als fünf Adressen erhalten nur den Gebäudeabstand von 25 m.",
       "category": "Mensch",
       "value_type": "binary",
       "clipped_to_austria": false,
@@ -722,8 +722,8 @@
     {
       "index": 18,
       "name": "military_restricted_area",
-      "label_de": "Militärisches Sperrgebiet",
-      "description_de": "Militärische Sperrgebiete aus OpenStreetMap, ohne zusätzlichen Abstand.",
+      "label_de": "Militärische Flächen",
+      "description_de": "Militärische Flächen aus OpenStreetMap, ohne zusätzlichen Abstand: Flächen mit landuse=military oder military=range, training_area, barracks, danger_area, airfield, naval_base oder base, also Truppen- und Schießübungsplätze, Kasernen, Militärflugplätze und Munitionslager.",
       "category": "Mensch",
       "value_type": "binary",
       "clipped_to_austria": false,
@@ -804,7 +804,7 @@
       "index": 21,
       "name": "nature_protection_areas",
       "label_de": "Amtliche Schutzgebiete",
-      "description_de": "Nationalparks, Naturschutzgebiete, Europaschutzgebiete nach Natura 2000 und Ramsar-Gebiete aus den amtlichen Datensätzen, ohne Abstand.",
+      "description_de": "Amtliche Schutzgebiete des Umweltbundesamts, die nach Naturschutzrecht der Länder per Verordnung oder Bescheid festgelegt sind, ohne Abstand: Nationalparks, Naturschutzgebiete, Europaschutzgebiete nach Natura 2000 (einschließlich FFH- und Vogelschutzgebiete), Ramsar-Gebiete, geschützte Landschaftsteile, Naturdenkmäler, geschützte Biotope, örtliche Schutzgebiete, Ruhegebiete, Ruhezonen und Pflanzenschutzgebiete. Landschaftsschutzgebiete sind kein Ausschlusskriterium.",
       "category": "Natur",
       "value_type": "binary",
       "clipped_to_austria": false,
@@ -829,36 +829,9 @@
     },
     {
       "index": 22,
-      "name": "osm_nature_protection_areas",
-      "label_de": "Schutzgebiete aus OpenStreetMap",
-      "description_de": "Als Schutzgebiet ausgewiesene Flächen aus OpenStreetMap, ohne Abstand.",
-      "category": "Natur",
-      "value_type": "binary",
-      "clipped_to_austria": false,
-      "is_total": false,
-      "color_rgba": [
-        255,
-        0,
-        0,
-        140
-      ],
-      "default_visible": false,
-      "rolle": "bedingung",
-      "puffer_m": null,
-      "puffer_hinweis": null,
-      "quelle": [
-        "osm_pbf"
-      ],
-      "abgeleitet_von": [],
-      "familie": "schutzgebiet",
-      "stufe": "zone",
-      "dashboard_layer": false
-    },
-    {
-      "index": 23,
       "name": "geography_slope_too_steep",
       "label_de": "Hangneigung zu steil",
-      "description_de": "Hangneigung über 15 Grad, ermittelt aus dem Geländemodell mit 25 m Auflösung.",
+      "description_de": "Hangneigung über 15 Grad. Das Geländemodell mit 25 m Auflösung wird in 4×4-Blöcken zu 100-m-Zellen gemittelt, die Neigung aus der 3×3-Nachbarschaft dieses Rasters (rund 300 m) berechnet.",
       "category": "Geografie",
       "value_type": "binary",
       "clipped_to_austria": false,
@@ -882,7 +855,7 @@
       "dashboard_layer": true
     },
     {
-      "index": 24,
+      "index": 23,
       "name": "geography_elevation_too_high",
       "label_de": "Seehöhe zu hoch",
       "description_de": "Seehöhe über 2.500 m, ermittelt aus dem Geländemodell mit 25 m Auflösung.",
@@ -909,7 +882,7 @@
       "dashboard_layer": true
     },
     {
-      "index": 25,
+      "index": 24,
       "name": "geography_wind_too_low",
       "label_de": "Wind zu gering",
       "description_de": "Windleistungsdichte in 150 m Höhe unter rund 160 W/m², aus dem Globalen Windatlas. Der Grenzwert entspricht 150 W/m² in 130 m Höhe, mit dem Windprofil auf 150 m hochgerechnet.",
@@ -936,7 +909,7 @@
       "dashboard_layer": true
     },
     {
-      "index": 26,
+      "index": 25,
       "name": "geography_water_bodies",
       "label_de": "Größere Gewässer",
       "description_de": "Seen, Stauseen und Flüsse aus OpenStreetMap, zusammenhängende Wasserflächen ab 1 ha.",
@@ -963,7 +936,7 @@
       "dashboard_layer": true
     },
     {
-      "index": 27,
+      "index": 26,
       "name": "exclusion_human",
       "label_de": "Ausschluss Mensch",
       "description_de": "Vereinigung aller Ausschlüsse der Kategorie Mensch: Siedlungsabstand, Häuser im Grünen, Gebäude und Anlagen, Verkehr, Hochspannungsfreileitungen, Militär und Luftfahrt; auf das Staatsgebiet zugeschnitten.",
@@ -1002,10 +975,10 @@
       "dashboard_layer": true
     },
     {
-      "index": 28,
+      "index": 27,
       "name": "exclusion_nature",
       "label_de": "Ausschluss Natur",
-      "description_de": "Amtliche Schutzgebiete, also Nationalparks, Naturschutzgebiete, Europaschutzgebiete nach Natura 2000 und Ramsar-Gebiete, sowie Schutzgebiete aus OpenStreetMap, vereinigt und auf das Staatsgebiet zugeschnitten. Ohne Abstandspuffer.",
+      "description_de": "Amtliche Schutzgebiete, die nach Naturschutzrecht der Länder per Verordnung oder Bescheid festgelegt sind, einschließlich Naturdenkmälern (Band 21), auf das Staatsgebiet zugeschnitten. Ohne Abstandspuffer.",
       "category": "Natur",
       "value_type": "binary",
       "clipped_to_austria": true,
@@ -1022,15 +995,14 @@
       "puffer_hinweis": null,
       "quelle": [],
       "abgeleitet_von": [
-        "nature_protection_areas",
-        "osm_nature_protection_areas"
+        "nature_protection_areas"
       ],
       "familie": "summe",
       "stufe": "summe_zonen",
       "dashboard_layer": true
     },
     {
-      "index": 29,
+      "index": 28,
       "name": "exclusion_geography",
       "label_de": "Ausschluss Geografie",
       "description_de": "Vereinigung der Kriterien Hangneigung, Seehöhe, Wind und Gewässer; auf das Staatsgebiet zugeschnitten.",
@@ -1060,7 +1032,7 @@
       "dashboard_layer": true
     },
     {
-      "index": 30,
+      "index": 29,
       "name": "all_exclusions",
       "label_de": "Ausschluss gesamt",
       "description_de": "Vereinigung der Ausschlüsse aus Mensch, Natur und Geografie: alles, was ausgeschlossen ist.",
@@ -1089,7 +1061,7 @@
       "dashboard_layer": true
     },
     {
-      "index": 31,
+      "index": 30,
       "name": "available_after_all_exclusions_raw",
       "label_de": "Verfügbare Fläche roh",
       "description_de": "Das Gegenstück zum Gesamtausschluss: die verbleibende Fläche ohne Mindestgrößen-Filter, einschließlich aller Splitter.",
@@ -1116,7 +1088,7 @@
       "dashboard_layer": false
     },
     {
-      "index": 32,
+      "index": 31,
       "name": "available_cleaned_min_10ha",
       "label_de": "Eignungsflächen",
       "description_de": "Das Endergebnis: die nach Abzug aller Ausschlüsse verbleibende Fläche, bereinigt um Splitter; nur zusammenhängende Flächen ab 10 ha.",
@@ -1143,7 +1115,7 @@
       "dashboard_layer": true
     },
     {
-      "index": 33,
+      "index": 32,
       "name": "available_blur_sigma_100m",
       "label_de": "Unschärfe schwach",
       "description_de": "Eignungsflächen, weichgezeichnet mit einer Standardabweichung von 100 m. Dient der flächigen Darstellung, nicht der Auswertung.",
@@ -1170,7 +1142,7 @@
       "dashboard_layer": false
     },
     {
-      "index": 34,
+      "index": 33,
       "name": "available_blur_sigma_200m",
       "label_de": "Unschärfe mittel",
       "description_de": "Eignungsflächen, weichgezeichnet mit einer Standardabweichung von 200 m. Dient der flächigen Darstellung, nicht der Auswertung.",
@@ -1197,7 +1169,7 @@
       "dashboard_layer": false
     },
     {
-      "index": 35,
+      "index": 34,
       "name": "available_blur_sigma_250m",
       "label_de": "Unschärfe stark",
       "description_de": "Eignungsflächen, weichgezeichnet mit einer Standardabweichung von 250 m. Dient der flächigen Darstellung, nicht der Auswertung.",
@@ -1224,7 +1196,7 @@
       "dashboard_layer": false
     },
     {
-      "index": 36,
+      "index": 35,
       "name": "available_blur_sigma_300m",
       "label_de": "Unschärfe sehr stark",
       "description_de": "Eignungsflächen, weichgezeichnet mit einer Standardabweichung von 300 m. Dient der flächigen Darstellung, nicht der Auswertung.",
@@ -1251,7 +1223,7 @@
       "dashboard_layer": false
     },
     {
-      "index": 37,
+      "index": 36,
       "name": "official_wind_zoning",
       "label_de": "Amtliche Windkraft-Zonen",
       "description_de": "Alle amtlichen Windkraft-Positivzonen der Länder in einem Layer: Zonierung Niederösterreich, Vorrang- und Eignungszonen Steiermark, Vorrangzonen Salzburg, Eignungszonen Burgenland, Beschleunigungszonen Kärnten. Dient dem Vergleich mit der Abschichtung und ist selbst kein Ausschluss.",
@@ -1283,7 +1255,7 @@
       "dashboard_layer": true
     },
     {
-      "index": 38,
+      "index": 37,
       "name": "wka_bestand_ausserhalb_zonen",
       "label_de": "WKA-Bestand außerhalb der Zonen",
       "description_de": "Bestehende Windräder aus dem gelieferten österreichischen Standortverzeichnis außerhalb der amtlichen Zonen, zu Park-Hüllen zusammengefasst: Anlagen mit weniger als 750 m Abstand bilden einen Park, dessen Hülle 200 m Rand erhält. Referenz, kein Ausschluss.",
@@ -1312,7 +1284,7 @@
       "dashboard_layer": true
     },
     {
-      "index": 39,
+      "index": 38,
       "name": "haeuser_im_gruenen_source",
       "label_de": "Quellen Häuser im Grünen",
       "description_de": "Vereinigung der drei Quellen Ferienhaus und Tourismus, amtliche Einzellagen-Widmung und Streusiedlungs-Hüllen, ohne Abstand und ohne Niederösterreich.",
@@ -1341,7 +1313,7 @@
       "dashboard_layer": false
     },
     {
-      "index": 40,
+      "index": 39,
       "name": "general_buildings_roh_osm",
       "label_de": "Sonstige Gebäude aus OpenStreetMap",
       "description_de": "Gebäude aus OpenStreetMap, die weiter als 100 m von einer Personenseilbahn entfernt liegen und von keiner der sechs abdeckenden Flächen erfasst werden: amtliches Wohnbauland, Ferienhaus- und Tourismusgebiete, amtliche Einzellagen-Widmung, niederösterreichische Mindestabstandszonen, Streusiedlungs-Hüllen und bewohnte Einzellagen. Rohdatensatz vor der Vereinigung mit den Kataster-Fußabdrücken.",
@@ -1368,7 +1340,7 @@
       "dashboard_layer": false
     },
     {
-      "index": 41,
+      "index": 40,
       "name": "general_buildings_roh_dkm",
       "label_de": "Sonstige Gebäude aus dem Kataster",
       "description_de": "Kataster-Fußabdrücke bewohnter Einzellagen mit weniger als fünf Adressen sowie die Hüllen innerhalb Niederösterreichs. Rohdatensatz vor der Vereinigung mit den Gebäuden aus OpenStreetMap.",
@@ -1396,7 +1368,7 @@
       "dashboard_layer": false
     },
     {
-      "index": 42,
+      "index": 41,
       "name": "sources_human",
       "label_de": "Quellen Mensch",
       "description_de": "Vereinigung aller ungepufferten Quellen der Kategorie Mensch: Wohnbauland, die vier Quellen der Häuser im Grünen, Nicht-Wohn-Hüllen, Seilbahn-Gebäude, sonstige Gebäude, Militärflächen und Flughafen-Areale, dazu Straßen, Bahnen und Personenseilbahnen als Linien ohne Abstand. Die An- und Abflugkorridore haben keine Objektquelle und fehlen deshalb.",
@@ -1432,10 +1404,10 @@
       "dashboard_layer": false
     },
     {
-      "index": 43,
+      "index": 42,
       "name": "sources_nature",
       "label_de": "Quellen Natur",
-      "description_de": "Vereinigung der amtlichen Schutzgebiete und der Schutzgebiete aus OpenStreetMap. In der Kategorie Natur gibt es keinen Abstand, das Band ist deshalb inhaltsgleich mit dem Ausschluss Natur und existiert nur, damit jede Kategorie denselben Aufbau hat.",
+      "description_de": "Die amtlichen Schutzgebiete (Band 21). In der Kategorie Natur gibt es keinen Abstand, das Band ist deshalb inhaltsgleich mit dem Ausschluss Natur und existiert nur, damit jede Kategorie denselben Aufbau hat.",
       "category": "Natur",
       "value_type": "binary",
       "clipped_to_austria": false,
@@ -1452,15 +1424,14 @@
       "puffer_hinweis": null,
       "quelle": [],
       "abgeleitet_von": [
-        "nature_protection_areas",
-        "osm_nature_protection_areas"
+        "nature_protection_areas"
       ],
       "familie": "summe",
       "stufe": "summe_quellen",
       "dashboard_layer": false
     },
     {
-      "index": 44,
+      "index": 43,
       "name": "sources_geography",
       "label_de": "Quellen Geografie",
       "description_de": "Vereinigung der Kriterien Hangneigung, Seehöhe, Wind und Gewässer. Es gibt keinen Abstand, das Band ist deshalb inhaltsgleich mit dem Ausschluss Geografie und existiert nur der Einheitlichkeit halber.",
@@ -1490,7 +1461,7 @@
       "dashboard_layer": false
     },
     {
-      "index": 45,
+      "index": 44,
       "name": "power_lines_110kv_plus",
       "label_de": "Hochspannungsfreileitungen",
       "description_de": "Abstand beiderseits der Achse von Hochspannungsfreileitungen ab 110 kV (110, 220, 380 und 400 kV) aus OpenStreetMap, je nach Spannung: 116 m bei 110 kV, 136 m bei 220, 380 und 400 kV. Der Abstand ergibt sich für die Referenzanlage Vestas V172 aus dem halben Rotordurchmesser von 86 m und dem Sicherheitsabstand zum äußersten Leiter (20 m bei 110 kV, 30 m bei 220 und 380 kV), zusammen 106 m bzw. 116 m, zuzüglich des Versatzes von der Mastachse zum äußersten Leiter (10 m bzw. 20 m). Die 116 m bzw. 136 m ab der Leitungsachse stellen so mindestens 106 m bzw. 116 m zum Leiter sicher. Leitungen mit mehreren Spannungsebenen erhalten den größeren Puffer. Dieses Band wird an der Vektorgeometrie der Leitung gepuffert und mit allen berührten Zellen gerastert, sodass jede Zelle innerhalb des Nennabstands ausgeschlossen ist; der Rand überschießt um höchstens eine Zelle. Untergrenze ohne Kranarbeitsfläche und ohne Nachweis gegen nachlaufinduzierte Schwingungen. Mittelspannung unter 110 kV erzeugt keine Zone, ebenso wenig Erdkabel.",
@@ -1520,7 +1491,7 @@
   "parameters": {
     "MIN_FRAGMENT_AREA_HA": "10.0",
     "PIPELINE": "widmung_v2",
-    "BAND_SCHEMA": "clean-45-freileitungen-110kv-sep-2026",
+    "BAND_SCHEMA": "clean-44-ohne-lsg-okt-2026",
     "SETTLEMENT_BUFFER_BY_BL": "{\"Burgenland\": 1000.0, \"Kärnten\": 1000.0, \"Niederösterreich\": 1200.0, \"Oberösterreich\": 1000.0, \"Salzburg\": 1000.0, \"Steiermark\": 1000.0, \"Tirol\": 1000.0, \"Vorarlberg\": 1000.0, \"Wien\": 1000.0}",
     "HIG_FAMILY_BUFFER_M": "750.0",
     "NONRESIDENTIAL_HULL_BUFFER_M": "25.0",
@@ -1532,7 +1503,7 @@
     "HIG_SOURCE": "amtliche Widmung + NÖ-SekROP-PDF + DKM-Hüllen + BEV-Adressregister (build_hig_sources.py); NÖ-Streusiedlung durch PDF ersetzt",
     "WICHTIGE_OBJEKTE": "in haeuser_im_gruenen (750 m); vorher eigenes 250-m-Band",
     "BEWOHNTE_EINZELLAGEN": "in general_buildings_source (25 m); vorher eigenes 25-m-Bandpaar",
-    "POWER_LINES": "Freileitungen >= 110 kV (OSM power=line, voltage 110/220/380/400 kV) als Band 45 power_lines_110kv_plus, Puffer ab Leitungsachse 116 m bei 110 kV (0,5*D V172 86 m + a_LTG 20 m + 10 m Achse-Leiter), 136 m bei 220/380/400 kV (86 m + a_LTG 30 m + 20 m); gemischte Leitungen: groesserer Puffer; Vektorpuffer der Liniengeometrie, gerastert mit all_touched (jede Zelle innerhalb des Nennabstands gesetzt, Rand hoechstens eine Zelle zu weit); Mittelspannung nicht enthalten",
+    "POWER_LINES": "Freileitungen >= 110 kV (OSM power=line, voltage 110/220/380/400 kV) als Band 44 power_lines_110kv_plus, Puffer ab Leitungsachse 116 m bei 110 kV (0,5*D V172 86 m + a_LTG 20 m + 10 m Achse-Leiter), 136 m bei 220/380/400 kV (86 m + a_LTG 30 m + 20 m); gemischte Leitungen: groesserer Puffer; Vektorpuffer der Liniengeometrie, gerastert mit all_touched (jede Zelle innerhalb des Nennabstands gesetzt, Rand hoechstens eine Zelle zu weit); Mittelspannung nicht enthalten",
     "AIRPORT_CORRIDOR_LENGTH_M": "5000.0",
     "AIRPORT_CORRIDOR_HALF_ANGLE_DEG": "15.0",
     "WIEN": "amtliche Widmung Stadt Wien (GENFLWIDMUNGOGD), kein Vollausschluss mehr",
@@ -1612,8 +1583,8 @@
       "rolle": "Referenzband official_wind_zoning"
     },
     "amtliche_windzonen_stmk": {
-      "pfad": "data/zonen/luca_zonen/Stmk.shp",
-      "stand": "unbekannt — zu klären (handdigitalisiert, nicht amtlich bezogen)",
+      "pfad": "data/zonen/stmk_sapro2026/SAPRO_Windenergie_zone.shp",
+      "stand": "SAPRO Windenergie 2026, LGBl. 87/2026, in Kraft 13.10.2026 (amtlich; Lizenz zu prüfen)",
       "rolle": "Referenzband official_wind_zoning"
     },
     "amtliche_windzonen_sbg": {
@@ -1677,19 +1648,19 @@
           9,
           12,
           13,
-          27,
+          26,
+          29,
           30,
           31,
           32,
           33,
           34,
           35,
-          36,
-          41
+          40
         ]
       },
       "severity": "methodisch",
-      "text_de": "Die DKM-Basis für Niederösterreich ist aus DXF-Linienwerk rekonstruiert, nicht amtlich flächig geliefert. Rund 29 % der rekonstruierten Polygone sind mehrdeutig klassifiziert oder ohne Klassifikation verworfen. Der Wirkungspfad läuft von der DKM-Rekonstruktion über Band 12 (dort werden die NÖ-Streusiedlungs-Hüllen eingebunden) durch dessen Pufferband 13 in die Gruppensummen 27/30/31/32 und weiter in die Unschärfebänder 33-36 - Band 32, die veröffentlichte Potenzialfläche, eingeschlossen.",
+      "text_de": "Die DKM-Basis für Niederösterreich ist aus DXF-Linienwerk rekonstruiert, nicht amtlich flächig geliefert. Rund 29 % der rekonstruierten Polygone sind mehrdeutig klassifiziert oder ohne Klassifikation verworfen. Der Wirkungspfad läuft von der DKM-Rekonstruktion über Band 12 (dort werden die NÖ-Streusiedlungs-Hüllen eingebunden) durch dessen Pufferband 13 in die Gruppensummen 26/29/30/31 und weiter in die Unschärfebänder 32-35 - Band 31, die veröffentlichte Potenzialfläche, eingeschlossen.",
       "numbers": {
         "polygons_total": 3491407,
         "ambiguous": 684249,
@@ -1701,10 +1672,10 @@
       "id": "blur_bands_bleed_across_border",
       "affects": {
         "bands": [
+          32,
           33,
           34,
-          35,
-          36
+          35
         ]
       },
       "severity": "methodisch",
@@ -1717,14 +1688,14 @@
           14,
           15,
           16,
-          27,
+          26,
+          29,
           30,
-          31,
-          32
+          31
         ]
       },
       "severity": "methodisch",
-      "text_de": "Der Tunnelfilter bei Autobahnen, Bundes- und Landesstraßen und Hauptbahnen prüft nur, ob ein Abschnitt ausdrücklich als Tunnel ausgewiesen ist. Abschnitte, die stattdessen als unterirdisch oder überdeckt geführt sind, werden gepuffert, obwohl dort kein Verkehr an der Oberfläche liegt. Betroffen sind 144 Objekte; die Flächenwirkung liegt unter 0,7 Prozent der ausgewiesenen Potenzialfläche und läuft über das Verkehrsband in die Summen 27, 30, 31 und 32. Registerpunkt 70.",
+      "text_de": "Der Tunnelfilter bei Autobahnen, Bundes- und Landesstraßen und Hauptbahnen prüft nur, ob ein Abschnitt ausdrücklich als Tunnel ausgewiesen ist. Abschnitte, die stattdessen als unterirdisch oder überdeckt geführt sind, werden gepuffert, obwohl dort kein Verkehr an der Oberfläche liegt. Betroffen sind 144 Objekte; die Flächenwirkung liegt unter 0,7 Prozent der ausgewiesenen Potenzialfläche und läuft über das Verkehrsband in die Summen 26, 29, 30 und 31. Registerpunkt 70.",
       "numbers": {
         "objekte_betroffen": 144,
         "flaechenwirkung_anteil_max": 0.007

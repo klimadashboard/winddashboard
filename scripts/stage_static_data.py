@@ -34,15 +34,23 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GEODATA = os.path.join(REPO, "geodata")
 TARGET = os.path.join(REPO, "static/data")
 
-# Genau die Dateien, welche die App lädt. possible_zones fehlt bewusst: die
-# kommen als Vektorkacheln vom Tileserver (scripts/build_zone_tiles.py).
+# Genau die Dateien, welche die App lädt. Zwei fehlen bewusst:
+#
+# - possible_zones.geojson — kommt als Vektorkacheln vom Tileserver
+#   (scripts/build_zone_tiles.py), weil 15 MB je Seitenaufruf zu viel waren.
+# - existing_turbines.geojson — kommt ebenfalls als Vektorkacheln
+#   (scripts/build_turbine_tiles.py), hier aber aus Lizenzgründen: die
+#   Standorte dürfen gezeigt, der Datensatz nicht weitergegeben werden. Eine
+#   Datei unter static/data/ ist eine Weitergabe, eine Kachel ist ein Bild-
+#   ausschnitt. Die Lieferdatei bleibt lokal in geodata/ liegen, weil
+#   build_region_stats.py, extract_possible_zones.py und
+#   extract_wka_bestand_hulls.py sie brauchen.
 SERVED = [
     "austria_outline.geojson",
     "exclusion_schutz.geojson",
     "exclusion_siedlung.geojson",
     "exclusion_sonstige.geojson",
     "exclusion_wind.geojson",
-    "existing_turbines.geojson",
     "official_zoning.geojson",
     "region_stats.json",
     "wka_bestand_ausserhalb_zonen.geojson",

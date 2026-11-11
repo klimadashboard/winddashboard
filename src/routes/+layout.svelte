@@ -14,7 +14,7 @@
 {#if isRoot}
 	<SeoHead
 		title="Windkraft in Österreich: Wo Windräder möglich sind"
-		description="Interaktive Karte für ganz Österreich: Wo Windräder gebaut werden können, welche Abstände gelten und was in Ihrer Gemeinde geplant ist. Für alle 2.116 Gemeinden."
+		description="Interaktive Karte für ganz Österreich: Wo Windräder gebaut werden können, welche Abstände gelten und was in deiner Gemeinde geplant ist. Für alle 2.116 Gemeinden."
 	/>
 {/if}
 

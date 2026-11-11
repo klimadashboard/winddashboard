@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { HoverInfo } from "./Map.svelte";
+	import { fmtNumber } from "$lib/format";
 
 	let { info = null }: { info: HoverInfo | null } = $props();
 
@@ -68,7 +69,7 @@
 					<div>
 						<span class="text-slate-400">Fläche</span>
 						<span class="font-medium text-slate-700"
-							>{Number(info.zone.area_ha).toLocaleString("de-AT")} ha</span
+							>{fmtNumber(Number(info.zone.area_ha))} ha</span
 						>
 					</div>
 					<!--
@@ -94,7 +95,7 @@
 					></span>
 					<span
 						class="font-semibold text-slate-800 text-xs uppercase tracking-wide"
-						>Offizielle Eignungszone</span
+						>Offizielle Windkraftzone</span
 					>
 				</div>
 				<div class="text-slate-600 text-xs space-y-0.5">
@@ -105,7 +106,7 @@
 					<div>
 						<span class="text-slate-400">Fläche</span>
 						<span class="font-medium text-slate-700"
-							>{Number(info.official.area_ha).toLocaleString("de-AT")} ha</span
+							>{fmtNumber(Number(info.official.area_ha))} ha</span
 						>
 					</div>
 					<div>
@@ -157,18 +158,18 @@
 						<div>
 							<span class="text-slate-400">Anlagen</span>
 							<span class="font-medium text-slate-700"
-								>{Number(info.hull.turbines).toLocaleString("de-AT")}</span
+								>{fmtNumber(Number(info.hull.turbines))}</span
 							>
 						</div>
 					{/if}
 					<div>
 						<span class="text-slate-400">Fläche</span>
 						<span class="font-medium text-slate-700"
-							>{Number(info.hull.area_ha).toLocaleString("de-AT")} ha</span
+							>{fmtNumber(Number(info.hull.area_ha))} ha</span
 						>
 					</div>
 					<p class="text-slate-400 text-[10px] leading-snug mt-1">
-						Keine amtliche Eignungszone: die Fläche umschließt die
+						Keine amtliche Windkraftzone: die Fläche umschließt die
 						bestehenden Anlagen, das Land hat sie nicht ausgewiesen.
 					</p>
 				</div>
@@ -186,7 +187,7 @@
 						<div><span class="text-slate-400">Standort</span> <span class="font-medium text-slate-700">{[info.turbine.gemeinde, info.turbine.bezirk].filter(Boolean).join(', ')}</span></div>
 					{/if}
 					{#if info.turbine.power_kw}
-						<div><span class="text-slate-400">Leistung</span> <span class="font-medium text-slate-700">{Number(info.turbine.power_kw).toLocaleString('de-AT')} kW</span></div>
+						<div><span class="text-slate-400">Leistung</span> <span class="font-medium text-slate-700">{fmtNumber(Number(info.turbine.power_kw))} kW</span></div>
 					{/if}
 					{#if info.turbine.commissioned}
 						<div><span class="text-slate-400">Inbetriebnahme</span> <span class="font-medium text-slate-700">{String(info.turbine.commissioned).slice(-4)}</span></div>

@@ -20,14 +20,14 @@ export const GENERAL_INTRO =
 	'In Österreich gelten strenge gesetzliche Vorgaben dafür, wo und unter welchen Bedingungen ein Windrad errichtet werden darf. Der Weg von der ersten Idee bis zur tatsächlichen Errichtung eines Windrads ist daher mehrstufig und umfasst wirtschaftliche, technische, rechtliche und ökologische Prüfungen. Die Gesamtdauer von Windkraftprojekten in Österreich (von der Planung bis zur Errichtung) liegt im Durchschnitt bei 5 bis 8 Jahren.';
 
 const STANDORTPRUEFUNG_KURZ: string[] = [
-	'Am Beginn jedes Windkraftprojekts steht die sorgfältige Prüfung eines möglichen Standorts. Dabei wird unter anderem untersucht, ob ausreichend Wind vorhanden ist und ob ein Anschluss an das Stromnetz technisch möglich ist. Ebenso werden die Zufahrtsmöglichkeiten für Bau und Wartung sowie raumordnungsrechtliche Rahmenbedingungen geprüft (z.B. Hangneigung).',
+	'Am Beginn jedes Windkraftprojekts steht die sorgfältige Prüfung eines möglichen Standorts. Dabei wird unter anderem untersucht, ob ausreichend Wind vorhanden ist und ob ein Anschluss an das Stromnetz technisch möglich ist. Ebenso werden die Zufahrtsmöglichkeiten für Bau und Wartung sowie raumordnungsrechtliche Rahmenbedingungen geprüft (z. B. Hangneigung).',
 	'Zeigt diese erste Prüfung, dass ein Standort grundsätzlich geeignet ist, werden die benötigten Grundstücksflächen gesichert. In der Praxis geschieht dies meist über Pachtverträge mit den Grundstückseigentümer:innen.',
 	'Dann beginnt die wirtschaftlich-technische Detailprüfung. Dazu werden in der Regel 1 Jahr lang Windmessungen durchgeführt. Aus den Messdaten wird berechnet, wie viel Strom ein Windrad an diesem Standort voraussichtlich erzeugen könnte. Auf dieser Grundlage können Betreiber einschätzen, ob sich das Projekt wirtschaftlich lohnt und welcher Windrad-Typ geeignet ist. Die Windmessung dient ausschließlich der wirtschaftlich-technischen Projektvalidierung und stellt noch keine Genehmigung für den Bau dar.',
 	'Auch der Netzanschluss muss geprüft und möglichst frühzeitig gesichert werden, da die verfügbaren Netzkapazitäten begrenzt sind.',
 ];
 
 const STANDORTPRUEFUNG_KONKRET: string[] = [
-	'Am Beginn jedes konkreten Windkraftprojekts steht die sorgfältige Prüfung eines möglichen Standorts. Dabei wird unter anderem untersucht, ob ausreichend Wind vorhanden ist und ob ein Anschluss an das Stromnetz technisch möglich ist. Ebenso werden die Zufahrtsmöglichkeiten für Bau und Wartung sowie raumordnungsrechtliche Rahmenbedingungen geprüft (z.B. Hangneigung).',
+	'Am Beginn jedes konkreten Windkraftprojekts steht die sorgfältige Prüfung eines möglichen Standorts. Dabei wird unter anderem untersucht, ob ausreichend Wind vorhanden ist und ob ein Anschluss an das Stromnetz technisch möglich ist. Ebenso werden die Zufahrtsmöglichkeiten für Bau und Wartung sowie raumordnungsrechtliche Rahmenbedingungen geprüft (z. B. Hangneigung).',
 	...STANDORTPRUEFUNG_KURZ.slice(1),
 ];
 
@@ -63,7 +63,7 @@ export const stateContent: Record<string, StateContent> = {
 				title: 'Widmung',
 				responsible: 'Gemeinde',
 				paragraphs: [
-					'Als nächstes müssen die für Windkraftprojekte geeigneten Flächen noch entsprechend umgewidmet werden. Für Windräder gibt es die Sonderwidmung „Grünland mit Windkraftnutzung". Die Widmung wird dabei vom betreffenden Gemeinderat beschlossen. Für die Widmung ist eine Strategische Umweltprüfung des Landes Niederösterreich notwendig. Diese dient dazu, voraussichtliche Umweltauswirkungen von Plänen und Programmen systematisch zu bewerten, bevor diese beschlossen oder umgesetzt werden.',
+					'Als nächstes müssen die für Windkraftprojekte geeigneten Flächen noch entsprechend umgewidmet werden. Für Windräder gibt es die Sonderwidmung „Grünland mit Windkraftnutzung“. Die Widmung wird dabei vom betreffenden Gemeinderat beschlossen. Für die Widmung ist eine Strategische Umweltprüfung des Landes Niederösterreich notwendig. Diese dient dazu, voraussichtliche Umweltauswirkungen von Plänen und Programmen systematisch zu bewerten, bevor diese beschlossen oder umgesetzt werden.',
 					'Hinweis zur Rechtslage: Befindet sich ein Windkraft-Projekt innerhalb der ausgewiesenen Zonen, fehlt aber die Widmung, kann der Betreiber trotzdem in das Genehmigungsverfahren gehen (siehe § 4a Abs 2 UVP-G).',
 				],
 			},
@@ -85,7 +85,7 @@ export const stateContent: Record<string, StateContent> = {
 				title: 'Standortprüfung, Flächensicherung & Netzanschlussvertrag',
 				responsible: 'Windkraftbetreiber',
 				paragraphs: [
-					'Am Beginn jedes Windkraftprojekts steht die sorgfältige Prüfung eines möglichen Standorts. Dabei wird untersucht, ob ausreichend Wind vorhanden ist, ob der Abstand zum nächsten Siedlungsgebiet ausreichend ist (abhängig vom Schall, meist ca. 800 - 1.200 m) und ob ein Anschluss an das Stromnetz technisch möglich ist. Ebenso werden die Zufahrtsmöglichkeiten für Bau und Wartung sowie raumordnungsrechtliche Rahmenbedingungen geprüft (z.B. Hangneigung).',
+					'Am Beginn jedes Windkraftprojekts steht die sorgfältige Prüfung eines möglichen Standorts. Dabei wird untersucht, ob ausreichend Wind vorhanden ist, ob der Abstand zum nächsten Siedlungsgebiet ausreichend ist (abhängig vom Schall, meist ca. 800–1.200 m) und ob ein Anschluss an das Stromnetz technisch möglich ist. Ebenso werden die Zufahrtsmöglichkeiten für Bau und Wartung sowie raumordnungsrechtliche Rahmenbedingungen geprüft (z. B. Hangneigung).',
 					'Zeigt diese erste Prüfung, dass ein Standort grundsätzlich geeignet ist, werden die benötigten Grundstücksflächen gesichert. In der Praxis geschieht dies meist über Pachtverträge mit den Grundstückseigentümer:innen.',
 					'Dann beginnt die wirtschaftlich-technische Detailprüfung. Dazu werden in der Regel 1 Jahr lang Windmessungen durchgeführt. Aus den Messdaten wird berechnet, wie viel Strom ein Windrad an diesem Standort voraussichtlich erzeugen könnte. Auf dieser Grundlage können Betreiber einschätzen, ob sich das Projekt wirtschaftlich lohnt und welcher Windrad-Typ geeignet ist. Die Windmessung dient ausschließlich der wirtschaftlich-technischen Projektvalidierung und stellt noch keine Genehmigung für den Bau dar.',
 					'Auch der Netzanschluss muss geprüft und möglichst frühzeitig gesichert werden, da die verfügbaren Netzkapazitäten begrenzt sind.',
@@ -116,7 +116,7 @@ export const stateContent: Record<string, StateContent> = {
 					'Das Land Steiermark unterscheidet in der überörtlichen Raumplanung vier Arten von Flächen und schafft damit eine Unterscheidung von Flächen, wo Windkraft bevorzugt, gut möglich, grundsätzlich möglich oder ausgeschlossen ist. Im Zuge dieser Zonierung wird bereits die technische und ökologische Eignung potenzieller Flächen geprüft.',
 					'Vorrangzonen = besonders geeignete Flächen, die vorrangig für Windkraft vorgesehen sind.',
 					'Eignungszonen = grundsätzlich für Windkraft vorgesehen.',
-					'Neutrale Zonen = diese Flächen werden für Windkraft weder aktiv eingeplant, noch kategorisch ausgeschlossen.',
+					'Neutrale Zonen = diese Flächen werden für Windkraft weder aktiv eingeplant noch kategorisch ausgeschlossen.',
 					'Ausschlusszonen = für Windkraft ausgeschlossene Flächen.',
 					'Generell ist in der Steiermark ein Mindestabstand von 1.000 Metern zum nächsten Wohnbauland einzuhalten.',
 				],
@@ -155,7 +155,7 @@ export const stateContent: Record<string, StateContent> = {
 				title: 'Zonierung',
 				responsible: 'Land',
 				paragraphs: [
-					'Das Land Kärnten unterscheidet in der überörtlichen Raumplanung „Beschleunigungsgebiete", die für den Windkraftausbau genutzt werden dürfen, und Ausschlusszonen. Insgesamt hat das Land Kärnten vier Beschleunigungsgebiete ausgewiesen, die eine Fläche von ca. 730 ha umfassen. Das ist weniger als 0,1 % der Landesfläche, während über 99,9 % der Landesfläche Wind-Ausschlusszonen sind. Die Beschleunigungsgebiete wurden im Zuge der Ausweisung bereits einer strategischen Umweltprüfung unterzogen.',
+					'Das Land Kärnten unterscheidet in der überörtlichen Raumplanung „Beschleunigungsgebiete“, die für den Windkraftausbau genutzt werden dürfen, und Ausschlusszonen. Insgesamt hat das Land Kärnten vier Beschleunigungsgebiete ausgewiesen, die eine Fläche von ca. 730 ha umfassen. Das ist weniger als 0,1 % der Landesfläche, während über 99,9 % der Landesfläche Wind-Ausschlusszonen sind. Die Beschleunigungsgebiete wurden im Zuge der Ausweisung bereits einer strategischen Umweltprüfung unterzogen.',
 					'Hinweis zur Rechtslage: Da die in Kärnten ausgewiesenen Beschleunigungsgebiete zu klein sind, um die gesetzlichen Windkraft-Ausbauziele zu erreichen, können Windräder auch außerhalb der Beschleunigungsgebiete gebaut werden (siehe § 4a Abs 3 UVP-G). Für den Bau eines Windrads außerhalb der Beschleunigungsgebiete braucht man jedoch die Zustimmung der Gemeinde.',
 				],
 			},
@@ -179,7 +179,7 @@ export const stateContent: Record<string, StateContent> = {
 				title: 'Genehmigungsverfahren',
 				responsible: 'Land',
 				paragraphs: [
-					'Ob ein Windrad schlussendlich tatsächlich gebaut werden darf, entscheidet sich im Genehmigungsverfahren. In Beschleunigungsgebieten wird eine sogenannte Grobprüfung durchgeführt. Diese dient dazu, zu prüfen, ob das Windrad tatsächlich im Beschleunigungsgebiet liegt, ob die festgelegten Minderungsmaßnahmen eingehalten werden und ob „voraussichtlich keine erheblichen (im Zeitpunkt der Ausweisung des Beschleunigungsgebiets) unvorhergesehenen nachteiligen Umweltauswirkungen" eintreten werden. Diese Grobprüfung muss binnen 45 Werktagen ab Vorlage der vollständigen Unterlagen durchgeführt werden.',
+					'Ob ein Windrad schlussendlich tatsächlich gebaut werden darf, entscheidet sich im Genehmigungsverfahren. In Beschleunigungsgebieten wird eine sogenannte Grobprüfung durchgeführt. Diese dient dazu, zu prüfen, ob das Windrad tatsächlich im Beschleunigungsgebiet liegt, ob die festgelegten Minderungsmaßnahmen eingehalten werden und ob „voraussichtlich keine erheblichen (im Zeitpunkt der Ausweisung des Beschleunigungsgebiets) unvorhergesehenen nachteiligen Umweltauswirkungen“ eintreten werden. Diese Grobprüfung muss binnen 45 Werktagen ab Vorlage der vollständigen Unterlagen durchgeführt werden.',
 					'Außerhalb von Beschleunigungsgebieten hat das Land Kärnten den Bau von Windrädern eigentlich verboten. Da die in Kärnten ausgewiesenen Beschleunigungsgebiete zu klein sind, um die gesetzlichen Windkraft-Ausbauziele zu erreichen, können Windräder auch außerhalb der Beschleunigungsgebiete gebaut werden (siehe § 4a Abs 3 UVP-G). Für den Bau eines Windrads außerhalb der Beschleunigungsgebiete braucht man jedoch die Zustimmung der Gemeinde und muss auch hier ein Genehmigungsverfahren durchlaufen. Bei großen Projekten passiert dies in Form einer Umweltverträglichkeitsprüfung (UVP), im Zuge derer zahlreiche Themen geprüft werden: ökologische Eignung, Schattenwurf, Schallimmissionen, Auswirkungen auf die Boden- und Landwirtschaft und Grundwasserhydrologie. Ein besonderer Schwerpunkt liegt auf dem Natur- und Artenschutz. Dazu werden meist über zwei Jahre hinweg Untersuchungen zur Aktivität von Vögeln und Fledermäusen durchgeführt. Die Ergebnisse dienen unter anderem dazu, Abschaltzeiten festzulegen. Diese sorgen dafür, dass Windräder während besonders sensibler Aktivitätszeiten automatisch stillstehen und so der Schutz der Tierwelt gewährleistet wird. Außerdem werden im Zuge der Umweltverträglichkeitsprüfung auch Ausgleichsmaßnahmen festgelegt, wie beispielsweise Aufforstungen oder Aufwertung anderer Lebensräume (Blühflächen oder Habitate für bestimmte Arten).',
 					'Repowering: Beim sogenannten Repowering werden alte Windräder durch modernere, leistungsstärkere Windräder ersetzt. Das Land Kärnten hat jedoch für das Repowering außerhalb der Beschleunigungsgebiete eine Erhöhung der Nabenhöhe um maximal 30 % vorgesehen. Diese Regelung betrifft die bestehenden Windkraftanlagen am Plöckenpass, die aufgrund dieser Regelung nicht erneuert werden können, da heute keine Windräder mehr am Markt verkauft werden, die nur 30 % höher sind als die bestehenden.',
 					'Erst wenn alle Prüfungen positiv abgeschlossen sind und alle Genehmigungen vorliegen, darf mit dem Bau der Windräder begonnen werden.',
@@ -198,7 +198,7 @@ export const stateContent: Record<string, StateContent> = {
 				responsible: 'Land',
 				paragraphs: [
 					'Salzburg hat im Landesentwicklungsprogramm 2025 einen verbindlichen, landesweiten Planungsrahmen für die Windkraft geschaffen. Kernstück sind 11 ausgewiesene Vorrangzonen für Windenergie: Anzenberg, Rannberg-Ebenholzspitz, Ofenauer Berg, Sulzau, Schneeberg, Hochegg, Hochalm, Resterhöhe-Rossgruberkogel, Windsfeld, Pirkegg, Lehmberg. Diese Zonen wurden in einem mehrstufigen Verfahren unter Einbindung fachlicher Gutachten (Naturschutz, Landschaftsbild, Siedlungs- und Freiraumentwicklung) ermittelt und im Rahmen einer Strategischen Umweltprüfung auf ihre Umweltverträglichkeit hin überprüft.',
-					'Diese Zonen gelten als besonders geeignete Flächen, die vorrangig für Windkraft vorgesehen sind. Die restliche Landesfläche wird für Windkraft weder aktiv eingeplant, noch kategorisch ausgeschlossen (= neutrale Zone).',
+					'Diese Zonen gelten als besonders geeignete Flächen, die vorrangig für Windkraft vorgesehen sind. Die restliche Landesfläche wird für Windkraft weder aktiv eingeplant noch kategorisch ausgeschlossen (= neutrale Zone).',
 				],
 			},
 			{
@@ -212,7 +212,8 @@ export const stateContent: Record<string, StateContent> = {
 				title: 'Widmung',
 				responsible: 'Gemeinde',
 				paragraphs: [
-					'Als nächstes muss die Gemeinde die Fläche für die Windräder im örtlichen Flächenwidmungsplan als „Grünland-Windkraftanlagen" ausweisen. Die Widmung wird dabei vom betreffenden Gemeinderat beschlossen. Für die Widmung ist eine Strategische Umweltprüfung des Landes Salzburg notwendig. Diese dient dazu, voraussichtliche Umweltauswirkungen von Plänen und Programmen systematisch zu bewerten, bevor diese beschlossen oder umgesetzt werden.',
+					'Als nächstes muss die Gemeinde prüfen, ob die Fläche für die Windräder dem räumlichen Entwicklungskonzept entgegensteht oder nicht. Anschließend muss im örtlichen Flächenwidmungsplan die entsprechende Fläche als „Grünland-Windkraftanlagen“ ausgewiesen werden. Die Widmung wird dabei vom betreffenden Gemeinderat beschlossen. Für die Widmung ist eine Strategische Umweltprüfung des Landes Salzburg notwendig. Diese dient dazu, voraussichtliche Umweltauswirkungen von Plänen und Programmen systematisch zu bewerten, bevor diese beschlossen oder umgesetzt werden.',
+					'Innerhalb von Vorrangzonen ist die Flächenwidmung ausreichend.',
 				],
 			},
 			{
@@ -237,7 +238,7 @@ export const stateContent: Record<string, StateContent> = {
 				title: 'Standortprüfung, Flächensicherung & Netzanschlussvertrag',
 				responsible: 'Windkraftbetreiber',
 				paragraphs: [
-					'Am Beginn jedes Windkraftprojekts steht die sorgfältige Prüfung eines möglichen Standorts. Dabei wird untersucht, ob ausreichend Wind vorhanden ist, ob der Abstand zum nächsten Siedlungsgebiet ausreichend ist (Mindestabstand zu Wohngebäuden 1 km) und ob ein Anschluss an das Stromnetz technisch möglich ist. Ebenso werden die Zufahrtsmöglichkeiten für Bau und Wartung sowie raumordnungsrechtliche Rahmenbedingungen geprüft (z.B. Hangneigung).',
+					'Am Beginn jedes Windkraftprojekts steht die sorgfältige Prüfung eines möglichen Standorts. Dabei wird untersucht, ob ausreichend Wind vorhanden ist, ob der Abstand zum nächsten Siedlungsgebiet ausreichend ist (Mindestabstand zu Wohngebäuden 1 km) und ob ein Anschluss an das Stromnetz technisch möglich ist. Ebenso werden die Zufahrtsmöglichkeiten für Bau und Wartung sowie raumordnungsrechtliche Rahmenbedingungen geprüft (z. B. Hangneigung).',
 					'Zeigt diese erste Prüfung, dass ein Standort grundsätzlich geeignet ist, werden die benötigten Grundstücksflächen gesichert. In der Praxis geschieht dies meist über Pachtverträge mit den Grundstückseigentümer:innen.',
 					'Dann beginnt die wirtschaftlich-technische Detailprüfung. Dazu werden in der Regel 1 Jahr lang Windmessungen durchgeführt. Aus den Messdaten wird berechnet, wie viel Strom ein Windrad an diesem Standort voraussichtlich erzeugen könnte. Auf dieser Grundlage können Betreiber einschätzen, ob sich das Projekt wirtschaftlich lohnt und welcher Windrad-Typ geeignet ist. Die Windmessung dient ausschließlich der wirtschaftlich-technischen Projektvalidierung und stellt noch keine Genehmigung für den Bau dar.',
 					'Auch der Netzanschluss muss geprüft und möglichst frühzeitig gesichert werden, da die verfügbaren Netzkapazitäten begrenzt sind.',
@@ -248,7 +249,7 @@ export const stateContent: Record<string, StateContent> = {
 				title: 'Widmung',
 				responsible: 'Gemeinde',
 				paragraphs: [
-					'Als nächstes müssen die für Windkraftprojekte geeigneten Flächen noch entsprechend umgewidmet werden. Für Windräder gibt es die Sonderwidmung „Grünland – Windkraftanlage". Die Widmung wird dabei vom betreffenden Gemeinderat beschlossen. Für die Widmung ist eine Strategische Umweltprüfung des Landes Oberösterreich notwendig. Diese dient dazu, voraussichtliche Umweltauswirkungen von Plänen und Programmen systematisch zu bewerten, bevor diese beschlossen oder umgesetzt werden.',
+					'Als nächstes müssen die für Windkraftprojekte geeigneten Flächen noch entsprechend umgewidmet werden. Für Windräder gibt es die Sonderwidmung „Grünland – Windkraftanlage“. Die Widmung wird dabei vom betreffenden Gemeinderat beschlossen. Für die Widmung ist eine Strategische Umweltprüfung des Landes Oberösterreich notwendig. Diese dient dazu, voraussichtliche Umweltauswirkungen von Plänen und Programmen systematisch zu bewerten, bevor diese beschlossen oder umgesetzt werden.',
 					'Hinweis zur Rechtslage: Bei großen Windkraftprojekten (ab 30 MW bzw. ab 15 MW über 1.000 m Seehöhe) reicht unter Umständen auch eine einfache Zustimmung der Gemeinde und die Fläche muss nicht extra gewidmet werden (siehe § 4a Abs 3 UVP-G).',
 				],
 			},
@@ -326,7 +327,7 @@ export const stateContent: Record<string, StateContent> = {
 				title: 'Standortprüfung, Flächensicherung & Netzanschlussvertrag',
 				responsible: 'Windkraftbetreiber',
 				paragraphs: [
-					'Am Beginn jedes Windkraftprojekts steht die sorgfältige Prüfung eines möglichen Standorts. Dabei wird untersucht, ob ausreichend Wind vorhanden ist, ob der Abstand zum nächsten Siedlungsgebiet ausreichend ist (abhängig vom Schall, meist ca. 800 - 1.200 m) und ob ein Anschluss an das Stromnetz technisch möglich ist. Ebenso werden die Zufahrtsmöglichkeiten für Bau und Wartung sowie raumordnungsrechtliche Rahmenbedingungen geprüft (z.B. Hangneigung).',
+					'Am Beginn jedes Windkraftprojekts steht die sorgfältige Prüfung eines möglichen Standorts. Dabei wird untersucht, ob ausreichend Wind vorhanden ist, ob der Abstand zum nächsten Siedlungsgebiet ausreichend ist (abhängig vom Schall, meist ca. 800–1.200 m) und ob ein Anschluss an das Stromnetz technisch möglich ist. Ebenso werden die Zufahrtsmöglichkeiten für Bau und Wartung sowie raumordnungsrechtliche Rahmenbedingungen geprüft (z. B. Hangneigung).',
 					'Zeigt diese erste Prüfung, dass ein Standort grundsätzlich geeignet ist, werden die benötigten Grundstücksflächen gesichert. In der Praxis geschieht dies meist über Pachtverträge mit den Grundstückseigentümer:innen.',
 					'Dann beginnt die wirtschaftlich-technische Detailprüfung. Dazu werden in der Regel 1 Jahr lang Windmessungen durchgeführt. Aus den Messdaten wird berechnet, wie viel Strom ein Windrad an diesem Standort voraussichtlich erzeugen könnte. Auf dieser Grundlage können Betreiber einschätzen, ob sich das Projekt wirtschaftlich lohnt und welcher Windrad-Typ geeignet ist. Die Windmessung dient ausschließlich der wirtschaftlich-technischen Projektvalidierung und stellt noch keine Genehmigung für den Bau dar.',
 					'Auch der Netzanschluss muss geprüft und möglichst frühzeitig gesichert werden, da die verfügbaren Netzkapazitäten begrenzt sind.',

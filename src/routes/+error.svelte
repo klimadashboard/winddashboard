@@ -8,8 +8,8 @@
 	);
 	const message = $derived(
 		status === 404
-			? 'Diese Seite gibt es nicht — vielleicht wurde eine Gemeinde umbenannt oder zusammengelegt. Suchen Sie auf der Karte einfach neu.'
-			: ($page.error?.message ?? 'Bitte versuchen Sie es später noch einmal.')
+			? 'Diese Seite gibt es nicht — vielleicht wurde eine Gemeinde umbenannt oder zusammengelegt. Suche auf der Karte einfach neu.'
+			: ($page.error?.message ?? 'Bitte versuche es später noch einmal.')
 	);
 </script>
 
