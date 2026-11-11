@@ -1,7 +1,7 @@
 // ⚠️ Erzeugt von scripts/generate_bands_config.py — nicht von Hand ändern.
 // Quelle: scripts/raster/abschichtung.bands.json
-// Bandschema: clean-45-freileitungen-110kv-sep-2026
-// Manifest erzeugt: 2026-09-30T21:10:15Z
+// Bandschema: clean-44-ohne-lsg-okt-2026
+// Manifest erzeugt: 2026-10-21T13:36:05Z
 //
 // Layer sind alle Bänder mit `dashboard_layer: true` und `rolle: "bedingung"`,
 // plus `exclusion_nature` (widmung_v2 blendet die einzelnen Schutzgebietsbänder
@@ -42,7 +42,7 @@ export const BAND_DEFS: BandDef[] = [
 		slug: "haeuser_im_gruenen",
 		label: "Häuser im Grünen (750 m)",
 		description:
-			"Abstand von 750 m um bewohnte Einzellagen außerhalb des Baulands: Ferienhaus- und Tourismusgebiete, amtliche Widmungen für Hofstellen, Camping, Golf, Kleingärten und Auffüllungsgebiete sowie Streusiedlungen. In Niederösterreich gelten stattdessen die Mindestabstandszonen des Sektoralen Raumordnungsprogramms, die den Abstand bereits enthalten.",
+			"Abstand von 750 m um amtliche Sonderwidmungen außerhalb des Baulands (die Liste der Widmungsarten unterscheidet sich je Bundesland) und um bewohnte Streusiedlungen mit mindestens fünf Adressen, erkannt aus Kataster und Adressregister. In Niederösterreich gelten stattdessen die amtlichen Mindestabstandszonen des Sektoralen Raumordnungsprogramms, die den Abstand bereits enthalten. Einzelne Häuser und Gruppen mit weniger als fünf Adressen erhalten nur den Gebäudeabstand von 25 m.",
 		color: "#ff8c3c96",
 		group: "human",
 	},
@@ -112,9 +112,9 @@ export const BAND_DEFS: BandDef[] = [
 	{
 		band: 18,
 		slug: "military_restricted_area",
-		label: "Militärisches Sperrgebiet",
+		label: "Militärische Flächen",
 		description:
-			"Militärische Sperrgebiete aus OpenStreetMap, ohne zusätzlichen Abstand.",
+			"Militärische Flächen aus OpenStreetMap, ohne zusätzlichen Abstand: Flächen mit landuse=military oder military=range, training_area, barracks, danger_area, airfield, naval_base oder base, also Truppen- und Schießübungsplätze, Kasernen, Militärflugplätze und Munitionslager.",
 		color: "#ff00008c",
 		group: "human",
 	},
@@ -137,16 +137,16 @@ export const BAND_DEFS: BandDef[] = [
 		group: "human",
 	},
 	{
-		band: 23,
+		band: 22,
 		slug: "geography_slope_too_steep",
 		label: "Hangneigung zu steil",
 		description:
-			"Hangneigung über 15 Grad, ermittelt aus dem Geländemodell mit 25 m Auflösung.",
+			"Hangneigung über 15 Grad. Das Geländemodell mit 25 m Auflösung wird in 4×4-Blöcken zu 100-m-Zellen gemittelt, die Neigung aus der 3×3-Nachbarschaft dieses Rasters (rund 300 m) berechnet.",
 		color: "#78461e96",
 		group: "terrain",
 	},
 	{
-		band: 24,
+		band: 23,
 		slug: "geography_elevation_too_high",
 		label: "Seehöhe zu hoch",
 		description:
@@ -155,7 +155,7 @@ export const BAND_DEFS: BandDef[] = [
 		group: "terrain",
 	},
 	{
-		band: 25,
+		band: 24,
 		slug: "geography_wind_too_low",
 		label: "Wind zu gering",
 		description:
@@ -164,7 +164,7 @@ export const BAND_DEFS: BandDef[] = [
 		group: "wind",
 	},
 	{
-		band: 26,
+		band: 25,
 		slug: "geography_water_bodies",
 		label: "Größere Gewässer",
 		description:
@@ -173,16 +173,16 @@ export const BAND_DEFS: BandDef[] = [
 		group: "terrain",
 	},
 	{
-		band: 28,
+		band: 27,
 		slug: "exclusion_nature",
 		label: "Ausschluss Natur",
 		description:
-			"Amtliche Schutzgebiete, also Nationalparks, Naturschutzgebiete, Europaschutzgebiete nach Natura 2000 und Ramsar-Gebiete, sowie Schutzgebiete aus OpenStreetMap, vereinigt und auf das Staatsgebiet zugeschnitten. Ohne Abstandspuffer.",
+			"Amtliche Schutzgebiete, die nach Naturschutzrecht der Länder per Verordnung oder Bescheid festgelegt sind, einschließlich Naturdenkmälern (Band 21), auf das Staatsgebiet zugeschnitten. Ohne Abstandspuffer.",
 		color: "#00b40096",
 		group: "nature",
 	},
 	{
-		band: 45,
+		band: 44,
 		slug: "power_lines_110kv_plus",
 		label: "Hochspannungsfreileitungen (136 m)",
 		description:

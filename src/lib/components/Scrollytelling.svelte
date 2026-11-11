@@ -5,8 +5,8 @@
 	import { storyStep } from "$lib/stores/windStore";
 	import RenewableGoalsChart from "./RenewableGoalsChart.svelte";
 	import { AUSTRIA_HA } from "$lib/config/austria";
-	import { BEZIRK_TO_BUNDESLAND } from "$lib/config/bezirke";
-	import { loadRegionStats } from "$lib/data/regionStats";
+	import { loadRegionStats, type RegionStatsTable } from "$lib/data/regionStats";
+	import { fmtNumber } from "$lib/format";
 
 	// Erste Stelle der Gemeindekennziffer = Bundesland.
 	const BUNDESLAND_BY_GKZ: Record<string, string> = {
@@ -69,7 +69,7 @@
 	let potentialViewMode = $state<"absolute" | "percent">("absolute");
 
 	// ── Konstanten aus dem Klassifikationsraster ──────────────────────────────
-	// Stand abschichtung.tif, Schema clean-45-freileitungen-110kv-sep-2026,
+	// Stand abschichtung.tif, Schema clean-44-ohne-lsg-okt-2026,
 	// erzeugt von scripts/create_classification_from_simplified.py. Nach jedem
 	// neuen Rasterlauf hier aktualisieren — siehe PIPELINE.md §6.
 	//
@@ -77,14 +77,22 @@
 	// (Gewässer) kamen mit widmung_v2 dazu. Code 10 (Freileitung) war in
 	// widmung_v2 leer und ist seit clean-45 wieder belegt — jetzt ab 110 kV
 	// statt erst ab 380 kV. Alle drei zählen zu "Sonstige".
-	const SCHUTZ_HA = 1_007_705; // code 1
+	//
+	// clean-44-ohne-lsg verschiebt die Naturzahl deutlich: Landschaftsschutz-
+	// gebiete sind kein Ausschlusskriterium mehr und die OSM-Schutzgebiete sind
+	// ganz entfallen, dafür zählen jetzt auch geschützte Landschaftsteile,
+	// Naturdenkmäler, Biotope und Ruhegebiete des Umweltbundesamts mit. Netto
+	// −92.620 ha bei Code 1. Weil die Klassifikation nach Priorität zuweist,
+	// landen diese Flächen überwiegend in "Sonstige" (+78.762 ha), nicht im
+	// Potenzial — das wächst nur um 8.209 ha.
+	const SCHUTZ_HA = 915_085; // code 1
 	const SIEDLUNG_HA = 4_569_390; // code 2
-	const SONSTIGE_HA = 2_350_851; // codes 3–8, 10, 12, 13, 15, 16
-	const WIND_HA = 39_879; // code 11, Wind zu gering
-	const POTENTIAL_HA = 357_769; // code 14, raster-based
+	const SONSTIGE_HA = 2_429_613; // codes 3–8, 10, 12, 13, 15, 16
+	const WIND_HA = 41_399; // code 11, Wind zu gering
+	const POTENTIAL_HA = 365_978; // code 14, raster-based
 
 	// Vector-derived potential (used in the "final" headline)
-	const POTENTIAL_VECTOR_HA = 357_740;
+	const POTENTIAL_VECTOR_HA = 365_949;
 
 	// Colors for the persistent header bar — fixed left-to-right stacking
 	// order: each category's segment appears once its step is reached and
@@ -102,32 +110,40 @@
 	// scripts/compute_bundesland_areas.py), so the "% of own area" view stays
 	// internally consistent with the rest of the pipeline. Cross-checked
 	// against Statistik Austria ("Fläche und Benützungsarten", Stand 1.1.2025,
-	// Bundesamt für Eich- und Vermessungswesen): every state is within ~1% of
-	// the official figure (raster slightly undercounts everywhere due to
-	// boundary pixels) — no state is an outlier.
+	// Bundesamt für Eich- und Vermessungswesen): every state is within ~1.2% of
+	// the official figure (raster slightly undercounts everywhere) — no state
+	// is an outlier.
+	//
+	// Der Fehlbetrag kommt nicht nur von Randpixeln: die Klassifikation weist
+	// nach Priorität zu, und eine Zelle, auf die keine Regel passt, bleibt
+	// Code 0. Verfügbare Splitter unter 10 ha fallen so aus der Zählung. Mit
+	// clean-44-ohne-lsg sind das rund 19.000 ha mehr als zuvor, weil Flächen,
+	// die nur wegen der OSM-Schutzgebiete ausgeschlossen waren, jetzt als
+	// Splitter übrig bleiben. Für die Prozentbalken unkritisch — als
+	// Flächenangabe für Dritte taugen diese Zahlen nicht.
 	const BUNDESLAND_HA: Record<string, number> = {
-		"Niederösterreich": 1_913_316,
-		"Steiermark": 1_629_196,
-		"Tirol": 1_252_069,
-		"Oberösterreich": 1_193_705,
-		"Kärnten": 948_875,
-		"Salzburg": 709_212,
-		"Burgenland": 395_412,
-		"Vorarlberg": 257_781,
-		"Wien": 41_467,
+		"Niederösterreich": 1_912_101,
+		"Steiermark": 1_622_717,
+		"Tirol": 1_249_113,
+		"Oberösterreich": 1_192_281,
+		"Kärnten": 945_832,
+		"Salzburg": 706_233,
+		"Burgenland": 395_084,
+		"Vorarlberg": 256_866,
+		"Wien": 41_445,
 	};
 
 	// ── Bundesland breakdown (vector data, sorted by potential area) ─────────
-	// Stand clean-45 (abschichtung.tif, 30.9.2026) — aus geodata/zone_stats.json.
+	// Stand clean-44-ohne-lsg (abschichtung.tif, 21.10.2026) — aus geodata/zone_stats.json.
 	const BUNDESLAENDER = [
-		{ name: "Niederösterreich", short: "NÖ", ha: 140_876 },
-		{ name: "Burgenland", short: "B", ha: 69_436 },
-		{ name: "Steiermark", short: "ST", ha: 44_342 },
-		{ name: "Oberösterreich", short: "OÖ", ha: 37_126 },
-		{ name: "Kärnten", short: "K", ha: 25_615 },
-		{ name: "Tirol", short: "T", ha: 19_125 },
-		{ name: "Salzburg", short: "S", ha: 16_646 },
-		{ name: "Vorarlberg", short: "V", ha: 4_223 },
+		{ name: "Niederösterreich", short: "NÖ", ha: 141_089 },
+		{ name: "Burgenland", short: "B", ha: 69_439 },
+		{ name: "Steiermark", short: "ST", ha: 47_409 },
+		{ name: "Oberösterreich", short: "OÖ", ha: 37_167 },
+		{ name: "Kärnten", short: "K", ha: 27_132 },
+		{ name: "Salzburg", short: "S", ha: 19_605 },
+		{ name: "Tirol", short: "T", ha: 18_840 },
+		{ name: "Vorarlberg", short: "V", ha: 4_917 },
 		{ name: "Wien", short: "W", ha: 253 },
 	];
 
@@ -163,7 +179,7 @@
 	);
 
 	function fmt(n: number, d = 0) {
-		return n.toLocaleString("de-AT", { maximumFractionDigits: d });
+		return fmtNumber(n, d);
 	}
 
 	// Anlagen je Bundesland — aus der vorberechneten Gemeindetabelle, deren
@@ -171,30 +187,28 @@
 	// Der frühere Weg über BEZIRK_TO_BUNDESLAND verlor die 51 Anlagen ohne
 	// `bezirk`-Attribut, wodurch die Balken hier nicht zu den Zahlen auf den
 	// Gemeindeseiten passten (NÖ 794 statt 801, Steiermark 112 statt 116).
-	// Fällt auf die Namenszuordnung zurück, falls die Tabelle nicht lädt.
-	async function turbinesPerBundesland(turbGj: any): Promise<Record<string, number>> {
-		const table = await loadRegionStats();
+	//
+	// Seit die Standorte nur noch als Vektorkacheln kommen, gibt es gar keinen
+	// Rückfall mehr: die Punktdatei liegt nicht mehr im Build. Lädt die Tabelle
+	// nicht, bleiben die Balken leer — besser als falsche Zahlen.
+	async function turbinesPerBundesland(
+		table: RegionStatsTable | null,
+	): Promise<Record<string, number>> {
 		const out: Record<string, number> = {};
-		if (table) {
-			for (const [gkz, entry] of Object.entries(table.regions)) {
-				const bl = BUNDESLAND_BY_GKZ[gkz[0]];
-				if (bl) out[bl] = (out[bl] ?? 0) + entry.turbines;
-			}
-			return out;
-		}
-		for (const f of turbGj.features) {
-			const bl = BEZIRK_TO_BUNDESLAND[f.properties.bezirk ?? ""];
-			if (bl) out[bl] = (out[bl] ?? 0) + 1;
+		if (!table) return out;
+		for (const [gkz, entry] of Object.entries(table.regions)) {
+			const bl = BUNDESLAND_BY_GKZ[gkz[0]];
+			if (bl) out[bl] = (out[bl] ?? 0) + entry.turbines;
 		}
 		return out;
 	}
 
 	// ── Data loading ──────────────────────────────────────────────────────────
 	async function loadData() {
-		const [offGj, turbGj, hullGj] = await Promise.all([
+		const [offGj, hullGj, statsTable] = await Promise.all([
 			fetch("/data/official_zoning.json").then((r) => r.json()),
-			fetch("/data/existing_turbines.json").then((r) => r.json()),
 			fetch("/data/wka_bestand_ausserhalb_zonen.json").then((r) => r.json()),
+			loadRegionStats(),
 		]);
 		officialAreaHa = offGj.features.reduce(
 			(s: number, f: any) => s + (f.properties.area_ha ?? 0),
@@ -216,8 +230,14 @@
 		}
 		hullByBL = hullBL;
 
-		turbineCount = turbGj.features.length;
-		turbinesByBL = await turbinesPerBundesland(turbGj);
+		// Gesamtzahl aus der Tabelle, nicht aus den Punkten: eine Kachelquelle
+		// lässt sich nicht zählen. `turbineTotal` enthält auch die Anlagen ohne
+		// Gemeindezuordnung, die Summe über `regions` nicht — deshalb nicht
+		// einfach aufaddieren.
+		turbineCount =
+			statsTable?.turbineTotal ??
+			Object.values(statsTable?.regions ?? {}).reduce((s, e) => s + e.turbines, 0);
+		turbinesByBL = await turbinesPerBundesland(statsTable);
 		dataReady = true;
 	}
 
@@ -456,7 +476,7 @@
 					class="font-extrabold text-xl leading-snug mb-3"
 					style="color:#0f172a;"
 				>
-					Wo der Wind weht: Windpotentiale in Österreich
+					Wo der Wind weht: Windpotenziale in Österreich
 				</h1>
 				<p class="text-sm text-slate-600 leading-relaxed mb-4">
 					Österreich hat <strong class="text-slate-800"
@@ -572,8 +592,10 @@
 				<p class="text-sm sm:text-base leading-relaxed text-slate-700 mb-3">
 					Weitere <strong class="text-slate-900"
 						>{fmt(SCHUTZ_HA)}&thinsp;ha</strong
-					> entfallen auf Naturschutzgebiete — Nationalparks, Naturparks, Natura-2000-Gebiete
-					und Ramsar-Feuchtgebiete. Diese Flächen sind für Windkraft ausgeschlossen.
+					> entfallen auf Schutzgebiete — Nationalparks, Naturschutzgebiete,
+					Natura-2000-Gebiete, Ramsar-Feuchtgebiete und weitere per Verordnung
+					oder Bescheid geschützte Flächen. Landschaftsschutzgebiete zählen
+					nicht dazu.
 				</p>
 				<div class="flex justify-between">
 					<span class="text-[9px] text-green-600 font-medium"
@@ -636,7 +658,7 @@
 					</p>
 				</div>
 				<p class="text-sm sm:text-base leading-relaxed text-slate-700 mb-3">
-					Auf Basis des European Wind Atlas wurden Standorte mit zu geringem
+					Auf Basis des Global Wind Atlas wurden Standorte mit zu geringem
 					Wind ausgeschlossen — weitere <strong class="text-slate-900"
 						>{fmt(WIND_HA)}&thinsp;ha</strong
 					>. Diese Daten dienen jedoch nur einer ersten Einschätzung: Für
@@ -692,7 +714,7 @@
 			{@render slidePanel(step4)}
 		{/if}
 
-		<!-- Step 5: Potentialflächen nach Bundesland -->
+		<!-- Step 5: Potenzialflächen nach Bundesland -->
 		{#if step === 5}
 			{#snippet step5()}
 				<div class="flex items-center gap-2 mb-3">
@@ -704,14 +726,14 @@
 						class="text-[10px] font-bold uppercase tracking-widest"
 						style="color:#1d4ed8;"
 					>
-						Potentialflächen
+						Potenzialflächen
 					</p>
 				</div>
 				<p class="text-sm sm:text-base leading-relaxed text-slate-700 mb-3">
 					Somit bleiben <strong class="text-slate-900"
 						>~{fmt(POTENTIAL_VECTOR_HA)}&thinsp;ha</strong
 					>
-					in ganz Österreich als Potentialflächen für Windkraft übrig — verteilt
+					in ganz Österreich als Potenzialflächen für Windkraft übrig — verteilt
 					auf alle 9 Bundesländer. Das sind ca.
 					<strong class="text-slate-900"
 						>{fmt((POTENTIAL_VECTOR_HA / AUSTRIA_HA) * 100, 1)}&thinsp;%</strong
@@ -817,20 +839,21 @@
 					Bestandsflächen einen zweiten Flächentyp bekommen.
 				-->
 				<p class="text-sm sm:text-base leading-relaxed text-slate-700 mb-4">
-					Fünf Bundesländer haben eigene Windkraft-Eignungszonen ausgewiesen:
+					Fünf Bundesländer haben eigene Windkraftzonen ausgewiesen:
 					Niederösterreich, Burgenland, Steiermark, Kärnten und Salzburg.
-					Diese „Zonierungsflächen" seht ihr hier{#if dataReady}&nbsp;—
+					Diese „Zonierungsflächen“ siehst du hier{#if dataReady}&nbsp;—
 						aktuell <strong class="text-slate-900"
 							>{fmt(Math.round(officialAreaHa))}&thinsp;ha</strong
 						>{/if}. In Tirol, Vorarlberg und Wien gibt es keine; in
-					Oberösterreich wird daran gearbeitet, in der Steiermark wird die
-					bestehende Zonierung gerade überarbeitet.
+					Oberösterreich wird aktuell an einer Zonierung gearbeitet.
 				</p>
 				<!--
 					Datenstand je Bundesland, wie ihn der Datenanbieter im Manifest
-					ausweist. Für drei Länder ist er dort ausdrücklich unbekannt, und
-					zwei Datensätze sind handdigitalisiert statt amtlich bezogen — das
-					gehört dazugesagt, sonst wirken alle fünf gleich belastbar.
+					ausweist. Für zwei Länder ist er dort ausdrücklich unbekannt, und
+					Salzburg ist handdigitalisiert statt amtlich bezogen — das gehört
+					dazugesagt, sonst wirken alle fünf gleich belastbar. Die Steiermark
+					war es bis Oktober 2026 auch; seit clean-44-ohne-lsg liegt dort das
+					amtliche SAPRO Windenergie 2026 zugrunde.
 				-->
 				<!--
 					Der zweite Flächentyp im selben Schritt. Ohne ihn war die Karte im
@@ -838,6 +861,12 @@
 					der 423 Anlagen stehen außerhalb dieser Zonen. Wer nur die
 					violetten Flächen sah, musste schließen, dass im Burgenland kaum
 					Windkraft-Flächen existieren.
+
+					Der Grund ist aber nicht, dass dort außerhalb der Zonen gebaut
+					wurde: uns liegen für das Burgenland nur die *aktuellen*
+					Eignungszonen vor, nicht die früheren, in denen diese Anlagen
+					stehen. Der Text sagt das seit der Durchsicht vom 11.11.2026
+					ausdrücklich — vorher las er sich wie ein Regelverstoß.
 				-->
 				<div
 					class="rounded-lg px-3 py-2.5 mb-3"
@@ -860,20 +889,21 @@
 						dieser Zonen. Sie sind hier türkis umrandet{#if dataReady}&nbsp;—
 							zusammen <strong class="text-slate-900"
 								>{fmt(Math.round(hullAreaHa))}&thinsp;ha</strong
-							> mit {fmt(hullTurbines)} Anlagen{/if}. Am deutlichsten im
-						Burgenland: dort stehen 397 von 423 Anlagen außerhalb der
-						Eignungszonen.
+							> mit {fmt(hullTurbines)} Anlagen{/if}. Im Burgenland liegen uns
+						nur die aktuellen Eignungszonen vor, nicht die bereits bebauten.
+						Viele burgenländische Anlagen erscheinen deshalb hier außerhalb der
+						Zonen, obwohl sie in früher ausgewiesenen Eignungszonen stehen.
 					</p>
 				</div>
 
 				<p class="text-[10px] text-slate-400 leading-relaxed mb-3">
 					Datenstand: Niederösterreich 30.4.2026 (LGBl. 47/2024), Burgenland
-					21.7.2026. Für Kärnten, Steiermark und Salzburg liegt uns kein
-					Datenstand vor; die steirischen und Salzburger Zonen sind
-					handdigitalisiert und nicht amtlich bezogen. Die Hüllen um die
-					bestehenden Windparks sind kein Rechtsakt, sondern berechnet:
-					Anlagen unter 750 m Abstand gelten als ein Park, um den 200 m Rand
-					gelegt werden.
+					21.7.2026, Steiermark 13.10.2026 (SAPRO Windenergie 2026, LGBl.
+					87/2026). Für Kärnten und Salzburg liegt uns kein Datenstand vor;
+					die Salzburger Zonen sind handdigitalisiert und nicht amtlich
+					bezogen. Die Hüllen um die bestehenden Windparks sind kein
+					Rechtsakt, sondern berechnet: Anlagen unter 750 m Abstand gelten
+					als ein Park, um den 200 m Rand gelegt werden.
 				</p>
 
 				<!-- Bundesland bars: potential (light blue) + zoned (purple) overlay,
@@ -1034,16 +1064,14 @@
 					class="text-xl font-extrabold tracking-tight mb-2"
 					style="color:#0f172a;"
 				>
-					Erkunde die Windpotentiale
+					Erkunde die Windpotenziale
 				</h2>
 				{#if dataReady}
 					<p class="text-sm sm:text-base leading-relaxed text-slate-700 mb-3 text-left">
 						{#if productionTwh !== null}
 							Österreichs Windräder haben zuletzt rund
 							<strong class="text-slate-900"
-								>{productionTwh.toLocaleString("de-AT", {
-									maximumFractionDigits: 1,
-								})}&thinsp;TWh</strong
+								>{fmtNumber(productionTwh, 1)}&thinsp;TWh</strong
 							>
 							Strom pro Jahr erzeugt ({productionYear}).
 						{:else}

@@ -28,13 +28,19 @@ node_modules
 !/geodata/exclusion_siedlung.geojson
 !/geodata/exclusion_sonstige.geojson
 !/geodata/exclusion_wind.geojson
-!/geodata/existing_turbines.geojson
 !/geodata/official_zoning.geojson
 !/geodata/possible_zones.geojson
 !/geodata/zone_centroids.geojson
 !/geodata/zone_stats.json
 !/geodata/region_stats.json
 !/geodata/wka_bestand_ausserhalb_zonen.geojson
+
+# existing_turbines.geojson fehlt in dieser Liste mit Absicht: die Standorte
+# der Bestandsanlagen dürfen gezeigt, aber nicht weitergegeben werden. Sie
+# liegen deshalb nur noch als Vektorkacheln auf dem eigenen Tileserver
+# (scripts/build_turbine_tiles.py). Die Lieferdatei bleibt lokal liegen —
+# mehrere Pipeline-Skripte brauchen sie —, geht aber nie wieder ins Repo.
+/static/data/existing_turbines.json
 
 # OS
 .DS_Store

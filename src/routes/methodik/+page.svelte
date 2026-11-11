@@ -55,8 +55,8 @@
 			Wie berechnen wir die Windkraft-Potenzialflächen?
 		</h1>
 		<p class="text-lg text-slate-600 leading-relaxed max-w-2xl">
-			Diese Seite, welche Daten wir verwenden, wie wir Potentialflächen rechnen
-			und wie sich unsere Visualisierungen zusammensetzen
+			Diese Seite erklärt, welche Daten wir verwenden, wie wir Potenzialflächen
+			berechnen und wie sich unsere Visualisierungen zusammensetzen.
 		</p>
 	</div>
 
@@ -70,8 +70,8 @@
 			Stück alles ab, wo aus rechtlichen, technischen oder ökologischen Gründen
 			kein Windrad stehen darf oder soll: Siedlungen und einzelne Wohngebäude
 			(mit Sicherheitsabstand), Naturschutzgebiete, Straßen, Bahnstrecken,
-			Seilbahnen, Gewässer, zu steiles oder zu hoch gelegenes Gelände und
-			Standorte mit zu wenig Wind. Was danach übrig bleibt und mindestens 10
+			Seilbahnen, Hochspannungsfreileitungen ab 110 kV, Gewässer, zu steiles
+			oder zu hoch gelegenes Gelände und Standorte mit zu wenig Wind. Was danach übrig bleibt und mindestens 10
 			Hektar zusammenhängende Fläche bietet, zeigen wir als
 			<strong>Potenzialfläche</strong>.
 		</p>
@@ -204,7 +204,7 @@
 				können die gesetzlichen Mindestabstände höher liegen als hier gerechnet.
 			</p>
 			<p class="text-xs text-slate-500 mt-3 leading-relaxed">
-				„Einzelgebäude" sind einzelne Wohnhäuser außerhalb von Siedlungen — etwa
+				„Einzelgebäude“ sind einzelne Wohnhäuser außerhalb von Siedlungen — etwa
 				ein einzelnes Bauernhaus. Weil sie nicht Teil eines größeren
 				Siedlungsgebiets sind, gilt für sie ein kleinerer Abstand als für
 				Siedlungen.
@@ -221,7 +221,7 @@
 				sicherheitsrelevanten Objekten einen Mindestabstand ein.
 			</p>
 			<p class="text-xs text-slate-500 leading-relaxed mb-3">
-				Die Kategorie „Wichtige Objekte" (250 m um Kirchen, Schlösser und
+				Die Kategorie „Wichtige Objekte“ (250 m um Kirchen, Schlösser und
 				ähnliche Landmarken) ist mit der Datenlieferung vom September 2026
 				entfallen und beim Datenanbieter angefragt. Der Abstand zu
 				Hochspannungsfreileitungen war zwischenzeitlich ebenfalls entfallen
@@ -294,9 +294,16 @@
 						Naturschutzgebiete
 					</p>
 					<p class="text-xs text-slate-600 leading-relaxed">
-						Nationalparks, Naturparks, Natura-2000-Gebiete und
-						Ramsar-Feuchtgebiete sind vollständig ausgeschlossen — dort ist eine
-						Windkraftanlage grundsätzlich nicht vorstellbar.
+						Ausgeschlossen sind die amtlichen Schutzgebiete des Umweltbundesamts,
+						also Flächen, die nach dem Naturschutzrecht der Länder per Verordnung
+						oder Bescheid festgelegt sind: Nationalparks, Naturschutzgebiete,
+						Europaschutzgebiete nach Natura 2000, Ramsar-Gebiete, geschützte
+						Landschaftsteile, Naturdenkmäler, geschützte Biotope, örtliche
+						Schutzgebiete, Ruhegebiete und Pflanzenschutzgebiete.
+						<strong>Landschaftsschutzgebiete</strong> sind kein Ausschlusskriterium:
+						sie verbieten Windkraft nicht grundsätzlich, sondern machen sie
+						genehmigungspflichtig. Naturparks sind keine eigene Schutzkategorie
+						und daher ebenfalls nicht enthalten.
 					</p>
 				</div>
 				<div class="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
@@ -321,7 +328,7 @@
 					<p class="text-xs text-slate-600 leading-relaxed">
 						Standorte mit einer mittleren Windleistungsdichte unter 150 W/m² in
 						130 m Nabenhöhe lohnen sich wirtschaftlich in aller Regel nicht und
-						sind daher ausgeschlossen. Die Daten stammen aus dem European Wind
+						sind daher ausgeschlossen. Die Daten stammen aus dem Global Wind
 						Atlas, der die Leistungsdichte für 150 m Höhe ausweist — dort
 						entspricht die Schwelle rund 160 W/m². Fehlen für einen Standort
 						Winddaten, wird er sicherheitshalber ebenfalls ausgeschlossen.
@@ -345,7 +352,7 @@
 			mehrere. Welche wofür zuständig ist:
 		</p>
 		<div class="space-y-3">
-			{#each [{ q: "Amtliche Flächenwidmung der neun Bundesländer", w: "Wo Siedlungen liegen und welcher Mindestabstand dort gilt. Stand der Pläne: Sommer 2026." }, { q: "Adressregister und Kataster", w: "Einzelne Wohnhäuser außerhalb der Siedlungen sowie Gebäudeumrisse. Vom Bundesamt für Eich- und Vermessungswesen." }, { q: "OpenStreetMap", w: "Straßen, Bahnstrecken, Seilbahnen und größere Gewässer — eine frei zugängliche, von Freiwilligen gepflegte Landkarte, die für Österreich sehr detailliert ist. Stand: 30.3.2026." }, { q: "Digitales Geländemodell", w: "Hangneigung und Seehöhe, in einer Auflösung von 25 Metern." }, { q: "Globaler Windatlas", w: "Wie viel Wind an einem Standort weht, ausgedrückt als Leistungsdichte." }, { q: "Schutzgebietsverzeichnisse", w: "Nationalparks, Naturschutzgebiete, Natura-2000- und Ramsar-Gebiete." }, { q: "Zonierungspläne der Bundesländer", w: "Die amtlich ausgewiesenen Windkraftzonen, die wir als eigene Ebene zeigen — sie schränken die berechneten Flächen nicht zusätzlich ein." }] as row}
+			{#each [{ q: "Amtliche Flächenwidmung der neun Bundesländer", w: "Wo Siedlungen liegen und welcher Mindestabstand dort gilt. Stand der Pläne: Sommer 2026." }, { q: "Adressregister und Kataster", w: "Einzelne Wohnhäuser außerhalb der Siedlungen sowie Gebäudeumrisse. Vom Bundesamt für Eich- und Vermessungswesen." }, { q: "OpenStreetMap", w: "Straßen, Bahnstrecken, Seilbahnen, Hochspannungsfreileitungen ab 110 kV und größere Gewässer — eine frei zugängliche, von Freiwilligen gepflegte Landkarte, die für Österreich sehr detailliert ist. Stand: 30.3.2026." }, { q: "Digitales Geländemodell", w: "Hangneigung und Seehöhe, in einer Auflösung von 25 Metern." }, { q: "Global Wind Atlas", w: "Wie viel Wind an einem Standort weht, ausgedrückt als Leistungsdichte." }, { q: "Schutzgebietsverzeichnis des Umweltbundesamts", w: "Alle per Verordnung oder Bescheid festgelegten Schutzgebiete: Nationalparks, Naturschutzgebiete, Natura-2000- und Ramsar-Gebiete, geschützte Landschaftsteile, Naturdenkmäler, Biotope, Ruhegebiete. Landschaftsschutzgebiete und Naturparks sind nicht enthalten." }, { q: "Zonierungspläne der Bundesländer", w: "Die amtlich ausgewiesenen Windkraftzonen, die wir als eigene Ebene zeigen — sie schränken die berechneten Flächen nicht zusätzlich ein." }] as row}
 				<div class="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
 					<p
 						class="text-sm font-semibold mb-1"
@@ -447,7 +454,7 @@
 			</p>
 			<!--
 				Band 38 stand bis September 2026 in keiner Doku und in keinem Layer,
-				obwohl es 14.756 ha umfasst. Es gehört hierher, weil es das einzige
+				obwohl es 14.721 ha umfasst. Es gehört hierher, weil es das einzige
 				Band ist, das nicht aus dem Rasterverfahren stammt, sondern aus den
 				Anlagenstandorten.
 			-->

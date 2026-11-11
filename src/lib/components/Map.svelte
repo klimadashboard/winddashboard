@@ -34,6 +34,10 @@
 		POSSIBLE_ZONES_LAYER,
 		POSSIBLE_ZONES_MIN_ZOOM,
 		POSSIBLE_ZONES_MAX_ZOOM,
+		TURBINE_TILES,
+		TURBINE_LAYER,
+		TURBINE_MIN_ZOOM,
+		TURBINE_MAX_ZOOM,
 	} from "$lib/config/tiles";
 	import type { Region } from "$lib/stores/windStore";
 	import {
@@ -130,7 +134,19 @@
 					right: 16,
 				};
 			} else {
-				padding = { top: 40, bottom: 40, left: 40, right: 40 };
+				// Links Platz für das Bedienfeld (top-4 left-4, rund 190 px breit),
+				// sobald die Story vorbei und das Panel sichtbar ist. Ohne diesen
+				// Rand lag die Legende über Vorarlberg und dem Tiroler Außerfern —
+				// gemeldet am 11.11.2026 von Leuten, deren Gemeinde damit gar nicht
+				// zu sehen war. Während der Story ist das Panel ausgeblendet, dort
+				// bleibt es beim gleichmäßigen Rand.
+				const panelVisible = get(storyStep) < 0;
+				padding = {
+					top: 40,
+					bottom: 40,
+					left: panelVisible ? 230 : 40,
+					right: 40,
+				};
 			}
 
 			// Ränder so stutzen, dass in beiden Achsen mindestens ein Drittel der
@@ -209,10 +225,14 @@
 				generateId: true,
 			});
 
+			// Vektorkacheln statt GeoJSON — Grund siehe TURBINE_TILES in
+			// config/tiles.ts: der Datensatz darf nicht weitergegeben werden.
 			map.addSource("turbines", {
-				type: "geojson",
-				data: "/data/existing_turbines.json",
-				generateId: true,
+				type: "vector",
+				tiles: [TURBINE_TILES],
+				minzoom: TURBINE_MIN_ZOOM,
+				maxzoom: TURBINE_MAX_ZOOM,
+				attribution: "© Klimadashboard",
 			});
 
 			map.addSource("classification-raster", {
@@ -308,10 +328,36 @@
 					},
 					"possible-zones-fill",
 				);
-				// Subtle border line along Austria's edge
+				// Subtle border line along Austria's edge.
+				//
+				// Nur die Außenringe: `austria_outline.json` entsteht durch
+				// Auflösen der Gemeindegrenzen und trägt dabei 162 Innenringe
+				// mit — Splitter zwischen benachbarten Gemeinden, der größte
+				// 0,12 km², der kleinste wenige Quadratmeter. Als Linie gezeichnet
+				// wurde jeder davon zu einer winzigen geschlossenen Schlaufe; bei
+				// der 2,5 px starken dunklen Linie der Story sahen sie wie
+				// schwarze Flecken quer über Österreich aus (gemeldet am
+				// 11.11.2026 für die Gegend um Zell am See). Die Maske nutzt
+				// ohnehin nur die Außenringe, die Linie tut es jetzt auch.
+				const borderGeometry: GeoJSON.Geometry =
+					outline.type === "MultiPolygon"
+						? {
+								type: "MultiPolygon",
+								coordinates: (
+									outline as GeoJSON.MultiPolygon
+								).coordinates.map((poly) => [poly[0]]),
+							}
+						: outline.type === "Polygon"
+							? {
+									type: "Polygon",
+									coordinates: [
+										(outline as GeoJSON.Polygon).coordinates[0],
+									],
+								}
+							: outline;
 				map.addSource("austria-border", {
 					type: "geojson",
-					data: { type: "Feature", geometry: outline, properties: {} },
+					data: { type: "Feature", geometry: borderGeometry, properties: {} },
 				});
 				// Bold while the intro story is active — visually ties the map's
 				// Austria outline to the story's area bar (same "this is the
@@ -330,6 +376,13 @@
 					},
 					"possible-zones-fill",
 				);
+				// Der Zustand kann sich geändert haben, während oben der Umriss
+				// geladen wurde: `addAustriaMask()` läuft bewusst nicht blockierend,
+				// und wer die Geschichte sofort überspringt, ist schon fertig, bevor
+				// der Fetch zurückkommt. Das Abonnement auf `storyStep` hat dann
+				// nichts vorgefunden, was es umfärben könnte, und Österreich behielt
+				// auf der fertigen Karte die fette dunkle Story-Linie.
+				applyStoryVisibility(get(storyStep));
 			} catch {
 				// Mask is optional — silently skip on error
 			}
@@ -416,6 +469,7 @@
 				id: "turbines",
 				type: "circle",
 				source: "turbines",
+				"source-layer": TURBINE_LAYER,
 				minzoom: 4.5,
 				paint: { "circle-radius": ["interpolate", ["linear"], ["zoom"], 4.5, 1.2, 7, 2, 10, 3.5, 13, 5], "circle-color": "#1e3a8a", "circle-stroke-color": "#ffffff", "circle-stroke-width": ["interpolate", ["linear"], ["zoom"], 4.5, 0.3, 8, 1], "circle-opacity": 0.85 },
 			}, B);
@@ -1089,7 +1143,13 @@
 			// CSS-transitions from 100vh → 60vh over 0.85s.  Wait for that to finish,
 			// then resize the canvas and fly to the proper Austria view. Greift nur
 			// nach einer tatsächlich gelaufenen Story — siehe currentStoryStep oben.
-			if (isMobile() && step < 0 && prev >= 0) {
+			//
+			// Am Schreibtisch gilt dasselbe, aus einem zweiten Grund: dort taucht
+			// mit dem Ende der Story das Bedienfeld oben links auf, für das
+			// `fitAustria` links mehr Rand einplant. Ohne dieses zweite Einpassen
+			// griffe der Rand erst beim nächsten Neuladen, und die Legende läge
+			// weiter über Vorarlberg.
+			if (step < 0 && prev >= 0) {
 				setTimeout(() => {
 					map.resize();
 					// Nach dem Ende der Story ist die Karte nur noch 60vh hoch und

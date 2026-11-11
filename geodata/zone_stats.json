@@ -1,15 +1,15 @@
 {
-  "count": 3895,
-  "totalHa": 357740,
+  "count": 4064,
+  "totalHa": 365949,
   "perBundesland": {
-    "Niederösterreich": 140876,
-    "Burgenland": 69436,
-    "Steiermark": 44342,
-    "Oberösterreich": 37126,
-    "Kärnten": 25615,
-    "Tirol": 19125,
-    "Salzburg": 16646,
-    "Vorarlberg": 4223,
+    "Niederösterreich": 141089,
+    "Burgenland": 69439,
+    "Steiermark": 47409,
+    "Oberösterreich": 37167,
+    "Kärnten": 27132,
+    "Salzburg": 19605,
+    "Tirol": 18840,
+    "Vorarlberg": 4917,
     "Wien": 253,
     "(unassigned)": 98
   }

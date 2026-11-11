@@ -4,6 +4,7 @@
 	import type { InfoCard, GraphicKey } from "$lib/data/faq";
 	import { getRegionIntro } from "$lib/data/regionIntro";
 	import { AUSTRIA_HA } from "$lib/config/austria";
+	import { fmtNumber } from "$lib/format";
 	import { goto } from "$app/navigation";
 	import { page } from "$app/stores";
 	import WegZumWindrad from "./WegZumWindrad.svelte";
@@ -54,9 +55,9 @@
 	const stats = $derived($regionStats ?? $page.data?.stats ?? null);
 	const intro = $derived(region ? getRegionIntro(region, stats) : null);
 	// Fällt auf die zuletzt bekannten Zahlen zurück, solange zone_stats.json lädt.
-	// Stand widmung_v2 (abschichtung.tif, Schema clean-44, 9.9.2026).
-	const zoneCount = $derived($zoneStats?.count ?? 3812);
-	const totalAreaHa = $derived($zoneStats?.totalHa ?? 357740);
+	// Stand widmung_v2 (abschichtung.tif, Schema clean-44-ohne-lsg, 21.10.2026).
+	const zoneCount = $derived($zoneStats?.count ?? 4064);
+	const totalAreaHa = $derived($zoneStats?.totalHa ?? 365949);
 	const potentialPct = $derived(Math.round((totalAreaHa / AUSTRIA_HA) * 1000) / 10);
 
 	// ── Bento card modal ──
@@ -178,8 +179,8 @@
 		<p class="text-base leading-relaxed text-slate-600 max-w-2xl">
 			Unsere Landkarte zeigt, wo in Österreich Windräder gebaut werden können.
 			Insgesamt gibt es <span class="font-semibold" style="color: var(--text-dark);"
-				>{zoneCount.toLocaleString("de-AT")} potenzielle Windeignungsflächen</span
-			> in Österreich, die einer Fläche von {potentialPct.toLocaleString("de-AT")} % der österreichischen
+				>{fmtNumber(zoneCount)} potenzielle Windeignungsflächen</span
+			> in Österreich, die einer Fläche von {fmtNumber(potentialPct, 1)} % der österreichischen
 			Landesfläche entsprechen.
 		</p>
 		<p class="text-sm text-slate-400 mt-2 leading-relaxed">

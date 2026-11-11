@@ -34,6 +34,14 @@ export interface RegionStatsTable {
 	generated: string;
 	boundarySource: string;
 	minShareHa: number;
+	/**
+	 * Alle Anlagen der Lieferung, auch die ohne Gemeindezuordnung — derzeit
+	 * 1.396 gegenüber 1.395 in der Summe über `regions`. Seit die Standorte
+	 * nur noch als Vektorkacheln ausgeliefert werden (Lizenz: zeigen ja,
+	 * weitergeben nein), ist das die einzige Quelle für die Gesamtzahl: eine
+	 * Kachelquelle kann man nicht zählen, sondern nur zeichnen.
+	 */
+	turbineTotal?: number;
 	regions: Record<string, RegionEntry>;
 }
 
@@ -54,17 +62,31 @@ export function loadRegionStats(): Promise<RegionStatsTable | null> {
  * "district" umfasst damit alle GKZ mit ihrem Code als Präfix — deshalb
  * genügt ein Präfixvergleich, um Bezirke und Bundesländer zu aggregieren.
  */
+/**
+ * Wien ist zugleich Gemeinde, Bezirk und Bundesland, hat aber in der Tabelle
+ * keine eigene Zeile: die amtlichen Gemeindegrenzen führen die Stadt als ihre
+ * 23 Gemeindebezirke (GKZ 90101–92301). Die Regions-API liefert für
+ * `/regions/wien` dagegen die Gemeinde mit der GKZ 90001 — und für den
+ * gleichnamigen Bezirk die 900. Beide Codes finden per Präfix nichts (901…
+ * beginnt weder mit „90001“ noch mit „900“), die Suche lieferte `null`, und
+ * die Wiener Seite blieb dauerhaft bei „Daten für Wien werden geladen …“.
+ * Beide Codes meinen dieselbe Stadt, also das ganze Bundesland 9.
+ */
+const WIEN_CODES = new Set(['90001', '900']);
+
 function matchingGkz(region: Region, table: RegionStatsTable): string[] {
 	const code = String(region.code ?? '').trim();
 	if (!code) return [];
 	const all = Object.keys(table.regions);
 
+	if (WIEN_CODES.has(code)) {
+		return all.filter((gkz) => gkz.startsWith('9'));
+	}
 	if (region.layer === 'municipality') {
 		return all.includes(code) ? [code] : [];
 	}
-	// Wien ist zugleich Gemeinde und Bundesland: die GKZ 900 existiert als
-	// Gemeinde, die Bezirke 901–923 sind Zählbezirke ohne eigene GKZ-Zeile.
-	// Der Präfixvergleich deckt beide Fälle ab.
+	// Die GKZ ist hierarchisch: erste Stelle Bundesland, erste drei Stellen
+	// politischer Bezirk — ein Präfixvergleich aggregiert beide Ebenen.
 	return all.filter((gkz) => gkz.startsWith(code));
 }
 

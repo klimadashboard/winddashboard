@@ -79,7 +79,12 @@ def load_gemeinden(directory: str) -> gpd.GeoDataFrame:
     shp = glob.glob(os.path.join(directory, "*.shp"))
     if not shp:
         sys.exit(f"Kein Shapefile in {directory} gefunden.")
-    gem = gpd.read_file(shp[0])
+    # encoding explizit: die Lieferung der Statistik Austria legt UTF-8 im
+    # .cst-Begleitfile aus, GDAL liest das DBF aber als Latin-1. Ohne die
+    # Angabe standen 362 der 2.114 Gemeindenamen doppelt kodiert in der
+    # Tabelle ("ThÃ¶rl", "GroÃ\x9fhÃ¶flein"). Die App zeigt den Namen aus der
+    # Regions-API, deshalb fiel es nie auf — die Tabelle ist trotzdem falsch.
+    gem = gpd.read_file(shp[0], encoding="utf-8")
     missing = {"g_id", "g_name"} - set(gem.columns)
     if missing:
         sys.exit(f"Spalten fehlen im Shapefile: {sorted(missing)}")
@@ -283,6 +288,12 @@ def main() -> None:
         "generated": pd.Timestamp.utcnow().strftime("%Y-%m-%d"),
         "boundarySource": os.path.basename(glob.glob(os.path.join(args.gemeinden, "*.shp"))[0]),
         "minShareHa": MIN_SHARE_HA,
+        # Alle Anlagen der Lieferung, auch die ohne Gemeindezuordnung. Die
+        # Summe über `regions` ist kleiner (derzeit 1.395 von 1.396): eine
+        # Anlage hat weder brauchbare Koordinaten noch einen eindeutigen
+        # Gemeindenamen. Das Scrollytelling nennt die Gesamtzahl und kann die
+        # Punktdatei selbst nicht mehr laden — sie liegt nicht mehr im Build.
+        "turbineTotal": int(len(sanitize_turbines())),
         "regions": regions,
     }
 

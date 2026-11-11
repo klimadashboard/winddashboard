@@ -2,8 +2,9 @@
 
 Dieses Dokument beschreibt alle Schritte, die beim Einspielen neuer Quelldaten durchzuführen sind.
 
-> **Kurzfassung:** Neue `osm_wka_distance_zones_widmung.tif` ablegen → Schritte 1–5 ausführen →
-> zwei MBTiles hochladen → App-Konstanten prüfen (Schritt 6).
+> **Kurzfassung:** Neue `abschichtung.tif` ablegen → Schritte 1–5c ausführen →
+> **vier** MBTiles hochladen (Klassifikation, Ausschlussbänder, Potenzialflächen,
+> Bestandsanlagen) → App-Konstanten prüfen (Schritt 6).
 
 ---
 
@@ -35,9 +36,87 @@ Danach in Schritt 6 die App-Konstanten aktualisieren.
 
 ---
 
+## Lieferung clean-44-ohne-lsg (21.10.2026) — Steiermark amtlich, Landschaftsschutz raus
+
+Aktuelles Paket: `abschichtung.tif` (155 MB, sha256
+`f507dd8573f16df123cc94ab4d626361a67683ef6ca723359c8cfd790bac1cf4`),
+`abschichtung.bands.json`, `LAYER.md`, `LAYER-MANIFEST.md`. Schema-Version
+2.5.0, Bandschema `clean-44-ohne-lsg-okt-2026`, **44 Bänder**, EPSG:31287,
+24001×14001, 25 m. Eingespielt am 11.11.2026.
+
+Geprüft durch Band-für-Band-Vergleich gegen clean-45 (Pixel für Pixel, nicht nur
+Flächensummen): Raster, CRS und Transform sind identisch. **Genau zwei
+Eingangsbänder haben sich geändert, 35 sind bitgleich.**
+
+| | |
+|---|---|
+| `osm_nature_protection_areas` | **entfallen** — das einzige gestrichene Band. Alle Bänder danach rutschen um eine Nummer nach unten (45 → 44 usw.) |
+| `nature_protection_areas` | 1.452.987 → 1.568.607 ha (+115.620, reiner Zuwachs): die amtliche UBA-Abgrenzung umfasst jetzt auch geschützte Landschaftsteile, Naturdenkmäler, Biotope, örtliche Schutzgebiete, Ruhegebiete und Pflanzenschutzgebiete |
+| `exclusion_nature` | 1.728.579 → 1.568.322 ha (−160.257): **Landschaftsschutzgebiete sind kein Ausschlusskriterium mehr**, und die OSM-Schutzgebiete fallen ganz weg |
+| `all_exclusions` | 7.971.001 → 7.958.794 ha (−12.207) |
+| **`available_cleaned_min_10ha`** | **358.586 → 366.846 ha (+8.261, +2,3 %)** |
+| `official_wind_zoning` | 39.618 → 43.808 ha (+4.189) — **Steiermark jetzt amtlich**, siehe unten |
+| `wka_bestand_ausserhalb_zonen` | 14.758 → 14.723 ha (−35), Folge der neuen steirischen Zonen |
+| alle übrigen 35 Bänder | identisch, Pixel für Pixel |
+
+**Steiermark ist jetzt amtlich.** Die einzige Änderung im Quellenverzeichnis:
+`data/zonen/luca_zonen/Stmk.shp` („Stand unbekannt — zu klären,
+handdigitalisiert, nicht amtlich bezogen") ist ersetzt durch
+`data/zonen/stmk_sapro2026/SAPRO_Windenergie_zone.shp`, **SAPRO Windenergie
+2026, Stmk. LGBl. Nr. 87/2026, in Kraft seit 13.10.2026**. In
+`official_zoning.geojson` wächst die Steiermark damit von 17 Zonen / 4.924 ha
+auf **28 Zonen / 8.564 ha**. Salzburg bleibt handdigitalisiert ohne bekannten
+Stand, Kärnten und Burgenland kommen weiterhin aus eigenen Shapefiles.
+
+> **Weiterhin offen:** Das Band ist binär (nur Wert 1). Die **Ausschlusszonen**
+> des SAPRO sind nicht enthalten, und **Vorrang- und Eignungszonen lassen sich
+> nicht unterscheiden** — die steirischen Zonen laufen in `regionIntro.ts`
+> deshalb weiter über den neutralen `positive`-Zweig. Dafür bräuchte es die
+> Originalgeometrien mit Typattribut, nicht das gerasterte Referenzband.
+
+**Falle beim Einbau — die Klassifikation hat jetzt mehr Löcher.** Die
+Klassenzuweisung läuft nach Priorität: eine Zelle, auf die keine Regel passt,
+bleibt Code 0, auch wenn sie innerhalb Österreichs liegt. Flächen, die vorher
+nur wegen der OSM-Schutzgebiete ausgeschlossen waren und jetzt als
+Splitterfläche unter 10 ha übrig bleiben, fallen damit aus der Klassifikation
+heraus. `compute_bundesland_areas.py` zählt genau diese Zellen (`classification
+!= 0`), weshalb `BUNDESLAND_HA` um rund 0,2 % sinkt. Gegen Statistik Austria
+liegen die Werte jetzt bis zu ~1,2 % zu niedrig (vorher ~1 %) — für die
+„% der Bundeslandfläche"-Balken unkritisch, aber keine Flächenangabe für Dritte.
+
+**Was das in der App bewegt** (Schritt 6):
+
+| Konstante | clean-45 | clean-44-ohne-lsg |
+|---|---:|---:|
+| `SCHUTZ_HA` (Code 1) | 1.007.705 | **915.085** |
+| `SIEDLUNG_HA` (Code 2) | 4.569.390 | 4.569.390 |
+| `SONSTIGE_HA` | 2.350.851 | **2.429.613** |
+| `WIND_HA` (Code 11) | 39.879 | **41.399** |
+| `POTENTIAL_HA` (Code 14) | 357.769 | **365.978** |
+| `POTENTIAL_VECTOR_HA` | 357.740 | **365.949** |
+| Potenzialflächen | 3.895 | **4.064** |
+
+Der Naturausschluss verliert 92.620 ha, das Potenzial gewinnt aber nur 8.209 ha:
+der Rest landet wegen der Prioritätsreihenfolge in „Sonstige" (+78.762 ha) und
+„Wind zu gering" (+1.520 ha) — diese Flächen waren schon vorher aus anderen
+Gründen ausgeschlossen, der Naturausschluss lag nur obenauf.
+
+Steiermark überholt in der Potenzialfläche Tirol; das `BUNDESLAENDER`-Array ist
+absteigend sortiert und wurde entsprechend umgestellt (Salzburg 19.605 ha vor
+Tirol 18.840 ha).
+
+**Mangel in der mitgelieferten Doku:** `LAYER-MANIFEST.md` beschreibt noch das
+45-Band-Schema — sie nennt „Schutzgebiete aus OpenStreetMap (Band 22)" und
+nummeriert die Ergebnisbänder um eins zu hoch (32 statt 31, 37 statt 36). Die
+Bandnamen in `abschichtung.bands.json` und im TIF stimmen dagegen exakt überein
+(geprüft, 0 Abweichungen). Maßgeblich ist das JSON; die Skripte ordnen ohnehin
+über Namen zu.
+
+---
+
 ## Lieferung clean-45 (30.9.2026) — Freileitungen zurück
 
-Aktuelles Paket: `abschichtung.tif` (161 MB, sha256
+Vorgängerpaket: `abschichtung.tif` (161 MB, sha256
 `b596fd021dbc42eb4bfa19b9caf8fead78cad6489f6f91e344dd3e645cf87700`),
 `abschichtung.bands.json`, `LAYER.md`, `LAYER-MANIFEST.md`. Bandschema
 `clean-45-freileitungen-110kv-sep-2026`, **45 Bänder**, EPSG:31287,
@@ -124,6 +203,11 @@ belegt (Freileitung ab 110 kV).
 | Windschwelle | jetzt 150 W/m² bei **130 m** Nabenhöhe (≙ 159,5 W/m² @150 m), vorher @150 m. Legende und FAQ sagen noch „@150 m" |
 | ~~Freileitungen ganz entfallen~~ | **Erledigt mit clean-45 (30.9.2026):** Band 45 `power_lines_110kv_plus` ist da, ab 110 kV statt erst ab 380 kV. Siehe Abschnitt oben |
 | Windleistungsdichte je Fläche | das Raster liefert nur ein binäres „Wind zu gering"-Band. Laut `LAYER.md` liegt beim Anbieter `data/gelaende/AUT_power-density_150m.tif` (Stand 29.3.2026) — genau das bräuchten wir für `pd_mean_w_m2` |
+| ~~Steiermark handdigitalisiert~~ | **Erledigt mit clean-44-ohne-lsg (21.10.2026):** SAPRO Windenergie 2026, Stmk. LGBl. Nr. 87/2026. Siehe Abschnitt oben |
+| Steiermark: Ausschlusszonen | das SAPRO kennt Vorrang-, Eignungs-, neutrale und Ausschlusszonen. Geliefert wird nur die Vereinigung der Positivzonen. Für die Gemeindetexte und die Karte bräuchten wir die Ausschlusszonen als eigene Geometrie |
+| `official_wind_zoning` ohne `zone_type` | das Band ist binär (nur Wert 1), fünf Bundesländer in einer Ebene. Vorrang- vs. Eignungszone (Steiermark) und Beschleunigungsgebiet (Kärnten) lassen sich daraus nicht lesen; `regionIntro.ts` hat die Textzweige dafür, sie greifen nur für Kärnten und das Burgenland, wo die Zonen aus eigenen Shapefiles kommen |
+| Salzburg handdigitalisiert | `data/zonen/luca_zonen/Sbg.shp`, „Stand unbekannt — zu klären". Als einzige der fünf Zonierungen noch nicht amtlich bezogen |
+| `LAYER-MANIFEST.md` veraltet | beschreibt noch das 45-Band-Schema (nennt „Band 22" OSM-Schutzgebiete, nummeriert Ergebnisbänder um eins zu hoch). `abschichtung.bands.json` und das TIF stimmen überein — das JSON ist maßgeblich |
 
 ---
 
@@ -440,6 +524,65 @@ für den räumlichen Bundesland-Join. Turbinen-Zuordnung läuft über einen räu
 (`shapely.strtree.STRtree`, `predicate="within"`) statt einer verschachtelten Schleife —
 bei ~5.000 Zonen × 6 Varianten sonst spürbar langsam.
 
+### Schritt 5a – Potenzialflächen als Vektorkacheln
+
+```bash
+python scripts/build_zone_tiles.py
+```
+
+Baut `scripts/raster/windkraft_possible_zones.mbtiles` aus
+`geodata/possible_zones.geojson` (Layer `possible_zones`, Zoom 4–14). **Das ist
+die Quelle der blauen Flächen auf der Karte** — `POSSIBLE_ZONES_TILES` in
+`src/lib/config/tiles.ts` zeigt darauf, nicht auf das GeoJSON.
+
+> **Dieser Schritt fehlte bis 11.11.2026 in diesem Dokument.** Die Kurzfassung
+> oben spricht von „zwei MBTiles", es sind aber drei. Wer nur die Bänderkacheln
+> hochlädt, bekommt eine Karte, auf der die Zahlen im Text (4.064 Flächen) und
+> die gezeichneten Flächen aus unterschiedlichen Lieferungen stammen — ohne
+> Fehlermeldung, weil Layername und Felder gleich bleiben.
+
+Hochladen wie die Bänderkacheln (siehe Schritt 4c).
+
+### Schritt 5c – Bestandsanlagen als Vektorkacheln
+
+```bash
+python scripts/build_turbine_tiles.py
+```
+
+Baut `scripts/raster/windkraft_turbines.mbtiles` aus
+`geodata/existing_turbines.geojson` (Layer `existing_turbines`, Zoom 4–14,
+ca. 0,4 MB). **Das ist seit 11.11.2026 die einzige Quelle der Windrad-Punkte
+auf der Karte** — `TURBINE_TILES` in `src/lib/config/tiles.ts` zeigt darauf.
+
+> **Warum Kacheln, obwohl die Datei nur 260 kB groß ist.** Nicht wegen der
+> Größe, sondern wegen der Lizenz: die Standorte dürfen *gezeigt*, der
+> Datensatz aber nicht *weitergegeben* werden. Als Datei unter `static/data/`
+> lag er im öffentlichen Repository und ging bei jedem Seitenaufruf am Stück an
+> den Browser — das ist eine Weitergabe. Eine Kachel ist ein Ausschnitt.
+>
+> Daraus folgt dreierlei, und alle drei Punkte hängen zusammen:
+> 1. `geodata/existing_turbines.geojson` ist **nicht** im Git (keine Ausnahme in
+>    `.gitignore`). Die Datei kommt vom Anbieter und muss beim Klonen von dort
+>    besorgt werden; ohne sie laufen `build_region_stats.py`,
+>    `extract_possible_zones.py` und `extract_wka_bestand_hulls.py` nicht.
+> 2. Sie steht **nicht** in `SERVED` in `stage_static_data.py`, landet also nicht
+>    im Build. Wer sie dort wieder einträgt, hebt den ganzen Umbau auf.
+> 3. Die Gesamtzahl der Anlagen steht als `turbineTotal` in `region_stats.json`.
+>    Das Scrollytelling nennt sie im Schritt „Windkraft heute" und kann sie nicht
+>    mehr selbst zählen — eine Kachelquelle lässt sich nur zeichnen.
+>
+> Das Skript lässt die Anlagen ohne brauchbare Position aus (derzeit 8 auf
+> `[0, 0]`) und dreht die zwei vertauschten Koordinatenpaare um, so wie
+> `build_region_stats.py` es für die Gemeindezahlen tut. Ohne das spannt ein
+> einziger Punkt auf Null die Kachel-Bounds bis vor die westafrikanische Küste.
+
+Hochladen wie die Bänderkacheln (siehe Schritt 4c), zusätzlich ein Eintrag in
+`/var/www/tiles/config.json` auf dem Tileserver:
+
+```json
+"windkraft_turbines": { "mbtiles": "windkraft_turbines.mbtiles" }
+```
+
 ### Optional – Steiermark/Salzburg zu official_zoning.geojson ergänzen
 
 ```bash
@@ -631,7 +774,7 @@ im Code sollte grob aktuell gehalten werden.
 - [ ] Prozentabhängige Prosa in `Scrollytelling.svelte` geprüft (SEG_*-Anteile ändern sich)
 - [ ] `POTENTIAL_VECTOR_HA` + `BUNDESLAENDER`-Array aus `variant_stats.json` (`default`) aktualisiert
 - [ ] Bandtabellen in `src/routes/methodik/+page.svelte` mit den echten Bandnamen/-nummern abgeglichen
-- [ ] Beide MBTiles hochgeladen und Tileserver neugestartet
+- [ ] Alle vier MBTiles hochgeladen und Tileserver neugestartet
 - [ ] Tileserver-URLs im Browser geprüft (siehe oben)
 
 ---
@@ -650,6 +793,8 @@ im Code sollte grob aktuell gehalten werden.
 | `scripts/raster/ktn_windkraftbeschleunigungszone/`, `scripts/raster/bgld_wk_eignungszonen/` | Kärnten/Burgenland-Zonierungs-Shapefiles (`add_ktn_bgld_zoning.py`) | ✗ |
 | `scripts/raster/windkraft_classification.mbtiles` | Klassifikation (Raster) | ✗ |
 | `scripts/raster/windkraft_exclusion_bands.mbtiles` | Ausschluss-Ebenen (Vektor, 23 Layer) | ✗ |
+| `scripts/raster/windkraft_possible_zones.mbtiles` | Potenzialflächen (Vektor, Schritt 5a) | ✗ |
+| `scripts/raster/windkraft_turbines.mbtiles` | Bestandsanlagen (Vektor, Schritt 5c) | ✗ |
 | `geodata/region_stats.json` | Kennzahlen je Gemeinde (`build_region_stats.py`, Schritt 5b) | ✓ |
 | `geodata/austria_states.geojson` | GADM Bundeslandgrenzen | ✓ |
 | `geodata/austria_outline.geojson` | Österreich-Umriss (aus States) — auch zum Maskieren in Schritt 1 | ✓ |
@@ -659,7 +804,7 @@ im Code sollte grob aktuell gehalten werden.
 | `geodata/variant_stats.json` | Pro-Variante-Kennzahlen (Zonenzahl, ha, Bundesland-Aufteilung) | ✓* |
 | `geodata/exclusion_*.geojson` | Story-Ausschluss-Overlays | ✓* |
 | `geodata/official_zoning.geojson` | Offizielle Eignungszonen NÖ + Steiermark + Salzburg | ✓ |
-| `geodata/existing_turbines.geojson` | Bestandsanlagen | ✓ |
+| `geodata/existing_turbines.geojson` | Bestandsanlagen — **Lieferung des Anbieters, darf nicht weitergegeben werden** (Schritt 5c) | ✗ |
 | `geodata/band_*.geojson` (18 Basisbänder + 5 Siedlungsabstand-Varianten) | Tippecanoe-Rohdaten für `windkraft_exclusion_bands.mbtiles` (Zwischenergebnis, ~470 MB) | ✗ |
 
 > \* Die mit ✓* markierten `geodata/*.geojson`-Dateien sind vom SvelteKit-Server

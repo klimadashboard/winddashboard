@@ -97,9 +97,10 @@ export const faqCategories: FaqCategory[] = [
 				question: "Wieso baut man Windräder im Wald?",
 				answer: [
 					"Wie in der Karte oben ersichtlich, scheiden viele Flächen für Windkraft in Österreich aufgrund der strengen Mindestabstände zu Siedlungsgebieten von vornherein aus. Unter den verbleibenden geeigneten Standorten befinden sich daher häufig auch Waldflächen – meist bewirtschaftete Wälder, nicht unberührte Naturflächen.",
-					"Die tatsächlich dauerhaft beanspruchte Waldfläche bei einem Wald-Windpark ist gering: Gerodete Flächen müssen durch Ausgleichsflächen wieder aufgeforstet werden. Rund 99 % der Fläche eines Windparks bleiben weiterhin forstwirtschaftlich nutzbar.",
-					"Windkraft im Wald ist zudem kein neues oder ungewöhnliches Konzept: In Deutschland stehen heute etwa doppelt so viele Windräder im Wald, wie in ganz Österreich insgesamt errichtet sind. Auch in Österreich gibt es Erfahrung damit: Der erste Wald-Windpark wurde bereits 2003 in Betrieb genommen (Sternwald, Oberösterreich).",
-					"Der biologische Hauptaktivitätsraum im Wald geht vom Boden bis knapp über die Baumspitzen (also bis ca. 50 m über dem Boden). Die Windrad-Flügelunterkante befindet sich auf ca. 90 m über dem Boden – es liegen also 40 m zwischen biologischem Hauptaktivitätsraum und Windradflügel. Das spricht übrigens auch für die neueren, größeren Anlagen, da sich die Rotorblätter nun weit über den Baumkronen drehen. Im Vergleich zum Ackerland ist im Wald auf der Höhe der Windradflügel weniger biologische Aktivität vorzufinden.",
+					"Die tatsächlich dauerhaft beanspruchte Waldfläche bei einem Wald-Windpark ist gering: Gerodete Flächen müssen durch Ausgleichsflächen wieder aufgeforstet werden (im Verhältnis 1:2 bis 1:3). Rund 99 % der Fläche eines Windparks bleiben weiterhin forstwirtschaftlich nutzbar.",
+					"Die Zufahrtswege werden nicht asphaltiert und bleiben somit wasserdurchlässig. Sie müssen ca. 4 Meter breit sein für die zu transportierenden Turmteile und sind damit kaum breiter als die bestehenden Forstwege. Die Kranstellfläche wird so weit wie möglich wieder aufgeforstet bzw. renaturiert.",
+					"Windkraft im Wald ist zudem kein neues oder ungewöhnliches Konzept: In Deutschland stehen heute etwa doppelt so viele Windräder im Wald, wie in ganz Österreich insgesamt errichtet sind. Auch in Österreich gibt es Erfahrung damit: Der erste Wald-Windpark wurde bereits 2003 in Betrieb genommen (Sternwald, Oberösterreich). [30]",
+					"Der biologische Hauptaktivitätsraum im Wald geht vom Boden bis knapp über die Baumspitzen (also bis ca. 50 m über dem Boden). Die Windrad-Flügelunterkante befindet sich – je nach Windradtyp – zwischen 80 und 100 m über dem Boden. Das spricht tatsächlich für neuere, größere Anlagen, da sich die Rotorblätter nun weit über den Baumkronen drehen.",
 				],
 				graphic: "windrad-height",
 			},
@@ -108,9 +109,9 @@ export const faqCategories: FaqCategory[] = [
 				question: "Gefährden Windräder die Biodiversität, insbesondere Vögel?",
 				answer: [
 					"Bei Windkraftprojekten erfolgt nach umfassenden Umweltuntersuchungen (1- bis 2-jährige Vogel- & Fledermausuntersuchung) eine sorgfältige naturschutzfachliche Planung. Der Standort wird so gewählt, dass Auswirkungen auf sensible Lebensräume möglichst gering sind.",
-					"Bei manchen Standorten werden sogenannte Antikollisionssysteme eingesetzt, durch die potentielle Kollisionen von Vögeln und Windrädern sehr wirksam vermieden werden können. Dabei wird eine Kamera am Windrad montiert, die mit KI-Unterstützung gefährdete Arten wie z. B. den Rotmilan in Echtzeit erkennt und die Anlage bei Kollisionsgefahr ausschaltet.",
+					"Bei manchen Standorten werden sogenannte Antikollisionssysteme eingesetzt, durch die potenzielle Kollisionen von Vögeln und Windrädern sehr wirksam vermieden werden können. Dabei wird eine Kamera am Windrad montiert, die mit KI-Unterstützung gefährdete Arten wie z. B. den Rotmilan in Echtzeit erkennt und die Anlage bei Kollisionsgefahr ausschaltet.",
 					"Während Windräder einzelne Vögel töten können, zeigen Studien, dass sie keinen messbaren Einfluss auf Vogelpopulationen haben. Andere Energieerzeugungstechnologien, wie zum Beispiel Öl- oder Gasbohrungen, haben im Gegensatz dazu einen signifikanten negativen Effekt auf Vogelpopulationen: Neue Anlagen zur Förderung von Öl und Gas vermindern umliegende Vogelpopulationen im Mittel um rund 15 Prozent. [29]",
-					"Aktuell verzeichnen insbesondere Feld- und Wiesenvogelarten einen starken Rückgang, vor allem aufgrund von intensiver Nutzung der Landschaft. Windkraftsensible Arten (bspw. Großgreifvögel) verzeichnen dagegen seit einigen Jahrzehnten kontinuierliches Wachstum.",
+					"Aktuell verzeichnen insbesondere Feld- und Wiesenvogelarten einen starken Rückgang, vor allem aufgrund von intensiver Nutzung der Landschaft. [33] Windkraftsensible Arten (bspw. Großgreifvögel) verzeichnen dagegen seit einigen Jahrzehnten kontinuierliches Wachstum.",
 				],
 				graphic: "bird-population",
 				graphicCaption:
@@ -120,17 +121,18 @@ export const faqCategories: FaqCategory[] = [
 				id: 3,
 				question: "Können Windräder recycelt werden?",
 				answer: [
-					"Wenn ein Windrad seine rund 20-jährige Lebensdauer erreicht hat, wird es abgebaut und kann zu 80–90 % wiederverwertet werden. [8] Der Turm aus Stahl kann wiederverwertet werden, während das Fundament aus Zement beispielsweise im Straßenbau genutzt werden kann.",
-					"Die Rotorblattentsorgung ist jedoch deutlich schwieriger, da eine Vielzahl an verschiedenen Materialien verbaut ist. Aktuell werden die Rotorblätter als Ersatzbrennstoff in Zementwerken eingesetzt. Es gibt mittlerweile aber auch vermehrt Unternehmen, die sich dem Rotorblatt-Recycling widmen. Bisher gab es für die recycelten Materialien noch nicht ausreichend Nachfrage – diese könnte beispielsweise durch eine Recyclingquote gesteigert werden. [15]",
-					"Derzeit werden jedoch fast alle abgebauten Windräder am Second-Hand-Markt verkauft. Ganz neue Windradflügel können auch schon in ihre Einzelkomponenten zerlegt und wieder als Ausgangsstoffe zur Verfügung gestellt werden. [16]",
+					"Wenn ein Windrad seine rund 20-jährige Lebensdauer erreicht hat, wird es abgebaut und kann zu 80–90 % wiederverwertet werden. [8] Der Großteil von einem Windrad besteht aus Stahl und Metall, das recycelt werden kann. Auch das Betonfundament kann komplett entfernt werden und beispielsweise im Straßenbau als Baustoff wiederverwendet werden.",
+					"Die Rotorblattentsorgung ist schwieriger, da eine Vielzahl an verschiedenen Materialien verbaut ist. Aktuell werden die Rotorblätter als Ersatzbrennstoff in Zementwerken eingesetzt. Es gibt mittlerweile aber auch immer mehr Unternehmen, die sich dem Rotorblatt-Recycling widmen. [15]",
+					"Ein großer Teil der in Österreich abgebauten Windräder werden am Second-Hand-Markt verkauft und dreht sich anderswo weiter. [16] Denn die Flächen für Windkraft sind in Österreich begrenzt. Moderne Windräder sind deutlich leistungsstärker und erzeugen am selben Standort ein Vielfaches an Strom. Das ist ähnlich wie beim Autokauf: Wer sein altes verkauft, tut das nicht, weil es kaputt ist, sondern weil ein neueres Modell effizienter ist.",
 				],
 			},
 			{
 				id: 4,
 				question: "Verursachen Windräder gefährliche Mengen an Mikroplastik?",
 				answer: [
-					"Durch Witterungseinflüsse wie Regen und Hagel kommt es an den Beschichtungen der Rotorblätter zu geringfügigem Abrieb. Eine Studie der Technischen Universität Dänemark hat die Menge an Mikroplastik von Windrädern untersucht und kommt bei Onshore-Windrädern auf das Ergebnis von 8–50 g pro Jahr pro Blatt. [17]",
-					"Deutlich mehr Abrieb wird im Straßenverkehr durch den Reifenabrieb erzeugt oder auch durch den Abrieb von Schuhsohlen oder Textilien. [18] In Deutschland macht die Windkraft weniger als 0,02 % des gesamten Mikroplastik-Ausstoßes aus. [19]",
+					"Durch Witterungseinflüsse wie Regen und Hagel kommt es an den Beschichtungen der Rotorblätter zu geringfügigem Abrieb. Die Menge ist im Vergleich zu anderen Mikroplastik-Quellen jedoch extrem gering.",
+					"Eine Studie der Technischen Universität Dänemark hat die Menge an Mikroplastik von Windrädern untersucht und kommt bei Onshore-Windrädern, also Windrädern an Land, auf das Ergebnis von 8–50 g pro Jahr pro Blatt. Auf ein ganzes Windrad gerechnet, wären das ca. 87 g pro Windrad und Jahr. [17]",
+					"Deutlich mehr Abrieb wird im Straßenverkehr durch den Reifenabrieb erzeugt oder auch durch den Abrieb von Schuhsohlen oder Textilien. In Deutschland macht der Abrieb von Windrädern weniger als 1 % des gesamten Mikroplastik-Ausstoßes aus. [18]",
 				],
 			},
 			{
@@ -139,7 +141,7 @@ export const faqCategories: FaqCategory[] = [
 				answer: [
 					"Windkraft im alpinen Raum ist kein Neuland. In der Schweiz wurde bereits 2002 der erste Windpark Gütsch ob Andermatt auf 2.300 m errichtet. Aufgrund der Windverhältnisse und der hohen Winterproduktion wurde der Standort weiter ausgebaut. Mittlerweile stehen dort 5 Windräder, die rund 5.000 Haushalte mit Strom versorgen.",
 					"Auch in Österreich zeigen bestehende Windparks in der Steiermark und in Kärnten, wie sich Strom aus Windkraft auch in höheren Lagen erzeugen lässt. Der Windpark Pretul auf rund 1.500 bis 1.600 m Seehöhe zählt zu den windstärksten Regionen Österreichs. Dort stehen 14 Windräder, die rund 38.000 Haushalte mit erneuerbarem Strom versorgen.",
-					"Windräder greifen sichtbar in die Landschaft ein, besonders in den Bergen. Allerdings hat auch der Skitourismus in den letzten Jahrzehnten das Landschaftsbild verändert. Hinzu kommt, dass der Klimawandel gerade in alpinen Regionen starke Veränderungen mit sich bringt: Die Gletscher befinden sich im Rückzug – in Österreich wird es 2050 keine Gletscher mehr geben, wie der Alpenverein warnt.",
+					"Windräder greifen sichtbar in die Landschaft ein, besonders in den Bergen. Allerdings hat auch der Skitourismus in den letzten Jahrzehnten das Landschaftsbild verändert. Hinzu kommt, dass der Klimawandel gerade in alpinen Regionen starke Veränderungen mit sich bringt: Die Gletscher befinden sich im Rückzug – in Österreich wird es 2050 keine Gletscher mehr geben, wie der Alpenverein warnt. [34]",
 					"Wenn Windräder in verschiedenen Regionen in Österreich stehen, sorgt dies für eine zuverlässigere Stromversorgung. Denn irgendwo in Österreich weht immer der Wind. So lässt sich erneuerbare Energie besser über das ganze Jahr nutzen.",
 				],
 			},
@@ -193,7 +195,7 @@ export const faqCategories: FaqCategory[] = [
 				id: 9,
 				question: "Wird der Strom durch Windräder billiger?",
 				answer: [
-					"Windstrom zählt zu den günstigsten Formen der Stromerzeugung. Derzeit ist der Strompreis oft hoch, weil besonders im Winter teure Gaskraftwerke zugeschaltet werden müssen, um die Nachfrage zu decken. Je mehr erneuerbare Energien im Netz sind, desto seltener müssen fossile Kraftwerke einspringen und desto günstiger wird der Strom. Darüber hinaus bieten viele Windparkbetreiber den Anrainer:innen direkt günstigeren Strom an, beispielsweise über Energiegemeinschaften oder eigene Stromtarife. Dabei können sich Haushalte zusammenschließen und Windstrom zu reduzierten Netzkosten beziehen.",
+					"Windstrom zählt zu den günstigsten Formen der Stromerzeugung. [31] Derzeit ist der Strompreis oft hoch, weil besonders im Winter teure Gaskraftwerke zugeschaltet werden müssen, um die Nachfrage zu decken. Je mehr erneuerbare Energien im Netz sind, desto seltener müssen fossile Kraftwerke einspringen und desto günstiger wird der Strom. Darüber hinaus bieten viele Windparkbetreiber den Anrainer:innen direkt günstigeren Strom an, beispielsweise über Energiegemeinschaften oder eigene Stromtarife. Dabei können sich Haushalte zusammenschließen und Windstrom zu reduzierten Netzkosten beziehen.",
 					"In der Grafik siehst du, wie sich der Strompreis in Europa bildet (durch die sogenannte „Merit-Order“). Auf der senkrechten Achse sieht man die Kosten, also wie teuer die Stromerzeugung ist. Auf der waagerechten Achse ist dargestellt, wie viel Strom zu einem bestimmten Zeitpunkt insgesamt benötigt bzw. erzeugt wird. Generell wird der Strom immer zuerst vom günstigsten Kraftwerk gedeckt, also Energie aus Wasser-, Wind- und Sonnenkraft, denn diese haben die niedrigsten variablen Kosten. Wenn die Nachfrage jedoch höher ist als das, was mit Erneuerbaren zu einem bestimmten Zeitpunkt produziert werden kann, folgen Technologien wie Atomkraftwerke, Kohlekraftwerke und Gaskraftwerke, die deutlich teurer sind. Um den Strombedarf zu decken, werden die Kraftwerke nacheinander eingesetzt: Zuerst produzieren die günstigen Anlagen Strom, reicht das nicht aus, werden nach und nach auch die teureren Kraftwerke zugeschaltet, bis genug Strom vorhanden ist. Entscheidend für die Kosten ist dabei das letzte Kraftwerk, das noch benötigt wird, um die Nachfrage vollständig zu decken – denn dessen variable Kosten bestimmen den Strompreis. Heutzutage ist dies nach wie vor oft ein Gaskraftwerk, vor allem in den Wintermonaten – das treibt den Preis in die Höhe. Je mehr Erneuerbare ans Netz gehen, desto weniger häufig braucht man die teuren, fossilen Kraftwerke. Langfristig können diese so aus dem Markt gedrängt und durch billigen, erneuerbaren Strom wie Wind oder PV ersetzt werden.",
 				],
 				graphic: "merit-order",
@@ -211,7 +213,7 @@ export const faqCategories: FaqCategory[] = [
 				id: 11,
 				question: "Wie viel Geld bekommen die Gemeinden?",
 				answer: [
-					"Eine Gemeinde bekommt für ein Windrad etwa 25.000 bis 50.000 € pro Jahr (abhängig von der Leistung des Windrads: zwischen 5.000–7.000 € pro MW).",
+					"Die meisten Gemeinden bekommen für ein Windrad auf ihrem Gemeindegebiet jährliche Zahlungen (die sogenannte „Energiewendebeteiligung“, § 57 EABG). Die Höhe ist dabei abhängig von der wirtschaftlichen Situation des Standorts (Windstärke, Leistung des Windrads, etc.).",
 					"Dieses Geld kann die Gemeinde für verschiedene Zwecke verwenden: In Munderfing (OÖ) wurde beispielsweise mit dem Geld des Windparks das Glasfasernetz in der Gemeinde ausgebaut [25]. Die Gemeinde Höflein (NÖ) zahlt jeder Familie eine jährliche finanzielle Energieunterstützung aus, generiert durch die Einnahmen des Windparks vor Ort [26].",
 					"Bei neuen Windparkprojekten wird den Gemeindebürger:innen häufig auch ein fixer, verbilligter Stromtarif angeboten. Dies ist erst mit dem neuen Förderregime des Erneuerbaren-Ausbau-Gesetzes seit Ende 2022 möglich.",
 				],
@@ -220,9 +222,9 @@ export const faqCategories: FaqCategory[] = [
 				id: 12,
 				question: "Was sind die Auswirkungen auf die heimische Wirtschaft?",
 				answer: [
-					"Windkraft macht uns unabhängig von fossilen Energieimporten aus dem Ausland. Derzeit fließen jährlich rund 10 Mrd. Euro für Öl- und Gasimporte ab – Geld, das stattdessen in regionale Wertschöpfung und Arbeitsplätze investiert werden könnte.",
+					"Windkraft macht uns unabhängig von fossilen Energieimporten aus dem Ausland. Derzeit fließen jährlich rund 10 Mrd. Euro für Öl- und Gasimporte ab – Geld, das stattdessen in regionale Wertschöpfung und Arbeitsplätze investiert werden könnte. [32]",
 					"Windkraftprojekte schaffen Arbeitsplätze vor Ort: in Planung, Bau, Wartung und Betrieb – vor allem im laufenden Betrieb, weniger bei der Installation.",
-					"Bei erneuerbaren Energien verbleiben von jedem ausgegebenen Euro im Mittel 96 Cent in Österreich, während es bei fossilen Energien nur 55 Cent sind. Bei Erneuerbaren bleibt also fast doppelt so viel Wertschöpfung in Österreich als bei fossilen Energien. [27]",
+					"Bei erneuerbaren Energien verbleiben von jedem ausgegebenen Euro im Mittel 96 Cent in Österreich, während es bei fossilen Energien nur 55 Cent sind. Bei Erneuerbaren bleibt also fast doppelt so viel Wertschöpfung in Österreich wie bei fossilen Energien. [27]",
 				],
 			},
 		],
@@ -249,7 +251,7 @@ export const faqCategories: FaqCategory[] = [
 					"Um die Energiewende zu schaffen, müssen die Windkraft-Potenziale in allen Bundesländern genutzt werden. Denn eine geografische Verteilung gleicht Wetterschwankungen aus: Wenn in Ostösterreich kein Wind weht, weht er möglicherweise im Westen. Eine breite Streuung der Standorte sorgt damit für eine stabilere Stromerzeugung über das gesamte Jahr.",
 					"Gleichzeitig reduziert die Verteilung die Belastung der Stromnetze. Würde der gesamte Windstrom in Niederösterreich und Burgenland erzeugt und dann über weite Strecken in den Westen transportiert werden, müsste das Netz noch stärker ausgebaut werden.",
 					"Mit Windrädern leistet außerdem jedes Bundesland einen Beitrag zur eigenen Versorgungssicherheit. Österreich importiert derzeit vor allem in den Wintermonaten Strom, weil Sonne und Wasserkraft dann weniger liefern. Windkraft erzeugt genau in dieser Zeit am meisten Strom und trägt damit zum Schließen der Winterstromlücke bei.",
-					'Statt „entweder-oder" braucht es deshalb „sowohl-als-auch"-Lösungen: Jedes Bundesland leistet entsprechend seines Potenzials einen Beitrag.',
+					'Statt „entweder-oder“ braucht es deshalb „sowohl-als-auch“-Lösungen: Jedes Bundesland leistet entsprechend seines Potenzials einen Beitrag.',
 				],
 			},
 		],

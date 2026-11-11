@@ -7,12 +7,21 @@ official Windkraft-Eignungszonen (richly attributed: zoning_id, name, legal_basi
 effective_from, communities, source_url — vectorized from the NÖ Sektorales
 Raumordnungsprogramm directly, not from this repo's raster pipeline).
 
-The current source raster (osm_wka_distance_zones_widmung.tif) additionally embeds
-Steiermark (SAPRO Windenergie) and Salzburg zoning as part of its band 30
-("official_wind_zoning") reference layer — see README §4.7 / methodik page. This
-script extracts ONLY the Steiermark/Salzburg polygons from that band (NÖ is left
-untouched, since the existing curated NÖ dataset is more precise and richly
-attributed than a raster-derived re-extraction would be) and appends them.
+The source raster (abschichtung.tif) additionally embeds Steiermark (SAPRO
+Windenergie) and Salzburg zoning in its "official_wind_zoning" reference band —
+see methodik page. This script extracts ONLY the Steiermark/Salzburg polygons
+from that band (NÖ is left untouched, since the existing curated NÖ dataset is
+more precise and richly attributed than a raster-derived re-extraction would be;
+Kärnten and Burgenland come from their own shapefiles via
+add_ktn_bgld_zoning.py).
+
+Das Skript ist **wiederholbar**: es wirft vorhandene STMK-/SBG-Features aus
+`official_zoning.geojson` heraus, bevor es die neuen anhängt. Bis zur Lieferung
+clean-44-ohne-lsg (Okt. 2026) hängte es nur an — ein zweiter Lauf verdoppelte
+damit stillschweigend alle steirischen und Salzburger Zonen.
+
+Die Bandnummer steht bewusst nirgends: sie hat sich zwischen den Lieferungen
+schon zweimal verschoben (30 → 37 → 36). Gesucht wird über den Bandnamen.
 
 Usage:
   python scripts/extract_official_zoning_extra.py
@@ -28,7 +37,7 @@ from rasterio.features import shapes
 from rasterio.warp import transform_geom
 from shapely.geometry import shape, mapping
 
-SRC = "scripts/raster/osm_wka_distance_zones_widmung.tif"
+SRC = "scripts/raster/abschichtung.tif"
 STATES = "geodata/austria_states.geojson"
 OUT = "geodata/official_zoning.geojson"
 
@@ -38,10 +47,18 @@ SIMPLIFY_TOL = 0.00005  # degrees (~5 m), matches extract_band_geojson.py
 
 # Bundesländer to add from the raster (Niederösterreich is intentionally excluded —
 # the existing curated dataset for NÖ stays authoritative).
+#
+# Steiermark: seit der Lieferung clean-44-ohne-lsg (Okt. 2026) liegt dem Band
+# das amtliche SAPRO Windenergie 2026 zugrunde (LGBl. 87/2026, in Kraft seit
+# 13.10.2026) statt der zuvor handdigitalisierten `luca_zonen/Stmk.shp`.
+# Salzburg ist weiterhin handdigitalisiert, ohne bekannten Stand.
 ADD_STATES = {
-    "Steiermark": "SAPRO Windenergie Steiermark 2013",
+    "Steiermark": "SAPRO Windenergie 2026, Stmk. LGBl. Nr. 87/2026",
     "Salzburg": "Zonierung Salzburg (digitale Zonengeometrien)",
 }
+# Nur gesetzt, wo wir ein belastbares Inkrafttreten kennen.
+EFFECTIVE_FROM = {"Steiermark": "2026-10-13"}
+ID_PREFIX = {"Steiermark": "STMK", "Salzburg": "SBG"}
 
 
 def main():
@@ -90,23 +107,39 @@ def main():
             continue  # skip Niederösterreich (already curated) and everything else
 
         counters[bundesland] += 1
-        prefix = {"Steiermark": "STMK", "Salzburg": "SBG"}[bundesland]
+        prefix = ID_PREFIX[bundesland]
+        props = {
+            "zoning_id": f"{prefix}-{counters[bundesland]:02d}",
+            "bundesland": bundesland,
+            "area_ha": area_ha,
+            "legal_basis": ADD_STATES[bundesland],
+            "source": f"raster-derived ({Path(SRC).name}, Band {band_idx} {BAND_NAME})",
+        }
+        if bundesland in EFFECTIVE_FROM:
+            props["effective_from"] = EFFECTIVE_FROM[bundesland]
         new_features.append({
             "type": "Feature",
             "geometry": mapping(geom),
-            "properties": {
-                "zoning_id": f"{prefix}-{counters[bundesland]:02d}",
-                "bundesland": bundesland,
-                "area_ha": area_ha,
-                "legal_basis": ADD_STATES[bundesland],
-                "source": "raster-derived (osm_wka_distance_zones_widmung.tif, Band 30)",
-            },
+            "properties": props,
         })
 
     print(f"Extracted {len(new_features)} polygons ({sum(counters.values())} total): "
           f"{ {k: v for k, v in counters.items()} }")
 
+    # Wiederholbar: die zuvor aus dem Raster abgeleiteten STMK-/SBG-Features
+    # fliegen raus, bevor die neuen angehängt werden. Erkannt werden sie am
+    # `bundesland` — die kuratierten NÖ-Zonen und die aus Shapefiles ergänzten
+    # Kärntner und burgenländischen Zonen bleiben unangetastet.
     existing = json.load(open(OUT))
+    before = len(existing["features"])
+    existing["features"] = [
+        f for f in existing["features"]
+        if f["properties"].get("bundesland") not in ADD_STATES
+    ]
+    dropped = before - len(existing["features"])
+    if dropped:
+        print(f"Removed {dropped} previously raster-derived "
+              f"{'/'.join(ADD_STATES)} polygons before re-adding")
     existing["features"].extend(new_features)
 
     with open(OUT, "w") as f:
