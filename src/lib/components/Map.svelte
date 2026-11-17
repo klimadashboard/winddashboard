@@ -1066,9 +1066,13 @@
 				map.setPaintProperty("turbines", "circle-radius", [
 					"interpolate", ["linear"], ["zoom"], 6, 2.5, 10, 4, 13, 6,
 				]);
-				map.setPaintProperty("turbines", "circle-color", "#fef08a");
-				map.setPaintProperty("turbines", "circle-stroke-color", "#ca8a04");
-				map.setPaintProperty("turbines", "circle-stroke-width", 1.5);
+				// Gleiche Farbe wie in der freien Karte (dunkel mit weißem Rand), nicht
+				// mehr gelb: sonst wechseln die Anlagen beim Verlassen der Story die
+				// Farbe, und dieselben Punkte sehen aus wie zwei verschiedene Dinge.
+				// Nur der Radius bleibt etwas größer, weil die Story weit herauszoomt.
+				map.setPaintProperty("turbines", "circle-color", "#1e3a8a");
+				map.setPaintProperty("turbines", "circle-stroke-color", "#ffffff");
+				map.setPaintProperty("turbines", "circle-stroke-width", 1);
 				map.setPaintProperty("turbines", "circle-opacity", 0.9);
 			}
 

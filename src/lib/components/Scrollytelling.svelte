@@ -66,8 +66,8 @@
 	// Zonen. Ohne diese Zahlen liest sich der Zonierungsschritt für das
 	// Burgenland falsch — dort sind 2.470 ha zoniert, aber 397 der 423
 	// Anlagen stehen in den gut 11.300 ha daneben.
-	let hullAreaHa = $state(0);
-	let hullTurbines = $state(0);
+	// Gesamtfläche und Anlagenzahl der Hüllen standen bis 17.11.2026 im Kasten
+	// „Bestehende Windparks“; der Text ist auf Wunsch der Redaktion gekürzt.
 	let hullByBL = $state<Record<string, number>>({});
 
 	// Potentialflächen step: absolute (ha, compared across states) vs. percent
@@ -111,6 +111,10 @@
 	const COLOR_POTENTIAL = "#2563eb";
 	const COLOR_ZONIERT = "#6d28d9";
 	const COLOR_BESTAND_FLAECHE = "#0891b2";
+	// Bestehende Anlagen: dieselbe dunkle Farbe wie die Punkte auf der Karte
+	// (Map.svelte, Layer "turbines"). Bis 17.11.2026 gelb.
+	const COLOR_TURBINE = "#1e293b";
+	const COLOR_TURBINE_BAR = "#475569";
 
 	// Each Bundesland's own total area in hectares — derived from the same
 	// classification raster as AUSTRIA_HA (rasterized per state; see
@@ -232,8 +236,6 @@
 		for (const f of hullGj.features) {
 			const bl: string = f.properties.bundesland ?? "";
 			hullBL[bl] = (hullBL[bl] ?? 0) + (f.properties.area_ha ?? 0);
-			hullAreaHa += f.properties.area_ha ?? 0;
-			hullTurbines += f.properties.turbines ?? 0;
 		}
 		hullByBL = hullBL;
 
@@ -930,16 +932,7 @@
 					</div>
 					<p class="text-xs sm:text-sm leading-relaxed text-slate-700">
 						Viele Windräder sind älter als die Zonierung und stehen außerhalb
-						dieser Zonen. Sie sind hier türkis umrandet{#if dataReady}&nbsp;—
-							zusammen <strong class="text-slate-900"
-								>{fmt(Math.round(hullAreaHa))}&thinsp;ha</strong
-							> mit {fmt(hullTurbines)} Anlagen{/if}. Im Burgenland liegen uns
-						nur die aktuellen Eignungszonen vor, nicht die bereits bebauten.
-						Viele burgenländische Anlagen erscheinen deshalb hier außerhalb der
-						Zonen, obwohl sie in früher ausgewiesenen Eignungszonen stehen.
-						Die Hüllen um die bestehenden Windparks sind kein Rechtsakt, sondern
-						berechnet: Anlagen unter 750 m Abstand gelten als ein Park, um den
-						200 m Rand gelegt werden.
+						dieser Zonen. Sie sind hier türkis umrandet.
 					</p>
 				</div>
 
@@ -1028,23 +1021,26 @@
 		<!-- Step 7: Windräder heute (Bestand nach Bundesland) -->
 		{#if step === 7}
 			{#snippet turbineIcon()}
-				<svg viewBox="0 0 16 16" width="11" height="11" class="shrink-0" fill="none">
-					<line x1="8" y1="5" x2="8" y2="15" stroke="#ca8a04" stroke-width="1.4" stroke-linecap="round" />
-					<circle cx="8" cy="5" r="1.1" fill="#ca8a04" />
-					<line x1="8" y1="5" x2="12.5" y2="3" stroke="#eab308" stroke-width="1.6" stroke-linecap="round" />
-					<line x1="8" y1="5" x2="3.8" y2="4" stroke="#eab308" stroke-width="1.6" stroke-linecap="round" />
-					<line x1="8" y1="5" x2="8.8" y2="0.5" stroke="#eab308" stroke-width="1.6" stroke-linecap="round" />
+				<!--
+					Windrad-Icon aus der Vorlage windpowerplant.svg (Redaktion, 17.11.2026).
+					Die Vorlage ist eine Umrisszeichnung: eine Außenkontur plus fünf
+					Innenkonturen (drei Blätter, Nabe, Turm), die zusammen wie Striche
+					wirken. Hier steht nur die Außenkontur — damit ist die Anlage als
+					gefüllte Silhouette gezeichnet.
+				-->
+				<svg viewBox="0 0 71 90" width="10" height="13" class="shrink-0" aria-hidden="true">
+					<path fill={COLOR_TURBINE} d="M69.867 52.743L66.289 49.925C60.035 45.006 53.072 41.096 45.597 38.299L41.264 36.674C40.944 35.795 40.453 34.999 39.802 34.352L40.163 29.766C40.782 21.779 40.178 13.816 38.368 6.097L37.325 1.662C37.221 1.209 36.98 0.795 36.635 0.487C36.274 0.173 35.82 0 35.361 0C34.432 0 33.625 0.685 33.396 1.659L32.354 6.1C30.541 13.825 29.936 21.788 30.559 29.766L30.916 34.355C30.269 35.002 29.778 35.795 29.458 36.674L25.128 38.299C17.652 41.093 10.689 45.003 4.435 49.925L0.854 52.74C0.312 53.166 0 53.78 0 54.425C0 54.708 0.0619996 54.98 0.176 55.22C0.5 55.926 1.231 56.355 2.042 56.355C2.199 56.355 2.356 56.34 2.517 56.309L6.97 55.377C14.747 53.755 22.22 50.937 29.186 46.998L32.106 45.349L29.818 89.171C29.809 89.387 29.886 89.596 30.034 89.753C30.186 89.91 30.392 90 30.609 90H40.113C40.329 90 40.536 89.91 40.687 89.753C40.834 89.596 40.912 89.387 40.903 89.171L38.614 45.346L41.538 46.998C48.498 50.934 55.971 53.752 63.748 55.377L68.208 56.309C68.371 56.343 68.528 56.359 68.683 56.359C69.509 56.359 70.222 55.923 70.539 55.23C70.939 54.388 70.662 53.363 69.867 52.743Z" />
 				</svg>
 			{/snippet}
 			{#snippet step7()}
 				<div class="flex items-center gap-2 mb-3">
 					<span
 						class="inline-block w-3 h-3 rounded-full border-2 shrink-0"
-						style="background:#fef08a; border-color:#ca8a04;"
+						style="background:{COLOR_TURBINE}; border-color:#ffffff; box-shadow:0 0 0 1px #cbd5e1;"
 					></span>
 					<p
 						class="text-[10px] font-bold uppercase tracking-widest"
-						style="color:#92400e;"
+						style="color:{COLOR_TURBINE};"
 					>
 						Windkraft heute
 					</p>
@@ -1073,7 +1069,7 @@
 							<div class="flex-1 h-3 rounded-sm overflow-hidden">
 								<div
 									class="h-full rounded-sm transition-all duration-300"
-									style="width:{pct}%; background:#fde047;"
+									style="width:{pct}%; background:{COLOR_TURBINE_BAR};"
 								></div>
 							</div>
 							{@render turbineIcon()}
