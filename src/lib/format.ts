@@ -1,6 +1,6 @@
 /**
  * Zahlenformat der Website: Punkt als Tausendertrennzeichen, Komma als
- * Dezimaltrennzeichen — 8.383.809 ha, 4.064 Flächen, 52,5 TWh.
+ * Dezimaltrennzeichen — 8.388.387 ha, 4.064 Flächen, 52,5 TWh.
  *
  * Bewusst `de-DE` und nicht `de-AT`: beide schreiben das Dezimalkomma, aber
  * `de-AT` gruppiert nach CLDR mit einem schmalen geschützten Leerzeichen.

@@ -68,11 +68,11 @@ handdigitalisiert, nicht amtlich bezogen") ist ersetzt durch
 auf **28 Zonen / 8.564 ha**. Salzburg bleibt handdigitalisiert ohne bekannten
 Stand, Kärnten und Burgenland kommen weiterhin aus eigenen Shapefiles.
 
-> **Weiterhin offen:** Das Band ist binär (nur Wert 1). Die **Ausschlusszonen**
-> des SAPRO sind nicht enthalten, und **Vorrang- und Eignungszonen lassen sich
-> nicht unterscheiden** — die steirischen Zonen laufen in `regionIntro.ts`
-> deshalb weiter über den neutralen `positive`-Zweig. Dafür bräuchte es die
-> Originalgeometrien mit Typattribut, nicht das gerasterte Referenzband.
+> **Erledigt am 16.11.2026:** Das Band ist binär (nur Wert 1) — ohne
+> Ausschlusszone und ohne Unterscheidung von Vorrang und Eignung. Beides kommt
+> jetzt direkt aus dem Landesdatensatz, siehe „Steiermark aus dem
+> Landesdatensatz (SAPRO 2026)" in Schritt 5. Das Inkrafttreten ist laut Land der
+> **15.10.2026** (`Von_Dat`), nicht der 13.10. aus dem Manifest des Anbieters.
 
 **Falle beim Einbau — die Klassifikation hat jetzt mehr Löcher.** Die
 Klassenzuweisung läuft nach Priorität: eine Zelle, auf die keine Regel passt,
@@ -587,7 +587,7 @@ Hochladen wie die Bänderkacheln (siehe Schritt 4c), zusätzlich ein Eintrag in
 "windkraft_turbines": { "mbtiles": "windkraft_turbines.mbtiles" }
 ```
 
-### Optional – Steiermark/Salzburg zu official_zoning.geojson ergänzen
+### Optional – Salzburg zu official_zoning.geojson ergänzen
 
 ```bash
 python scripts/extract_official_zoning_extra.py
@@ -595,10 +595,38 @@ python scripts/extract_official_zoning_extra.py
 
 `geodata/official_zoning.geojson` enthielt historisch nur amtlich kuratierte
 NÖ-Zonen (mit `legal_basis`, `effective_from`, `communities` — extern vektorisiert,
-nicht aus dem Raster). Dieses Skript ergänzt **nur** Steiermark und Salzburg aus
-Band 30 (`official_wind_zoning`) der Quelldatei — NÖ bleibt unangetastet. Nur nötig,
-wenn `official_zoning.geojson` aus Versehen auf einen reinen NÖ-Stand zurückgesetzt
-wurde; normalerweise bleibt die Datei so wie sie ist.
+nicht aus dem Raster). Dieses Skript ergänzt **nur Salzburg** aus dem Band
+`official_wind_zoning` der Quelldatei — NÖ bleibt unangetastet. Bis 16.11.2026 tat
+es das auch für die Steiermark; die kommt jetzt aus dem Landesdatensatz (nächster
+Abschnitt) und ist hier bewusst ausgenommen, damit ein Lauf die amtlichen Zonen
+nicht mit typlosen Rasterzonen überschreibt.
+
+### Steiermark aus dem Landesdatensatz (SAPRO 2026)
+
+```bash
+mkdir -p scripts/raster/stmk_sapro_windenergie
+curl -L -o /tmp/sapro.zip \
+  https://service.stmk.gv.at/ogd/OGD_Data_ABT17/geoinformation/SAPRO_Windenergie_zone.zip
+unzip -o /tmp/sapro.zip -d scripts/raster/stmk_sapro_windenergie
+python scripts/add_stmk_sapro_zoning.py
+```
+
+Der OGD-Datensatz des Landes (Abt. 17) enthält 25 Vorrang- und 3 Eignungszonen
+(zusammen 8.564 ha — exakt die Fläche, die vorher aus dem Rasterband kam) und eine
+**Ausschlusszone über 444.258 ha**, gut ein Viertel der Steiermark.
+
+- Vorrang und Eignung **ersetzen** die steirischen Zonen in `official_zoning.geojson`
+  — jetzt mit Name und `zone_type`, sodass die Gemeindetexte die beiden Zonenarten
+  unterscheiden. Auf ~5 m vereinfacht; die Datei wurde dadurch kleiner, nicht größer.
+- Die Ausschlusszone geht in die **eigene Datei** `geodata/official_exclusion.geojson`.
+  Sie wird nicht ausgeliefert und nicht gezeichnet (die Karte malt
+  `official_zoning` lila als Windkraftzone), sondern speist nur
+  `build_region_stats.py`. Danach also **Schritt 5b neu laufen lassen**.
+
+Nebeneffekt der genaueren Geometrie: Die Rasterzonen ragten an der Landesgrenze
+einige Hektar nach Kärnten. **Preitenegg** galt dadurch als Gemeinde mit
+Beschleunigungsgebiet, obwohl dort keines liegt; ebenso Waldbach-Mönichwald (Stmk)
+als Gemeinde mit Zone. Beides ist mit den Vektordaten korrigiert.
 
 ### Optional – Kärnten/Burgenland zu official_zoning.geojson ergänzen
 
@@ -684,6 +712,14 @@ Verschneidet `possible_zones*.geojson` (alle 6 Varianten), `official_zoning.geoj
 (EPSG:31287, CC-BY 4.0) und schreibt `geodata/region_stats.json` — je Gemeindekennziffer
 Potenzialflächen, offizielle Zone und Bestandsanlagen. Die App liest diese Tabelle und
 aggregiert Bezirke und Bundesländer über das GKZ-Präfix.
+
+Seit 16.11.2026 zusätzlich je Gemeinde `areaHa` (Gemeindefläche) und, wo eine
+amtliche Ausschlusszone liegt, `exclusion: {areaHa, potentialHa}` — Gemeindefläche
+und Potenzialfläche innerhalb der Zone, aus `official_exclusion.geojson`. Eine
+Ausschlusszone zählt nur in ihrem eigenen Bundesland (sonst bekamen Hinterstoder und
+Weyer in OÖ Grenzsplitter der steirischen Zone). Die Texte richten sich nach dem
+Anteil: ab 99 % „befindet sich in einer Ausschlusszone", darunter „rund N % der
+Fläche liegen in der Ausschlusszone", unter 1 % gar nicht (Grenzsplitter).
 
 **Warum vorberechnet:** die Zahlen kamen früher zur Laufzeit aus
 `queryRenderedFeatures` über die **Bounding Box** des Gemeindeumrisses. Eine Box ist
@@ -807,7 +843,9 @@ im Code sollte grob aktuell gehalten werden.
 | `geodata/zone_centroids_<800\|1000\|1200\|1500\|2000>.geojson` (×5) | Zentroide für Heatmap je Vergleichs-Variante | ✓* |
 | `geodata/variant_stats.json` | Pro-Variante-Kennzahlen (Zonenzahl, ha, Bundesland-Aufteilung) | ✓* |
 | `geodata/exclusion_*.geojson` | Story-Ausschluss-Overlays | ✓* |
-| `geodata/official_zoning.geojson` | Offizielle Eignungszonen NÖ + Steiermark + Salzburg | ✓ |
+| `geodata/official_zoning.geojson` | Offizielle Windkraftzonen NÖ, Burgenland, Steiermark, Kärnten, Salzburg | ✓ |
+| `geodata/official_exclusion.geojson` | Amtliche Ausschlusszonen (derzeit Steiermark) — nur für Schritt 5b, nicht ausgeliefert | ✓ |
+| `scripts/raster/stmk_sapro_windenergie/` | SAPRO-Landesdatensatz Steiermark (Shapefile) | ✗ |
 | `geodata/existing_turbines.geojson` | Bestandsanlagen — **Lieferung des Anbieters, darf nicht weitergegeben werden** (Schritt 5c) | ✗ |
 | `geodata/band_*.geojson` (18 Basisbänder + 5 Siedlungsabstand-Varianten) | Tippecanoe-Rohdaten für `windkraft_exclusion_bands.mbtiles` (Zwischenergebnis, ~470 MB) | ✗ |
 

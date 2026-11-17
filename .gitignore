@@ -29,6 +29,7 @@ node_modules
 !/geodata/exclusion_sonstige.geojson
 !/geodata/exclusion_wind.geojson
 !/geodata/official_zoning.geojson
+!/geodata/official_exclusion.geojson
 !/geodata/possible_zones.geojson
 !/geodata/zone_centroids.geojson
 !/geodata/zone_stats.json

@@ -145,6 +145,18 @@
 					Offiz. Windkraftzone
 				</span>
 				<!--
+					Amtliche Ausschlusszone (derzeit nur Steiermark). Schraffur wie auf
+					der Karte (Map.svelte, hatchPattern) — eine Füllfarbe wäre mit
+					Potenzial, Zone oder Windpark verwechselbar.
+				-->
+				<span class="flex items-center gap-2">
+					<span
+						class="w-3 h-3 rounded-sm flex-shrink-0 inline-block"
+						style="background: repeating-linear-gradient(-45deg, #475569 0 1.5px, transparent 1.5px 4px); border: 1px solid #475569;"
+					></span>
+					Offiz. Ausschlusszone
+				</span>
+				<!--
 					Bestandsfläche statt "Eignungszone": die Fläche ist keine Ausweisung
 					des Landes, sondern die Hülle um bestehende Anlagen. Sie steht
 					unter der Eignungszone in der Legende, weil beide Flächen auf der
@@ -243,6 +255,25 @@
 							></span>
 							<span class="text-slate-600" style="font-size:11px;"
 								>Windkraftzonen</span
+							>
+						</div>
+						<!-- Gleiche Schraffur wie in der einfachen Legende und auf der Karte. -->
+						<div class="flex items-center gap-2">
+							<span
+								class="w-3 h-3 rounded-sm flex-shrink-0"
+								style="background:repeating-linear-gradient(-45deg, #475569 0 1.5px, transparent 1.5px 4px);border:1px solid #475569;display:inline-block;"
+							></span>
+							<span class="text-slate-600" style="font-size:11px;"
+								>Ausschlusszonen</span
+							>
+						</div>
+						<div class="flex items-center gap-2">
+							<span
+								class="w-3 h-3 rounded-sm flex-shrink-0"
+								style="background:#0891b2;opacity:0.75;border:1px solid #0e7490;display:inline-block;"
+							></span>
+							<span class="text-slate-600" style="font-size:11px;"
+								>Bestehende Windparks</span
 							>
 						</div>
 						<div class="flex items-center gap-2">

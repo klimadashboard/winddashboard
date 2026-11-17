@@ -131,10 +131,11 @@
 		{/if}
 
 		<!--
-			Bestandsfläche: bewusst mit dem Zusatz "keine amtliche Zone". Ohne ihn
-			steht hier eine violette und eine türkise Fläche nebeneinander, beide
-			mit Flächenangabe, und nichts sagt, dass nur eine davon ein Rechtsakt
-			ist.
+			Bestandsfläche: Park-Hülle um bestehende Anlagen außerhalb der amtlichen
+			Zonen (Band 37 der Lieferung, extract_wka_bestand_hulls.py). Unterschieden
+			von der amtlichen Zone durch Farbe, Titel und das Fehlen von
+			Rechtsgrundlage und Datum — einen eigenen Hinweistext gibt es seit
+			17.11.2026 nicht mehr.
 		-->
 		{#if info.hull}
 			<div class="px-3 py-2 border-b border-slate-100">
@@ -168,10 +169,12 @@
 							>{fmtNumber(Number(info.hull.area_ha))} ha</span
 						>
 					</div>
-					<p class="text-slate-400 text-[10px] leading-snug mt-1">
-						Keine amtliche Windkraftzone: die Fläche umschließt die
-						bestehenden Anlagen, das Land hat sie nicht ausgewiesen.
-					</p>
+					<!--
+						Hier stand bis 17.11.2026 „Keine amtliche Windkraftzone: die Fläche
+						umschließt die bestehenden Anlagen …“. Auf Wunsch der Redaktion
+						entfernt: im Tooltip eher verwirrend als erklärend. Die Erklärung
+						steht im Story-Kasten „Bestehende Windparks“.
+					-->
 				</div>
 			</div>
 		{/if}

@@ -28,6 +28,10 @@ interface RegionEntry {
 	bounds: [number, number, number, number];
 	official?: { count: number; type: string | null; areaHa: number };
 	potential: PotentialEntry;
+	/** Gemeindefläche in ha — Bezugsgröße für den Anteil der Ausschlusszone. */
+	areaHa?: number;
+	/** Teil der Gemeinde in einer amtlichen Ausschlusszone (build_region_stats.py). */
+	exclusion?: { areaHa: number; potentialHa: number };
 }
 
 export interface RegionStatsTable {
@@ -118,6 +122,9 @@ export function statsForRegion(
 	let pdWeighted = 0;
 	let turbineCount = 0;
 	let officialZoneCount = 0;
+	let regionAreaHa = 0;
+	let exclusionAreaHa = 0;
+	let potentialInExclusionHa = 0;
 	const zoneTypes: OfficialZoneType[] = [];
 
 	for (const id of gkz) {
@@ -130,6 +137,11 @@ export function statsForRegion(
 			pdWeighted += p.pd * p.areaHa;
 		}
 		turbineCount += entry.turbines;
+		regionAreaHa += entry.areaHa ?? 0;
+		if (entry.exclusion) {
+			exclusionAreaHa += entry.exclusion.areaHa;
+			potentialInExclusionHa += entry.exclusion.potentialHa;
+		}
 		if (entry.official) {
 			officialZoneCount += entry.official.count;
 			zoneTypes.push(normalizeZoneType(entry.official.type));
@@ -149,6 +161,9 @@ export function statsForRegion(
 		turbineCount,
 		officialZoneCount,
 		officialZoneType,
+		regionAreaHa: Math.round(regionAreaHa),
+		exclusionAreaHa: Math.round(exclusionAreaHa),
+		potentialInExclusionHa: Math.round(potentialInExclusionHa),
 	};
 }
 

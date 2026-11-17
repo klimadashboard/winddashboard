@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
-Add Steiermark + Salzburg zoning polygons to geodata/official_zoning.geojson.
+Add Salzburg zoning polygons to geodata/official_zoning.geojson.
+
+(Bis 16.11.2026 auch die Steiermark — die kommt jetzt amtlich aus
+scripts/add_stmk_sapro_zoning.py, siehe ADD_STATES unten.)
 
 geodata/official_zoning.geojson historically only contained Niederösterreich's
 official Windkraft-Eignungszonen (richly attributed: zoning_id, name, legal_basis,
@@ -48,17 +51,17 @@ SIMPLIFY_TOL = 0.00005  # degrees (~5 m), matches extract_band_geojson.py
 # Bundesländer to add from the raster (Niederösterreich is intentionally excluded —
 # the existing curated dataset for NÖ stays authoritative).
 #
-# Steiermark: seit der Lieferung clean-44-ohne-lsg (Okt. 2026) liegt dem Band
-# das amtliche SAPRO Windenergie 2026 zugrunde (LGBl. 87/2026, in Kraft seit
-# 13.10.2026) statt der zuvor handdigitalisierten `luca_zonen/Stmk.shp`.
-# Salzburg ist weiterhin handdigitalisiert, ohne bekannten Stand.
+# Die Steiermark ist seit 16.11.2026 ebenfalls draußen: ihre Zonen kommen jetzt aus
+# dem Landesdatensatz SAPRO Windenergie 2026 (scripts/add_stmk_sapro_zoning.py) —
+# mit Namen, Vorrang/Eignung und der Ausschlusszone. Stünde sie hier noch, würde
+# ein erneuter Lauf diese amtlichen Zonen still durch die typlosen Rasterzonen
+# ersetzen. Salzburg ist weiterhin handdigitalisiert, ohne bekannten Stand.
 ADD_STATES = {
-    "Steiermark": "SAPRO Windenergie 2026, Stmk. LGBl. Nr. 87/2026",
     "Salzburg": "Zonierung Salzburg (digitale Zonengeometrien)",
 }
 # Nur gesetzt, wo wir ein belastbares Inkrafttreten kennen.
-EFFECTIVE_FROM = {"Steiermark": "2026-10-13"}
-ID_PREFIX = {"Steiermark": "STMK", "Salzburg": "SBG"}
+EFFECTIVE_FROM: dict[str, str] = {}
+ID_PREFIX = {"Salzburg": "SBG"}
 
 
 def main():

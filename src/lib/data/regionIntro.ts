@@ -38,13 +38,14 @@ export const NÖ_TURBINE_LEGACY_NOTE =
 	'Der Mindestabstand von 1,2 km für Windräder gilt in Niederösterreich erst seit 2004. Daher können auf dieser Karte Windräder teilweise außerhalb der ausgewiesenen Zonen oder Potenzialflächen liegen, sofern sie bereits vor 2004 entsprechend gewidmet oder genehmigt wurden.';
 
 // Bis zur Lieferung clean-44-ohne-lsg stand hier, die Zonierung werde "aktuell
-// überarbeitet". Das stimmt seit dem 13.10.2026 nicht mehr: das SAPRO
-// Windenergie 2026 (Stmk. LGBl. Nr. 87/2026) ist in Kraft, und die Karte zeigt
-// seine Zonen. Die Ausschlusszonen desselben Programms liegen uns nicht vor —
-// das gehört dazugesagt, sonst liest sich eine Gemeinde ohne eingezeichnete
-// Zone wie eine Gemeinde ohne Festlegung.
+// überarbeitet". Seit 15.10.2026 ist das SAPRO Windenergie 2026 (Stmk. LGBl.
+// Nr. 87/2026) in Kraft — Datum laut Landesdatensatz (Von_Dat); das Manifest des
+// Datenanbieters nennt den 13.10. Seit 16.11.2026 kommen Vorrang-, Eignungs- und
+// Ausschlusszone aus dem Landesdatensatz selbst (add_stmk_sapro_zoning.py). Die
+// Ausschlusszone fließt in die Gemeindetexte ein und ist schraffiert eingezeichnet
+// (Map.svelte, „official-exclusion“); Potenzialflächen darin bleiben sichtbar.
 const STEIERMARK_REVISION_NOTE =
-	'Grundlage ist das Sachprogramm Windenergie 2026 des Landes Steiermark (LGBl. Nr. 87/2026), in Kraft seit 13. Oktober 2026. Die Karte zeigt die darin festgelegten Vorrang- und Eignungszonen; die Ausschlusszonen des Programms liegen uns nicht als Datensatz vor und sind hier nicht eingezeichnet.';
+	'Grundlage ist das Sachprogramm Windenergie 2026 des Landes Steiermark (LGBl. Nr. 87/2026), in Kraft seit 15. Oktober 2026. Die Karte zeigt die darin festgelegten Vorrang- und Eignungszonen. Die Ausschlusszone des Programms ist schraffiert eingezeichnet.';
 
 const KÄRNTEN_LEGAL_NOTE =
 	'Kärnten hat aktuell weniger als 0,1 % der Landesfläche als Beschleunigungsgebiete ausgewiesen; über 99,9 % sind Ausschlusszonen. Weil die ausgewiesenen Beschleunigungsgebiete die gesetzlichen Ausbauziele nicht erreichen, sind Windräder jedoch grundsätzlich auch außerhalb dieser Zonen möglich (§ 4a UVP-G).';
@@ -209,47 +210,69 @@ function introSteiermark(name: string, s: ZoneStats): RegionIntroContent {
 			afterBullets: [STEIERMARK_REVISION_NOTE],
 		};
 	}
-	if (zoneType === 'ausschluss' && !hasPotential) {
-		return {
-			paragraphs: [
-				`In ${name} befindet sich eine Ausschlusszone. Das bedeutet, dass das Land Steiermark diese Flächen für Windkraft ausgeschlossen hat. Falls die Landesregierung die Windkraft-Zonierung in den nächsten Jahren überarbeitet, könnte sich dies jedoch ändern.`,
-			],
-			afterBullets: [STEIERMARK_REVISION_NOTE],
-		};
-	}
-	if (zoneType === 'ausschluss') {
-		return {
-			paragraphs: [
-				`${name} befindet sich derzeit in einer Ausschlusszone. Das bedeutet, dass das Land Steiermark diese Flächen für Windkraft ausgeschlossen hat. Falls die Landesregierung die Windkraft-Zonierung in den nächsten Jahren überarbeitet, könnte sich dies jedoch ändern. Laut Potenzialkarte besteht in ${name} grundsätzlich Potenzial für Windkraft.`,
-			],
-			afterBullets: [STEIERMARK_REVISION_NOTE],
-		};
-	}
-	// No official zone (neutral)
-	if (hasTurbines) {
+	// ── Ohne Vorrang- oder Eignungszone ──────────────────────────────────────
+	// Seit 16.11.2026 kennt die Tabelle die Ausschlusszone des SAPRO 2026. Sie
+	// deckt gut ein Viertel der Steiermark, aber nur sieben Gemeinden ganz; 127
+	// berührt sie. Deshalb entscheidet der Anteil, nicht ein Ja/Nein: wer zu einem
+	// Drittel in der Zone liegt, ist nicht „in einer Ausschlusszone“, und der alte
+	// Satz „Das Land schließt den Bau von Windrädern hier aber auch nicht aus“
+	// wäre für genau dieses Drittel falsch. Entscheidend für die Aussage zum
+	// Potenzial ist zudem, ob die Potenzialflächen selbst in der Zone liegen.
+	const exShare = s.regionAreaHa ? (s.exclusionAreaHa ?? 0) / s.regionAreaHa : 0;
+	const potIn = s.potentialInExclusionHa ?? 0;
+	const potFree = Math.max(0, s.totalAreaHa - potIn);
+	const reversible =
+		'Falls die Landesregierung die Windkraft-Zonierung in den nächsten Jahren überarbeitet, könnte sich dies jedoch ändern.';
+
+	// Praktisch ganz in der Ausschlusszone — gleiche Formulierung wie in Kärnten.
+	if (exShare >= 0.99) {
+		const base = `${name} befindet sich derzeit in einer Ausschlusszone. Das bedeutet, dass das Land Steiermark diese Flächen für Windkraft ausgeschlossen hat. ${reversible}`;
 		return withTurbines({
 			paragraphs: [
-				`In ${name} befinden sich bereits Windräder. Bestehende Anlagen könnten in Zukunft modernisiert und durch leistungsstärkere Windräder ersetzt werden.`,
+				hasPotential
+					? `${base} Laut Potenzialkarte besteht in ${name} grundsätzlich Potenzial für Windkraft.`
+					: base,
 			],
 			afterBullets: [STEIERMARK_REVISION_NOTE],
 		}, name, s.turbineCount);
 	}
-	const detailIntro = 'Ob hier ein Windrad errichtet werden kann, hängt von der Detailprüfung ab:';
-	if (!hasPotential) {
-		return {
+
+	const noZone = `In ${name} befindet sich keine vom Land vorgesehene Fläche für den Windkraftausbau (sogenannte „Vorrang- oder Eignungszonen“).`;
+	// Unter 1 % sind es Grenzsplitter zwischen Gemeinde- und Zonengrenze.
+	const partial = exShare >= 0.01;
+	const pct = fmtNumber(Math.round(exShare * 100));
+	const inZone = `Rund ${pct} % der Fläche von ${name} liegen in der Ausschlusszone des Landes, in der Windkraft ausgeschlossen ist`;
+
+	// Teilweise in der Zone — und genau dort liegt das ganze Potenzial.
+	if (partial && hasPotential && potFree < 1) {
+		return withTurbines({
 			paragraphs: [
-				`In ${name} befindet sich keine vom Land vorgesehene Fläche für den Windkraftausbau (sogenannte „Vorrang- oder Eignungszonen“). Das Land schließt den Bau von Windrädern hier aber auch nicht aus.`,
-				detailIntro,
+				`${noZone} ${inZone} – und dort liegen auch alle Flächen, die laut Potenzialkarte grundsätzlich für Windkraft infrage kämen. ${reversible}`,
 			],
-			bullets: DETAIL_BULLETS,
 			afterBullets: [STEIERMARK_REVISION_NOTE],
-		};
+		}, name, s.turbineCount);
 	}
+
+	if (hasTurbines) {
+		return withTurbines({
+			paragraphs: [
+				`In ${name} befinden sich bereits Windräder. Bestehende Anlagen könnten in Zukunft modernisiert und durch leistungsstärkere Windräder ersetzt werden.${partial ? ` ${inZone}.` : ''}`,
+			],
+			afterBullets: [STEIERMARK_REVISION_NOTE],
+		}, name, s.turbineCount);
+	}
+
+	const landSentence = partial
+		? `${inZone.replace(' liegen in ', ' liegen allerdings in ')}. Außerhalb davon schließt das Land den Bau von Windrädern nicht aus.`
+		: 'Das Land schließt den Bau von Windrädern hier aber auch nicht aus.';
+	const potSentence = !hasPotential
+		? ''
+		: partial && potIn >= 1
+			? ` Laut Potenzialkarte besteht in ${name} grundsätzlich Potenzial für Windkraft – ${fmtNumber(potFree)} der ${fmtNumber(s.totalAreaHa)} Hektar liegen außerhalb der Ausschlusszone.`
+			: ` Laut Potenzialkarte besteht in ${name} grundsätzlich Potenzial für Windkraft.`;
+	const detailIntro = 'Ob hier ein Windrad errichtet werden kann, hängt von der Detailprüfung ab:';
 	return {
-		paragraphs: [
-			`In ${name} befindet sich keine vom Land vorgesehene Fläche für den Windkraftausbau (sogenannte „Vorrang- oder Eignungszonen“). Das Land schließt den Bau von Windrädern hier aber auch nicht aus. Laut Potenzialkarte besteht in ${name} grundsätzlich Potenzial für Windkraft.`,
-			detailIntro,
-		],
+		paragraphs: [`${noZone} ${landSentence}${potSentence}`, detailIntro],
 		bullets: DETAIL_BULLETS,
 		afterBullets: [STEIERMARK_REVISION_NOTE],
 	};

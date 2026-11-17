@@ -52,6 +52,9 @@ SERVED = [
     "exclusion_sonstige.geojson",
     "exclusion_wind.geojson",
     "official_zoning.geojson",
+    # Amtliche Ausschlusszonen (derzeit Steiermark, add_stmk_sapro_zoning.py) —
+    # schraffiert auf der Karte. ~0,6 MB, komprimiert ~170 kB.
+    "official_exclusion.geojson",
     "region_stats.json",
     "wka_bestand_ausserhalb_zonen.geojson",
     "zone_centroids.geojson",

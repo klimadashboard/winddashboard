@@ -23,6 +23,15 @@ export interface ZoneStats {
 	turbineCount: number;
 	officialZoneCount: number;
 	officialZoneType: OfficialZoneType; // null = no official zone data for this region
+	/**
+	 * Amtliche Ausschlusszonen (derzeit nur Steiermark, SAPRO 2026). Getrennt von
+	 * `officialZone*`, weil eine Ausschlusszone eine Gemeinde meist nur teilweise
+	 * deckt — der Text braucht den Anteil, nicht nur ein Ja/Nein.
+	 */
+	regionAreaHa?: number;
+	exclusionAreaHa?: number;
+	/** Potenzialfläche, die innerhalb der Ausschlusszone liegt. */
+	potentialInExclusionHa?: number;
 }
 
 export type VizMode = 'zones' | 'heatmap' | 'hexbin' | 'dots';

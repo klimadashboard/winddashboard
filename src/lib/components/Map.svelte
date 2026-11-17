@@ -79,6 +79,23 @@
 	// Matches nothing — the resting state of the selected-region highlight layers.
 	const NO_REGION_FILTER = ["==", ["get", "AGS"], "\u0000"] as const;
 
+	/**
+	 * Diagonale Schraffur für die amtlichen Ausschlusszonen, als Bild für
+	 * `fill-pattern`. 12 px Kantenlänge und Modulo 12 — so schließen die Streifen
+	 * an den Kachelkanten nahtlos an. Schiefergrau wie die Zonengrenze.
+	 */
+	function hatchPattern(size = 12, stripe = 2) {
+		const data = new Uint8Array(size * size * 4);
+		for (let y = 0; y < size; y++) {
+			for (let x = 0; x < size; x++) {
+				if ((x + y) % size >= stripe) continue;
+				const i = (y * size + x) * 4;
+				data[i] = 0x47; data[i + 1] = 0x55; data[i + 2] = 0x69; data[i + 3] = 255;
+			}
+		}
+		return { width: size, height: size, data };
+	}
+
 	// Aufräumen läuft über onDestroy, nicht über den Rückgabewert von onMount:
 	// die Mount-Funktion ist `async`, Svelte bekommt also ein Promise statt einer
 	// Funktion und ruft den Rückgabewert nie auf. Ohne das blieben fünf
@@ -207,6 +224,14 @@
 				maxzoom: POSSIBLE_ZONES_MAX_ZOOM,
 				promoteId: { [POSSIBLE_ZONES_LAYER]: "zone_id" },
 				attribution: "© Klimadashboard",
+			});
+
+			// Amtliche Ausschlusszonen (derzeit nur Steiermark, SAPRO 2026). Eigene
+			// Quelle statt Teil von official-zones: dort wird alles lila als
+			// Windkraftzone gezeichnet — ein Ausschluss darf nie so aussehen.
+			map.addSource("official-exclusion", {
+				type: "geojson",
+				data: "/data/official_exclusion.json",
 			});
 
 			map.addSource("official-zones", {
@@ -450,6 +475,20 @@
 			// Teal statt Violett, durchgezogene statt gestrichelter Kante und nur
 			// halb deckend. Sie sind kein Rechtsakt, sondern eine Beobachtung, und
 			// dürfen nicht wie eine Ausweisung des Landes gelesen werden.
+			// Ausschlusszone: schraffiert ÜBER den Potenzialflächen, damit die blauen
+			// Flächen darin sichtbar „durchgestrichen“ sind, aber UNTER Zonen,
+			// Windparks und Anlagen. Schraffur statt Füllfarbe, weil jede Farbe
+			// schon belegt ist (blau Potenzial, lila Zone, türkis Windpark) und ein
+			// grauer Schleier wie „keine Daten“ aussähe.
+			//
+			// Sichtbarkeit gleich beim Anlegen nach dem Story-Schritt: der erste
+			// applyStoryVisibility()-Aufruf nach addLayers() greift oft nicht, weil
+			// er bei noch ladenden Quellen (isStyleLoaded() === false) abbricht.
+			if (!map.hasImage("exclusion-hatch")) map.addImage("exclusion-hatch", hatchPattern());
+			const exclusionVisibility = get(storyStep) < 0 ? "visible" : "none";
+			map.addLayer({ id: "official-exclusion-fill", type: "fill", source: "official-exclusion", layout: { visibility: exclusionVisibility }, paint: { "fill-pattern": "exclusion-hatch", "fill-opacity": 0.75 } }, B);
+			map.addLayer({ id: "official-exclusion-outline", type: "line", source: "official-exclusion", layout: { visibility: exclusionVisibility }, paint: { "line-color": "#475569", "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.8, 10, 1.5], "line-opacity": 0.8 } }, B);
+
 			map.addLayer({ id: "wka-hulls-fill",    type: "fill", source: "wka-hulls", paint: { "fill-color": "#0891b2", "fill-opacity": 0.4 } }, B);
 			// Kante zoomabhängig: in der Übersicht sind die Hüllen nur wenige Pixel
 			// groß und lebten allein von der Füllung, im Detail trägt die Kante die
@@ -964,7 +1003,7 @@
 					(id) => show(id, false),
 				);
 				updateLayers(currentExpert, currentViz);
-				["official-zones-fill", "official-zones-outline", "wka-hulls-fill", "wka-hulls-outline", "turbines"].forEach(
+				["official-zones-fill", "official-zones-outline", "wka-hulls-fill", "wka-hulls-outline", "turbines", "official-exclusion-fill", "official-exclusion-outline"].forEach(
 					(id) => show(id, true),
 				);
 				if (map.getLayer("turbines")) {
@@ -1002,6 +1041,10 @@
 			// Official zoning und Bestandsflächen: step 6+. Beide gehören in denselben
 			// Schritt — die Aussage "hier darf gebaut werden" ist ohne "und hier steht
 			// schon etwas, ohne dass es ausgewiesen wurde" unvollständig.
+			// Ausschlusszone nur in der freien Karte: die Story erklärt sie nirgends,
+			// und im Zonierungsschritt würde sie mit den Zonen verwechselt.
+			show("official-exclusion-fill",    false);
+			show("official-exclusion-outline", false);
 			show("official-zones-fill",    step >= 6);
 			show("official-zones-outline", step >= 6);
 			show("wka-hulls-fill",         step >= 6);
@@ -1072,6 +1115,9 @@
 			updateLayers(currentExpert, currentViz);
 			// Override with story visibility if story is active
 			applyStoryVisibility(currentStoryStep);
+			// Noch einmal, sobald alle Quellen geladen sind: der Aufruf direkt
+			// darüber bricht ab, solange GeoJSON-Quellen laden (isStyleLoaded()).
+			map.once("idle", () => applyStoryVisibility(get(storyStep)));
 			mapInstance.set(map);
 			dataLoaded.set(true);
 			// Highlight region that was set before the map finished loading (URL navigation)

@@ -63,6 +63,12 @@ CRS_AREA = 3035
 # Genau ein Potenzialflächen-Datensatz. Die fünf Siedlungsabstands-Szenarien
 # wurden am 10.9.2026 entfernt — siehe scripts/extract_possible_zones.py.
 POSSIBLE_ZONES = "possible_zones.geojson"
+EXCLUSION = "official_exclusion.geojson"
+# Erste Stelle der Gemeindekennziffer je Bundesland.
+GKZ_PREFIX = {
+    "Burgenland": "1", "Kärnten": "2", "Niederösterreich": "3", "Oberösterreich": "4",
+    "Salzburg": "5", "Steiermark": "6", "Tirol": "7", "Vorarlberg": "8", "Wien": "9",
+}
 
 # Splitterschwelle: Ragt eine Zone nur mit weniger als 1 ha in eine Gemeinde,
 # zählt sie dort nicht. Ohne das würde ein Grenzverlauf-Artefakt von 0,15 ha
@@ -221,6 +227,56 @@ def official_per_gemeinde(gem: gpd.GeoDataFrame) -> dict[str, dict]:
     return out
 
 
+def exclusion_per_gemeinde(gem: gpd.GeoDataFrame) -> dict[str, dict]:
+    """Amtliche Ausschlusszonen je Gemeinde: Gemeinde- und Potenzialfläche darin.
+
+    Quelle ist geodata/official_exclusion.geojson (derzeit nur die Steiermark,
+    add_stmk_sapro_zoning.py). Getrennt von `official`, weil eine Ausschlusszone
+    selten eine ganze Gemeinde deckt: die steirische berührt 127 Gemeinden, liegt
+    aber nur über 7 vollständig. Für den Text zählt deshalb nicht *ob*, sondern
+    *wie viel* — und vor allem, ob das Potenzial der Gemeinde darin liegt:
+    `potentialHa` ist die Potenzialfläche innerhalb der Ausschlusszone.
+    """
+    path = os.path.join(GEODATA, EXCLUSION)
+    if not os.path.exists(path):
+        log("Ausschlusszonen: keine Datei, übersprungen")
+        return {}
+    ex = read_layer(EXCLUSION)
+    unknown = set(ex["bundesland"]) - set(GKZ_PREFIX)
+    if unknown:
+        sys.exit(f"Ausschlusszonen ohne bekanntes Bundesland: {unknown}")
+
+    # Eine Ausschlusszone gilt nur im Land, das sie verordnet hat. Ohne diese
+    # Einschränkung bekamen Hinterstoder und Weyer (OÖ) je 1–2 ha der steirischen
+    # Zone zugeschrieben — Splitter, weil Landes- und Gemeindegrenzen aus
+    # verschiedenen Quellen nicht deckungsgleich sind.
+    in_gem_parts, pot_parts_all = [], []
+    zones = read_layer(POSSIBLE_ZONES)
+    for land, grp in ex.groupby("bundesland"):
+        own = gem[gem["g_id"].str.startswith(GKZ_PREFIX[land])]
+        ex_union = gpd.GeoDataFrame(geometry=[grp.union_all()], crs=ex.crs)
+        in_gem_parts.append(join_polygons(own, ex_union))
+        pot_in_ex = gpd.overlay(zones[["geometry"]], ex_union, how="intersection",
+                                keep_geom_type=True)
+        pot_parts_all.append(gpd.overlay(pot_in_ex, own[["g_id", "geometry"]],
+                                         how="intersection", keep_geom_type=True))
+    in_gem = pd.concat(in_gem_parts, ignore_index=True)
+    pot_parts = pd.concat(pot_parts_all, ignore_index=True)
+    pot_parts = gpd.GeoDataFrame(pot_parts, geometry="geometry", crs=ex.crs)
+    pot_parts["ha"] = clipped_area_ha(pot_parts)
+    pot_by_gem = pot_parts.groupby("g_id")["ha"].sum()
+
+    out: dict[str, dict] = {}
+    for g_id, grp in in_gem.groupby("g_id"):
+        out[str(g_id)] = {
+            "areaHa": round(float(grp["area_in_gem_ha"].sum()), 1),
+            "potentialHa": round(float(pot_by_gem.get(g_id, 0.0)), 1),
+        }
+    log(f"Ausschlusszonen: {len(ex)} Objekte, in {len(out)} Gemeinden, "
+        f"{pot_parts['ha'].sum():,.0f} ha Potenzialfläche darin")
+    return out
+
+
 def potential_per_gemeinde(gem: gpd.GeoDataFrame) -> dict[str, dict]:
     """Potenzialflächen je Gemeinde."""
     zones = read_layer(POSSIBLE_ZONES)
@@ -263,6 +319,9 @@ def main() -> None:
     turbines = turbines_per_gemeinde(gem)
     official = official_per_gemeinde(gem)
     potential = potential_per_gemeinde(gem)
+    exclusion = exclusion_per_gemeinde(gem)
+    gem_ha = clipped_area_ha(gem)
+    gem_ha.index = gem["g_id"]
 
     bounds = gem.to_crs(4326).bounds
     bounds.index = gem["g_id"]
@@ -282,8 +341,13 @@ def main() -> None:
             ],
             "potential": potential.get(g_id, {"count": 0, "areaHa": 0.0, "pd": 0}),
         }
+        # Gemeindefläche: nötig, um den Anteil der Ausschlusszone auch für
+        # Bezirke und Bundesländer zu bilden (Summe Ausschluss / Summe Fläche).
+        entry["areaHa"] = round(float(gem_ha.loc[g_id]), 1)
         if g_id in official:
             entry["official"] = official[g_id]
+        if g_id in exclusion:
+            entry["exclusion"] = exclusion[g_id]
         regions[g_id] = entry
 
     payload = {
