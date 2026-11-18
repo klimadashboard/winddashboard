@@ -54,7 +54,7 @@
 	// ── Live stats (fetched) ──────────────────────────────────────────────────
 	let officialAreaHa = $state(0);
 	let turbineCount = $state(0);
-	// Jüngste gemessene Jahresproduktion (E-Control), gemeldet vom Diagramm —
+	// Jüngste gemessene Jahresproduktion (Energy-Charts), gemeldet vom Diagramm —
 	// siehe `onLatest` in RenewableGoalsChart.svelte. Ersetzt die frühere
 	// Hochrechnung aus der Nennleistung: sie stand in GWh über einem Diagramm in
 	// TWh und lag zugleich rund 50 % über dem gemessenen Wert.
@@ -641,9 +641,9 @@
 					Weitere <strong class="text-slate-900"
 						>{fmt(SCHUTZ_HA)}&thinsp;ha</strong
 					> entfallen auf Schutzgebiete — Nationalparks, Naturschutzgebiete,
-					Natura-2000-Gebiete, Ramsar-Feuchtgebiete und weitere per Verordnung
-					oder Bescheid geschützte Flächen. Landschaftsschutzgebiete zählen
-					nicht dazu.
+					Europaschutzgebiete (Natura 2000), Geschützte Landschaftsteile,
+					Sonstige Schutzgebiete (nur verordnete Kategorien) und Naturdenkmäler.
+					Landschaftsschutzgebiete zählen nicht dazu.
 				</p>
 				<div class="flex justify-between">
 					<span class="text-[9px] text-green-600 font-medium"
@@ -931,8 +931,14 @@
 						</p>
 					</div>
 					<p class="text-xs sm:text-sm leading-relaxed text-slate-700">
-						Viele Windräder sind älter als die Zonierung und stehen außerhalb
-						dieser Zonen. Sie sind hier türkis umrandet.
+						Manche Windräder liegen außerhalb der auf der Karte ersichtlichen
+						Zonen der Bundesländer. Das kann daran liegen, dass sie vor der
+						Zonierung gebaut wurden oder ihre Zone nicht mehr öffentlich
+						zugänglich ist wie im Burgenland. Das Burgenland stellt nur die noch
+						unbebauten Zonen öffentlich zur Verfügung, nicht die bereits
+						bebauten. Deshalb wurden bestehende Windparks türkis umrandet. Diese
+						Fläche haben wir berechnet (Windräder unter 750&thinsp;m Abstand plus
+						200&thinsp;m Rand), sie ist kein amtlicher Plan.
 					</p>
 				</div>
 

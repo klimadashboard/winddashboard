@@ -480,14 +480,17 @@
 			// Windparks und Anlagen. Schraffur statt Füllfarbe, weil jede Farbe
 			// schon belegt ist (blau Potenzial, lila Zone, türkis Windpark) und ein
 			// grauer Schleier wie „keine Daten“ aussähe.
+			// Bewusst zurückhaltend (Schraffur 30 %, Kante 35 %): die Zone soll
+			// beim Hinsehen erkennbar sein, aber nicht als Erstes ins Auge springen
+			// (Wunsch der Redaktion, 17.11.2026; vorher 75 % / 80 %).
 			//
 			// Sichtbarkeit gleich beim Anlegen nach dem Story-Schritt: der erste
 			// applyStoryVisibility()-Aufruf nach addLayers() greift oft nicht, weil
 			// er bei noch ladenden Quellen (isStyleLoaded() === false) abbricht.
 			if (!map.hasImage("exclusion-hatch")) map.addImage("exclusion-hatch", hatchPattern());
 			const exclusionVisibility = get(storyStep) < 0 ? "visible" : "none";
-			map.addLayer({ id: "official-exclusion-fill", type: "fill", source: "official-exclusion", layout: { visibility: exclusionVisibility }, paint: { "fill-pattern": "exclusion-hatch", "fill-opacity": 0.75 } }, B);
-			map.addLayer({ id: "official-exclusion-outline", type: "line", source: "official-exclusion", layout: { visibility: exclusionVisibility }, paint: { "line-color": "#475569", "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.8, 10, 1.5], "line-opacity": 0.8 } }, B);
+			map.addLayer({ id: "official-exclusion-fill", type: "fill", source: "official-exclusion", layout: { visibility: exclusionVisibility }, paint: { "fill-pattern": "exclusion-hatch", "fill-opacity": 0.3 } }, B);
+			map.addLayer({ id: "official-exclusion-outline", type: "line", source: "official-exclusion", layout: { visibility: exclusionVisibility }, paint: { "line-color": "#475569", "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.8, 10, 1.5], "line-opacity": 0.35 } }, B);
 
 			map.addLayer({ id: "wka-hulls-fill",    type: "fill", source: "wka-hulls", paint: { "fill-color": "#0891b2", "fill-opacity": 0.4 } }, B);
 			// Kante zoomabhängig: in der Übersicht sind die Hüllen nur wenige Pixel

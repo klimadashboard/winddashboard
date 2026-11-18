@@ -242,7 +242,18 @@
 			/>
 		</svg>
 		<p class="text-[9px] text-slate-400 mt-0.5">
-			Jahresproduktion Windenergie AT in TWh · Quelle: E-Control. Ausbauziel
+			<!--
+				Quelle Energy-Charts, nicht E-Control: die Werte aus ee_produktion
+				decken sich mit Energy-Charts (2025: 8,540 gegenüber 8,544 TWh,
+				2024: 9,33 gegenüber 9,37 TWh), geprüft am 18.11.2026.
+			-->
+			Jahresproduktion Windenergie AT in TWh · Quelle:
+			<a
+				href="https://www.energy-charts.info/charts/energy/chart.htm?l=de&c=AT&interval=year"
+				target="_blank"
+				rel="noopener"
+				class="underline hover:text-slate-600"
+			>Energy-Charts</a>. Ausbauziel
 			{GOAL_YEAR}: {fmtNumber(GOAL_TWH, 1)}&nbsp;TWh laut
 			<a
 				href="https://www.unsereenergiewelt2040.at/energie/die-wichtigsten-zahlen-im-ueberblick"

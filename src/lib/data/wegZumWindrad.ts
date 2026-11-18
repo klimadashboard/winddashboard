@@ -231,7 +231,7 @@ export const stateContent: Record<string, StateContent> = {
 
 	// Oberösterreich
 	[STATE.OBERÖSTERREICH]: {
-		intro: 'Grundsätzlich können in Oberösterreich Windkraftprojekte zur Genehmigung eingereicht werden.',
+		intro: 'In Oberösterreich müssen folgende Schritte durchlaufen werden, um ein Windrad errichten zu können:',
 		steps: [
 			{
 				number: 1,
