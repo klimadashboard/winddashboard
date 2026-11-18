@@ -179,10 +179,25 @@ function introSteiermark(name: string, s: ZoneStats): RegionIntroContent {
 	// Fläche" beschrieben, obwohl die Karte daneben eine Zone zeigte.
 	const hasZone = zoneType === 'vorrang' || zoneType === 'eignung' || zoneType === 'positive';
 
+	// Seit 16.11.2026 kennt die Tabelle die Ausschlusszone des SAPRO 2026. Sie
+	// deckt gut ein Viertel der Steiermark, aber nur sieben Gemeinden ganz; 127
+	// berührt sie. Deshalb entscheidet der Anteil, nicht ein Ja/Nein: wer zu einem
+	// Drittel in der Zone liegt, ist nicht „in einer Ausschlusszone“. Unter 1 %
+	// sind es Grenzsplitter zwischen Gemeinde- und Zonengrenze.
+	const exShare = s.regionAreaHa ? (s.exclusionAreaHa ?? 0) / s.regionAreaHa : 0;
+	const partial = exShare >= 0.01;
+	const pct = fmtNumber(Math.round(exShare * 100));
+	const inZone = `Rund ${pct} % der Fläche von ${name} liegen in der Ausschlusszone des Landes, in der Windkraft ausgeschlossen ist`;
+	// Der Anteil wird in jeder steirischen Gemeinde genannt, auch neben einer
+	// Vorrang- oder Eignungszone (Wunsch Redaktion 18.11.2026): Tragöß-Sankt
+	// Katharein liegt zu 41 % in der Ausschlusszone, bekam bis dahin aber nur den
+	// Vorrangzonen-Text — Eisenerz ohne Zone dagegen den Hinweis.
+	const exclusionAddon = partial ? ` ${inZone.replace(' liegen in ', ' liegen außerdem in ')}.` : '';
+
 	if (hasTurbines && hasZone) {
 		return withTurbines({
 			paragraphs: [
-				`In ${name} befindet sich eine Windkraftzone, in der bereits Windräder errichtet wurden. Bestehende Anlagen könnten in Zukunft modernisiert und durch leistungsstärkere Windräder ersetzt werden.`,
+				`In ${name} befindet sich eine Windkraftzone, in der bereits Windräder errichtet wurden. Bestehende Anlagen könnten in Zukunft modernisiert und durch leistungsstärkere Windräder ersetzt werden.${exclusionAddon}`,
 			],
 			afterBullets: [STEIERMARK_REVISION_NOTE],
 		}, name, s.turbineCount);
@@ -190,7 +205,7 @@ function introSteiermark(name: string, s: ZoneStats): RegionIntroContent {
 	if (zoneType === 'vorrang') {
 		return {
 			paragraphs: [
-				`In ${name} befindet sich eine sogenannte „Vorrangzone“. Diese Flächen sind vom Land Steiermark vorrangig für die Errichtung von Windkraftanlagen vorgesehen. Das bedeutet, dass diese Zone als besonders geeignet gilt und daher vorrangig für die Entwicklung von Windparks vorgesehen ist.`,
+				`In ${name} befindet sich eine sogenannte „Vorrangzone“. Diese Flächen sind vom Land Steiermark vorrangig für die Errichtung von Windkraftanlagen vorgesehen. Das bedeutet, dass diese Zone als besonders geeignet gilt und daher vorrangig für die Entwicklung von Windparks vorgesehen ist.${exclusionAddon}`,
 			],
 			afterBullets: [STEIERMARK_REVISION_NOTE],
 		};
@@ -198,7 +213,7 @@ function introSteiermark(name: string, s: ZoneStats): RegionIntroContent {
 	if (zoneType === 'eignung') {
 		return {
 			paragraphs: [
-				`In ${name} befindet sich eine sogenannte „Eignungszone“. Das bedeutet, dass das Land Steiermark diese Flächen grundsätzlich für Windkraft vorgesehen hat.`,
+				`In ${name} befindet sich eine sogenannte „Eignungszone“. Das bedeutet, dass das Land Steiermark diese Flächen grundsätzlich für Windkraft vorgesehen hat.${exclusionAddon}`,
 			],
 			afterBullets: [STEIERMARK_REVISION_NOTE],
 		};
@@ -206,20 +221,16 @@ function introSteiermark(name: string, s: ZoneStats): RegionIntroContent {
 	if (zoneType === 'positive') {
 		return {
 			paragraphs: [
-				`In ${name} befindet sich eine vom Land Steiermark ausgewiesene Windkraftzone. Das bedeutet, dass diese Flächen grundsätzlich für Windkraft vorgesehen sind.`,
+				`In ${name} befindet sich eine vom Land Steiermark ausgewiesene Windkraftzone. Das bedeutet, dass diese Flächen grundsätzlich für Windkraft vorgesehen sind.${exclusionAddon}`,
 			],
 			afterBullets: [STEIERMARK_REVISION_NOTE],
 		};
 	}
 	// ── Ohne Vorrang- oder Eignungszone ──────────────────────────────────────
-	// Seit 16.11.2026 kennt die Tabelle die Ausschlusszone des SAPRO 2026. Sie
-	// deckt gut ein Viertel der Steiermark, aber nur sieben Gemeinden ganz; 127
-	// berührt sie. Deshalb entscheidet der Anteil, nicht ein Ja/Nein: wer zu einem
-	// Drittel in der Zone liegt, ist nicht „in einer Ausschlusszone“, und der alte
-	// Satz „Das Land schließt den Bau von Windrädern hier aber auch nicht aus“
-	// wäre für genau dieses Drittel falsch. Entscheidend für die Aussage zum
-	// Potenzial ist zudem, ob die Potenzialflächen selbst in der Zone liegen.
-	const exShare = s.regionAreaHa ? (s.exclusionAreaHa ?? 0) / s.regionAreaHa : 0;
+	// Der alte Satz „Das Land schließt den Bau von Windrädern hier aber auch
+	// nicht aus“ wäre für den Teil in der Ausschlusszone falsch. Entscheidend für
+	// die Aussage zum Potenzial ist zudem, ob die Potenzialflächen selbst in der
+	// Zone liegen.
 	const potIn = s.potentialInExclusionHa ?? 0;
 	const potFree = Math.max(0, s.totalAreaHa - potIn);
 	const reversible =
@@ -239,10 +250,6 @@ function introSteiermark(name: string, s: ZoneStats): RegionIntroContent {
 	}
 
 	const noZone = `In ${name} befindet sich keine vom Land vorgesehene Fläche für den Windkraftausbau (sogenannte „Vorrang- oder Eignungszonen“).`;
-	// Unter 1 % sind es Grenzsplitter zwischen Gemeinde- und Zonengrenze.
-	const partial = exShare >= 0.01;
-	const pct = fmtNumber(Math.round(exShare * 100));
-	const inZone = `Rund ${pct} % der Fläche von ${name} liegen in der Ausschlusszone des Landes, in der Windkraft ausgeschlossen ist`;
 
 	// Teilweise in der Zone — und genau dort liegt das ganze Potenzial.
 	if (partial && hasPotential && potFree < 1) {

@@ -75,6 +75,12 @@ GKZ_PREFIX = {
 # genügen, damit "In X befindet sich eine Windkraftzone" erscheint — genau der
 # Fall Hausleiten/Rußbach (WE121 liegt zu 99,9 % in Rußbach).
 MIN_SHARE_HA = 1.0
+# Für Potenzialflächen strenger: Die kleinste Fläche der Lieferung hat 5,06 ha.
+# Liegt von einer Fläche weniger als das in einer Gemeinde, ist es ein
+# Grenzsplitter einer Nachbarfläche und keine eigene Potenzialfläche. Mit 1 ha
+# bekam Wildalpen (zu 100 % Schutzgebiet und SAPRO-Ausschlusszone) 1,7 ha einer
+# 16-ha-Fläche aus Landl zugerechnet und damit den Satz „grundsätzlich Potenzial“.
+MIN_POTENTIAL_SHARE_HA = 5.0
 # Anlagen laut Register (nicht: Punkte in der Lieferung) — siehe payload unten.
 TURBINE_TOTAL_REGISTER = 1447
 
@@ -116,13 +122,15 @@ def clipped_area_ha(frame: gpd.GeoDataFrame) -> pd.Series:
     return frame.geometry.to_crs(CRS_AREA).area / 10_000.0
 
 
-def join_polygons(gem: gpd.GeoDataFrame, polys: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+def join_polygons(
+    gem: gpd.GeoDataFrame, polys: gpd.GeoDataFrame, min_ha: float = MIN_SHARE_HA
+) -> gpd.GeoDataFrame:
     """Verschneidet Polygone mit den Gemeinden; eine Zeile je (Zone, Gemeinde)."""
     parts = gpd.overlay(
         polys, gem[["g_id", "geometry"]], how="intersection", keep_geom_type=True
     )
     parts["area_in_gem_ha"] = clipped_area_ha(parts)
-    return parts[parts["area_in_gem_ha"] >= MIN_SHARE_HA]
+    return parts[parts["area_in_gem_ha"] >= min_ha]
 
 
 # Österreich-Bounding-Box, um kaputte Koordinaten zu erkennen.
@@ -227,7 +235,7 @@ def official_per_gemeinde(gem: gpd.GeoDataFrame) -> dict[str, dict]:
     return out
 
 
-def exclusion_per_gemeinde(gem: gpd.GeoDataFrame) -> dict[str, dict]:
+def exclusion_per_gemeinde(pot_counted: gpd.GeoDataFrame, gem: gpd.GeoDataFrame) -> dict[str, dict]:
     """Amtliche Ausschlusszonen je Gemeinde: Gemeinde- und Potenzialfläche darin.
 
     Quelle ist geodata/official_exclusion.geojson (derzeit nur die Steiermark,
@@ -250,15 +258,15 @@ def exclusion_per_gemeinde(gem: gpd.GeoDataFrame) -> dict[str, dict]:
     # Einschränkung bekamen Hinterstoder und Weyer (OÖ) je 1–2 ha der steirischen
     # Zone zugeschrieben — Splitter, weil Landes- und Gemeindegrenzen aus
     # verschiedenen Quellen nicht deckungsgleich sind.
+    # Potenzial in der Zone nur aus den Flächenteilen, die auch in `potential`
+    # zählen — sonst stünde ein Grenzsplitter hier wieder drin.
     in_gem_parts, pot_parts_all = [], []
-    zones = read_layer(POSSIBLE_ZONES)
     for land, grp in ex.groupby("bundesland"):
         own = gem[gem["g_id"].str.startswith(GKZ_PREFIX[land])]
         ex_union = gpd.GeoDataFrame(geometry=[grp.union_all()], crs=ex.crs)
         in_gem_parts.append(join_polygons(own, ex_union))
-        pot_in_ex = gpd.overlay(zones[["geometry"]], ex_union, how="intersection",
-                                keep_geom_type=True)
-        pot_parts_all.append(gpd.overlay(pot_in_ex, own[["g_id", "geometry"]],
+        own_pot = pot_counted[pot_counted["g_id"].str.startswith(GKZ_PREFIX[land])]
+        pot_parts_all.append(gpd.overlay(own_pot[["g_id", "geometry"]], ex_union,
                                          how="intersection", keep_geom_type=True))
     in_gem = pd.concat(in_gem_parts, ignore_index=True)
     pot_parts = pd.concat(pot_parts_all, ignore_index=True)
@@ -277,10 +285,12 @@ def exclusion_per_gemeinde(gem: gpd.GeoDataFrame) -> dict[str, dict]:
     return out
 
 
-def potential_per_gemeinde(gem: gpd.GeoDataFrame) -> dict[str, dict]:
-    """Potenzialflächen je Gemeinde."""
+def potential_per_gemeinde(
+    gem: gpd.GeoDataFrame,
+) -> tuple[dict[str, dict], gpd.GeoDataFrame]:
+    """Potenzialflächen je Gemeinde, dazu die gezählten Flächenteile."""
     zones = read_layer(POSSIBLE_ZONES)
-    parts = join_polygons(gem, zones)
+    parts = join_polygons(gem, zones, MIN_POTENTIAL_SHARE_HA)
 
     out: dict[str, dict] = {}
     for g_id, grp in parts.groupby("g_id"):
@@ -297,7 +307,7 @@ def potential_per_gemeinde(gem: gpd.GeoDataFrame) -> dict[str, dict]:
             "pd": round(pd_mean),
         }
     log(f"Potenzialflächen: {len(zones)} Objekte, in {len(out)} Gemeinden")
-    return out
+    return out, parts
 
 
 def main() -> None:
@@ -318,8 +328,8 @@ def main() -> None:
 
     turbines = turbines_per_gemeinde(gem)
     official = official_per_gemeinde(gem)
-    potential = potential_per_gemeinde(gem)
-    exclusion = exclusion_per_gemeinde(gem)
+    potential, pot_parts = potential_per_gemeinde(gem)
+    exclusion = exclusion_per_gemeinde(pot_parts, gem)
     gem_ha = clipped_area_ha(gem)
     gem_ha.index = gem["g_id"]
 
@@ -354,6 +364,7 @@ def main() -> None:
         "generated": pd.Timestamp.utcnow().strftime("%Y-%m-%d"),
         "boundarySource": os.path.basename(glob.glob(os.path.join(args.gemeinden, "*.shp"))[0]),
         "minShareHa": MIN_SHARE_HA,
+        "minPotentialShareHa": MIN_POTENTIAL_SHARE_HA,
         # Gesamtzahl der Anlagen für den Text („Windkraft heute"). Bewusst NICHT
         # die Zahl der Punkte: die Lieferung enthält 1.396 Standorte, das
         # Anlagenregister zählt 1.447 (Vorgabe Redaktion, 16.11.2026). Karte und

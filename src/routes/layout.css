@@ -14,10 +14,11 @@
 /*
   Attribution auf schmalen Bildschirmen.
 
-  MapLibre klappt die Attributionszeile beim Start auf; auf 375 px braucht sie
-  zwei Zeilen. Die Suchleiste ragt über die Kartenunterkante hinaus und
-  verdeckte die zweite — die Nennung von OpenStreetMap war damit nicht mehr
-  lesbar. Hier wird sie so weit angehoben, dass beide Zeilen frei stehen.
+  Am Desktop steht die Attribution oben rechts, auf dem Handy unten rechts
+  (Map.svelte), weil die Story-Karte dort oben über die ganze Breite liegt.
+  Auf 375 px braucht sie mehrere Zeilen. Die Suchleiste ragt über die
+  Kartenunterkante hinaus und verdeckte die letzte Zeile; deshalb wird sie
+  so weit angehoben, dass alle Zeilen frei stehen.
 
   `!important` ist nötig, weil maplibre-gl.css erst zur Laufzeit nachgeladen
   wird (dynamischer Import in Map.svelte) und damit nach diesem Stylesheet im
@@ -46,4 +47,12 @@
 */
 .maplibregl-ctrl-attrib-inner .dataset-citation {
   display: block;
+}
+
+/*
+  Schmal halten, damit die linken Story-Karten (bis ~20 rem breit) die
+  Attribution oben rechts auch bei 800 px Fensterbreite nicht überdecken.
+*/
+.maplibregl-ctrl-top-right .maplibregl-ctrl-attrib {
+  max-width: 26rem;
 }

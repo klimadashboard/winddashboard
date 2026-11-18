@@ -719,7 +719,17 @@ und Potenzialfläche innerhalb der Zone, aus `official_exclusion.geojson`. Eine
 Ausschlusszone zählt nur in ihrem eigenen Bundesland (sonst bekamen Hinterstoder und
 Weyer in OÖ Grenzsplitter der steirischen Zone). Die Texte richten sich nach dem
 Anteil: ab 99 % „befindet sich in einer Ausschlusszone", darunter „rund N % der
-Fläche liegen in der Ausschlusszone", unter 1 % gar nicht (Grenzsplitter).
+Fläche liegen in der Ausschlusszone", unter 1 % gar nicht (Grenzsplitter). Seit
+18.11.2026 nennen auch Gemeinden mit Vorrang- oder Eignungszone den Anteil.
+
+**Splitterschwellen:** Eine Zone zählt in einer Gemeinde erst ab 1 ha
+(`MIN_SHARE_HA`, amtliche Zonen und Ausschlusszone). Für Potenzialflächen gilt seit
+18.11.2026 `MIN_POTENTIAL_SHARE_HA = 5` — die kleinste Fläche der Lieferung hat
+5,06 ha, kleinere Anteile sind Grenzsplitter einer Nachbarfläche. Auslöser war
+Wildalpen: 1,7 ha einer 16-ha-Fläche aus Landl ergaben „grundsätzlich Potenzial“
+in einer Gemeinde, die ganz im Schutzgebiet und in der Ausschlusszone liegt. Mit
+der Schwelle verlieren 37 Gemeinden ihr (Splitter-)Potenzial, 1.161 statt 1.198
+Gemeinden haben Potenzial; `exclusion.potentialHa` rechnet mit denselben Anteilen.
 
 **Warum vorberechnet:** die Zahlen kamen früher zur Laufzeit aus
 `queryRenderedFeatures` über die **Bounding Box** des Gemeindeumrisses. Eine Box ist

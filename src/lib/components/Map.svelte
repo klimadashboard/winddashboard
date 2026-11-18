@@ -229,12 +229,21 @@
 			const [citation] = parts.splice(idx, 1);
 			inner.innerHTML = citation + parts.join(" | ");
 		};
-		map.addControl(attribution, "bottom-right");
-
 		map.addControl(
 			new maplibregl.NavigationControl({ showCompass: false }),
 			"top-right",
 		);
+		// Am Desktop oben rechts unter den Zoomknöpfen: unten verdeckten Story-
+		// Karten und Gemeindesuche die Quellen. Auf dem Handy liegt die Story-
+		// Karte oben über der ganzen Breite, dort bleibt sie unten rechts
+		// (Abstand zur Suchleiste in layout.css).
+		const narrow = window.matchMedia("(max-width: 767px)");
+		const placeAttribution = () => {
+			if (map.hasControl(attribution)) map.removeControl(attribution);
+			map.addControl(attribution, narrow.matches ? "bottom-right" : "top-right");
+		};
+		placeAttribution();
+		narrow.addEventListener("change", placeAttribution);
 
 		// ── Helpers (defined inside onMount so they close over `map` and `maplibregl`) ──
 
@@ -1290,6 +1299,7 @@
 			unsubStory();
 			unsubBands();
 			unsubVectors();
+			narrow.removeEventListener("change", placeAttribution);
 			// Reset per-map state so the next map instance starts clean
 			activatedSlugs.clear();
 			expertMode.set(false);
