@@ -194,10 +194,41 @@
 			attributionControl: false,
 		});
 
-		map.addControl(
-			new maplibregl.AttributionControl({ compact: true }),
-			"bottom-right",
-		);
+		// Zitat des Datensatzes, auf dem Ausschluss- und Potenzialflächen beruhen,
+		// vollständig und auf die DOI verlinkt (die URL selbst steht nicht im Text)
+		// — als erste Zeile der Attribution, darunter die Copyright-Hinweise.
+		//
+		// Die Reihenfolge lässt sich über `customAttribution` allein nicht
+		// festlegen: MapLibre sortiert alle Einträge nach Länge (für die
+		// Duplikatprüfung), das Zitat als längster landete immer zuletzt. Deshalb
+		// wird nach jedem Neuaufbau der Zeile das Zitat wieder nach vorn gestellt.
+		// Es trägt die Klasse `dataset-citation` und steht per CSS als eigene Zeile
+		// (src/routes/layout.css).
+		//
+		// © Statistik Austria bleibt: die Gemeindegrenzen (Kachelquelle
+		// municipalities-at und region_stats.json) stehen unter CC BY 4.0, die
+		// Quellennennung ist Lizenzbedingung — ebenso OpenStreetMap (ODbL) und CARTO.
+		const DATASET_DOI = "https://doi.org/10.5281/zenodo.24267882";
+		const attribution = new maplibregl.AttributionControl({
+			compact: true,
+			customAttribution: `<span class="dataset-citation"><a href="${DATASET_DOI}" target="_blank" rel="noopener">Daten: J. Hurt, „Wind power exclusion and suitability areas for Austria on a 25 m grid (Abschichtung Windkraft Österreich)“</a></span>`,
+		});
+		const attributionInternals = attribution as unknown as {
+			_updateAttributions: () => void;
+			_innerContainer?: HTMLElement;
+		};
+		const updateAttributions = attributionInternals._updateAttributions.bind(attribution);
+		attributionInternals._updateAttributions = () => {
+			updateAttributions();
+			const inner = attributionInternals._innerContainer;
+			if (!inner) return;
+			const parts = inner.innerHTML.split(" | ");
+			const idx = parts.findIndex((p) => p.includes("dataset-citation"));
+			if (idx <= 0) return; // fehlt oder steht schon vorn
+			const [citation] = parts.splice(idx, 1);
+			inner.innerHTML = citation + parts.join(" | ");
+		};
+		map.addControl(attribution, "bottom-right");
 
 		map.addControl(
 			new maplibregl.NavigationControl({ showCompass: false }),

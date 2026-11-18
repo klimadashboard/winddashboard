@@ -39,3 +39,11 @@
     height: 34px !important;
   }
 }
+
+/*
+  Zitat des Datensatzes (Map.svelte, customAttribution) als eigene erste Zeile
+  der Kartenattribution, die Copyright-Hinweise folgen darunter.
+*/
+.maplibregl-ctrl-attrib-inner .dataset-citation {
+  display: block;
+}
