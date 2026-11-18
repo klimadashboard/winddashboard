@@ -4,9 +4,10 @@
 		expertMode,
 		vizMode,
 		hiddenBands,
+		hiddenVectorLayers,
 		emptyBands,
 	} from "$lib/stores/windStore";
-	import type { VizMode } from "$lib/stores/windStore";
+	import type { VizMode, VectorLayerKey } from "$lib/stores/windStore";
 	import { LEGEND_CODES, GROUP_LABELS } from "$lib/config/legend";
 	import { BAND_DEFS, BAND_GROUPS, GROUP_ORDER } from "$lib/config/bands";
 	import type { BandGroup } from "$lib/config/bands";
@@ -56,6 +57,22 @@
 			return next;
 		});
 	}
+	const VECTOR_ROWS: { key: VectorLayerKey; label: string; swatch: string; round?: boolean }[] = [
+		{ key: "zones", label: "Windkraftzonen", swatch: "background:#7c3aed;border:1.5px dashed #6d28d9;" },
+		{ key: "exclusion", label: "Ausschlusszonen (Stmk.)", swatch: "background:repeating-linear-gradient(-45deg, #475569 0 1.5px, transparent 1.5px 4px);border:1px solid #475569;" },
+		{ key: "hulls", label: "Bestehende Windparks", swatch: "background:#0891b2;opacity:0.75;border:1px solid #0e7490;" },
+		{ key: "turbines", label: "Bestehende Anlagen", swatch: "background:#1e293b;border:1.5px solid white;box-shadow:0 0 0 1px #cbd5e1;", round: true },
+	];
+
+	function toggleVector(key: VectorLayerKey) {
+		hiddenVectorLayers.update((s) => {
+			const next = new Set(s);
+			if (next.has(key)) next.delete(key);
+			else next.add(key);
+			return next;
+		});
+	}
+
 	function toggleBand(bandId: number) {
 		hiddenBands.update((s) => {
 			const next = new Set(s);
@@ -145,17 +162,9 @@
 					Offiz. Windkraftzone
 				</span>
 				<!--
-					Amtliche Ausschlusszone (derzeit nur Steiermark). Schraffur wie auf
-					der Karte (Map.svelte, hatchPattern) — eine Füllfarbe wäre mit
-					Potenzial, Zone oder Windpark verwechselbar.
+					Die Ausschlusszonen (Steiermark) stehen nur in der Detail-Legende:
+					auf der Karte erscheinen sie erst mit der Detailansicht.
 				-->
-				<span class="flex items-center gap-2">
-					<span
-						class="w-3 h-3 rounded-sm flex-shrink-0 inline-block"
-						style="background: repeating-linear-gradient(-45deg, #475569 0 1.5px, transparent 1.5px 4px); border: 1px solid #475569;"
-					></span>
-					Offiz. Ausschlusszone
-				</span>
 				<!--
 					Bestandsfläche statt "Eignungszone": die Fläche ist keine Ausweisung
 					des Landes, sondern die Hülle um bestehende Anlagen. Sie steht
@@ -239,7 +248,11 @@
 					</div>
 				{/each}
 
-				<!-- Vector layers (unchanged from current code) -->
+				<!--
+					Vektorebenen: per Klick ein- und ausblendbar, wie die Bänder darüber.
+					Der Zustand liegt in hiddenVectorLayers (windStore), Map.svelte setzt
+					daraus die Sichtbarkeit.
+				-->
 				<div>
 					<div
 						class="font-bold uppercase mb-1.5"
@@ -248,43 +261,20 @@
 						Vektorebenen
 					</div>
 					<div class="space-y-1">
-						<div class="flex items-center gap-2">
-							<span
-								class="w-3 h-3 rounded-sm flex-shrink-0"
-								style="background:#7c3aed;border:1.5px dashed #6d28d9;display:inline-block;"
-							></span>
-							<span class="text-slate-600" style="font-size:11px;"
-								>Windkraftzonen</span
+						{#each VECTOR_ROWS as row}
+							{@const hidden = $hiddenVectorLayers.has(row.key)}
+							<button
+								class="flex items-center gap-2 w-full text-left cursor-pointer"
+								onclick={() => toggleVector(row.key)}
+								aria-pressed={!hidden}
 							>
-						</div>
-						<!-- Gleiche Schraffur wie in der einfachen Legende und auf der Karte. -->
-						<div class="flex items-center gap-2">
-							<span
-								class="w-3 h-3 rounded-sm flex-shrink-0"
-								style="background:repeating-linear-gradient(-45deg, #475569 0 1.5px, transparent 1.5px 4px);border:1px solid #475569;display:inline-block;"
-							></span>
-							<span class="text-slate-600" style="font-size:11px;"
-								>Ausschlusszonen</span
-							>
-						</div>
-						<div class="flex items-center gap-2">
-							<span
-								class="w-3 h-3 rounded-sm flex-shrink-0"
-								style="background:#0891b2;opacity:0.75;border:1px solid #0e7490;display:inline-block;"
-							></span>
-							<span class="text-slate-600" style="font-size:11px;"
-								>Bestehende Windparks</span
-							>
-						</div>
-						<div class="flex items-center gap-2">
-							<span
-								class="w-3 h-3 rounded-full flex-shrink-0"
-								style="background:#1e293b;border:1.5px solid white;box-shadow:0 0 0 1px #cbd5e1;"
-							></span>
-							<span class="text-slate-600" style="font-size:11px;"
-								>Bestehende Anlagen</span
-							>
-						</div>
+								<span
+									class="w-3 h-3 flex-shrink-0 {row.round ? 'rounded-full' : 'rounded-sm'}"
+									style="display:inline-block;{hidden ? 'background:#e2e8f0;border:1px solid #cbd5e1;' : row.swatch}"
+								></span>
+								<span style="font-size:11px;color:{hidden ? '#94a3b8' : '#4b5563'};">{row.label}</span>
+							</button>
+						{/each}
 					</div>
 				</div>
 			</div>

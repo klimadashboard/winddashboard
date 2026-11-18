@@ -42,10 +42,11 @@ export const NÖ_TURBINE_LEGACY_NOTE =
 // Nr. 87/2026) in Kraft — Datum laut Landesdatensatz (Von_Dat); das Manifest des
 // Datenanbieters nennt den 13.10. Seit 16.11.2026 kommen Vorrang-, Eignungs- und
 // Ausschlusszone aus dem Landesdatensatz selbst (add_stmk_sapro_zoning.py). Die
-// Ausschlusszone fließt in die Gemeindetexte ein und ist schraffiert eingezeichnet
-// (Map.svelte, „official-exclusion“); Potenzialflächen darin bleiben sichtbar.
+// Ausschlusszone fließt in die Gemeindetexte ein und ist in der Detailansicht
+// schraffiert eingezeichnet (Map.svelte, „official-exclusion“; seit 18.11.2026
+// nicht mehr in der Standardansicht).
 const STEIERMARK_REVISION_NOTE =
-	'Grundlage ist das Sachprogramm Windenergie 2026 des Landes Steiermark (LGBl. Nr. 87/2026), in Kraft seit 15. Oktober 2026. Die Karte zeigt die darin festgelegten Vorrang- und Eignungszonen. Die Ausschlusszone des Programms ist schraffiert eingezeichnet.';
+	'Grundlage ist das Sachprogramm Windenergie 2026 des Landes Steiermark (LGBl. Nr. 87/2026), in Kraft seit 15. Oktober 2026. Die Karte zeigt die darin festgelegten Vorrang- und Eignungszonen. Die Ausschlusszone des Programms ist in der Detailansicht schraffiert eingezeichnet.';
 
 const KÄRNTEN_LEGAL_NOTE =
 	'Kärnten hat aktuell weniger als 0,1 % der Landesfläche als Beschleunigungsgebiete ausgewiesen; über 99,9 % sind Ausschlusszonen. Weil die ausgewiesenen Beschleunigungsgebiete die gesetzlichen Ausbauziele nicht erreichen, sind Windräder jedoch grundsätzlich auch außerhalb dieser Zonen möglich (§ 4a UVP-G).';

@@ -55,6 +55,10 @@ export const austriaOutline = writable<GeoJSON.Polygon | GeoJSON.MultiPolygon | 
 export const storyStep      = writable<number>(-1);
 export const storyComplete  = writable<boolean>(false);
 export const hiddenBands       = writable<Set<number>>(new Set<number>());
+// Vektorebenen, die in der Detail-Legende ausgeblendet wurden (Klick auf den
+// Eintrag). Die Ausschlusszonen sind zusätzlich nur in der Detailansicht sichtbar.
+export type VectorLayerKey = 'zones' | 'exclusion' | 'hulls' | 'turbines';
+export const hiddenVectorLayers = writable<Set<VectorLayerKey>>(new Set<VectorLayerKey>());
 export const detailLayersReady = writable(false);
 // Band IDs with no rendered features in the current viewport (updated on map idle)
 export const emptyBands        = writable<Set<number>>(new Set<number>());

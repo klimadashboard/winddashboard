@@ -1,14 +1,135 @@
 <script lang="ts">
-	// Die Bandtabelle unten kommt direkt aus dem Bandmanifest des Datenanbieters,
-	// nicht aus einer abgetippten Liste — sonst beschreibt die Methodik-Seite nach
-	// jeder Lieferung ein Schema, das es nicht mehr gibt.
-	import manifest from "$lib/data/abschichtung.bands.json";
+	// Methodik nach der Kurzfassung „Methodik_Kurzfassung_Website“ (November 2026),
+	// die die frühere, ausführliche Seite mit Band-Tabelle vollständig ersetzt.
+	// Abweichungen vom Dokument, abgestimmt am 18.11.2026:
+	//   - Schutzgebiete: 15.683 km² statt 15.670 km² (exclusion_nature der
+	//     Lieferung, 1.568.322 ha; 18,7 % bleibt).
+	//   - Freileitungen: 136 m gelten auch für 400 kV (Manifest).
+	//   - Zitat und Quellen am Ende ergänzt (Datensatz J. Hurt, Statistik Austria,
+	//     Energy-Charts, Hintergrundkarte).
+	// Burgenland steht mit 1.200 m drin, obwohl die aktuelle Lieferung dort noch
+	// mit 1.000 m rechnet — so entschieden, die neue Lieferung ist angefragt.
 	import SeoHead from "$lib/components/SeoHead.svelte";
+
+	type Link = { label: string; href: string };
+	type Row = { kriterium: string; regel: string; daten: Link[]; datenText?: string };
+	type Group = { name: string; color: string; rows: Row[] };
+
+	const OSM: Link = { label: "OpenStreetMap", href: "https://www.openstreetmap.org/copyright" };
+	const DGM: Link = {
+		label: "Geländemodell BEV (DGM 25 m)",
+		href: "https://data.bev.gv.at/download/DGM/Hoehenraster/DGM_R25.tif",
+	};
+	const NOE_SEKROP =
+		"https://www.raumordnung-noe.at/land/ueberoertliche-raumordnung/raumordnungsprogramme/raumordnungsprogramme-fuer-sachbereiche/sektorales-raumordnungsprogramm-ueber-windkraftnutzung-in-noe-1";
+
+	const WIDMUNG: Link[] = [
+		{ label: "Burgenland", href: "https://www.burgenland.at/service/open-government-data/bestandsliste/detail/flaechenwidmung-burgenland-widmungsflaechen/" },
+		{ label: "Kärnten", href: "https://kagis.ktn.gv.at/Geodaten/Open-Government-Data" },
+		{ label: "Niederösterreich", href: "https://www.noe.gv.at/noe/OGD_Detailseite.html?id=81a23612-9823-4a61-95cb-09aea8242db8" },
+		{ label: "Oberösterreich", href: "https://www.data.gv.at/katalog/dataset/land-ooe_flachenwidmung-widmungen-flachen-oberosterreich" },
+		{ label: "Salzburg", href: "https://service.salzburg.gv.at/ogd/client/showDetail/d7b4c0c9-3407-4dba-9e15-9b60ea7d00f7" },
+		{ label: "Steiermark", href: "https://data.steiermark.at/cms/beitrag/12762373/97428847/" },
+		{ label: "Tirol", href: "https://www.data.gv.at/katalog/dataset/AE90DD7E-79C9-48AA-B685-732B357E9246" },
+		{ label: "Vorarlberg", href: "https://vogis.cnv.at/geonetwork/srv/api/records/85bd045b-8857-4388-bc07-0fccd5a29eb1" },
+		{ label: "Wien", href: "https://www.wien.gv.at/stadtentwicklung/flaechenwidmung/geodaten.html" },
+	];
+
+	const GROUPS: Group[] = [
+		{
+			name: "Mensch",
+			color: "#f97316",
+			rows: [
+				{
+					kriterium: "Siedlungen",
+					regel: "1.000 m Abstand, in Niederösterreich und im Burgenland 1.200 m",
+					datenText: "Flächenwidmung der Länder:",
+					daten: WIDMUNG,
+				},
+				{
+					kriterium: "Häuser im Grünen",
+					regel: "750 m Abstand",
+					datenText: "Flächenwidmung,",
+					daten: [
+						{ label: "Kataster", href: "https://data.bev.gv.at/geonetwork/srv/api/records/279a32e9-c001-4508-914c-5e00952d6156" },
+						{ label: "Adressregister", href: "https://www.bev.gv.at/Services/Produkte/Adressregister/Oesterreichisches-Adressregister.html" },
+						{ label: "Mindestabstandszonen Niederösterreich", href: NOE_SEKROP },
+					],
+				},
+				{
+					kriterium: "Übrige Gebäude",
+					regel:
+						"Um alle anderen Gebäude halten wir 25 m Abstand ein – das entspricht praktisch ihrer Grundfläche. Gebäude, die höchstens 100 m neben einer Personenseilbahn liegen, gelten als Seilbahnstation und bekommen 50 m.",
+					datenText: "Kataster,",
+					daten: [OSM],
+				},
+				{
+					kriterium: "Verkehr",
+					regel:
+						"150 m Abstand auf beiden Seiten von Autobahnen und Schnellstraßen, Bundes- und Landesstraßen, Hauptbahnen und Personenseilbahnen (Gondel-, Kabinen- und Pendelbahnen, Sessellifte und Kombibahnen). Abschnitte in Tunneln zählen nicht.",
+					daten: [OSM],
+				},
+				{
+					kriterium: "Militär",
+					regel:
+						"Militärisch genutzte Flächen: Truppenübungs- und Schießplätze, Gefahrenzonen, Kasernen, Militärflugplätze, Munitionsanstalten und sonstige Militärstandorte. Den Großteil machen die Truppenübungsplätze Allentsteig, Lizum/Walchen, Bruckneudorf, Großmittel, Hochfilzen und Seetaler Alpe aus.",
+					daten: [OSM],
+				},
+				{
+					kriterium: "Luftfahrt",
+					regel:
+						"Flughafenareal der sechs Verkehrsflughäfen Wien-Schwechat, Graz, Linz, Salzburg, Innsbruck und Klagenfurt. Dazu kommen an jedem Pistenende An- und Abflugkorridore von 5 km Länge und ±15° um die verlängerte Pistenachse. Kleinere Flugplätze sind nicht berücksichtigt.",
+					daten: [OSM],
+				},
+				{
+					kriterium: "Freileitungen",
+					regel: "116 m Abstand zu Freileitungen mit 110 kV, 136 m zu Freileitungen mit 220, 380 und 400 kV",
+					daten: [OSM],
+				},
+			],
+		},
+		{
+			name: "Natur",
+			color: "#16a34a",
+			rows: [
+				{
+					kriterium: "Schutzgebiete",
+					regel:
+						"Nationalparks, Naturschutzgebiete, Europaschutzgebiete (Natura 2000), Geschützte Landschaftsteile, Sonstige Schutzgebiete (nur verordnete Kategorien) und Naturdenkmäler. Landschaftsschutzgebiete zählen nicht dazu.",
+					daten: [{ label: "Umweltbundesamt", href: "https://www.umweltbundesamt.at/umweltthemen/naturschutz/schutzgebiete" }],
+				},
+			],
+		},
+		{
+			name: "Geografie",
+			color: "#78716c",
+			rows: [
+				{ kriterium: "Hangneigung", regel: "steiler als 15°", daten: [DGM] },
+				{ kriterium: "Seehöhe", regel: "über 2.500 m", daten: [DGM] },
+				{
+					kriterium: "Wind",
+					regel: "unter 150 W/m² in 130 m Höhe",
+					daten: [{ label: "Global Wind Atlas", href: "https://globalwindatlas.info" }],
+				},
+				{ kriterium: "Gewässer", regel: "Seen, Stauseen und Flüsse ab 1 ha", daten: [OSM] },
+			],
+		},
+	];
+
+	const ZONEN: Link[] = [
+		{ label: "Niederösterreich", href: NOE_SEKROP },
+		{ label: "Burgenland*", href: "https://www.burgenland.at/service/open-government-data/bestandsliste/detail/windkraftanlagen-eignungszonen-burgenland/" },
+		{ label: "Steiermark", href: "https://www.landesentwicklung.steiermark.at/cms/beitrag/12755541/154267170/" },
+		{ label: "Kärnten", href: "https://www.ris.bka.gv.at/Dokumente/LgblAuth/LGBLA_KA_20260220_11/Anlage_Anlage_zu___7c_Abs._2.pdf" },
+		{ label: "Salzburg", href: "https://www.salzburg.gv.at/fileadmin/Dateien/Bauen-Wohnen/Raumplanung/Raumordnung_Publikationen/260928V2_Landesentwicklungsprogramm_2026_Online.pdf" },
+	];
+
+	const DATASET_DOI = "https://doi.org/10.5281/zenodo.24267882";
 </script>
 
 <SeoHead
 	title="Methodik: Wie wir Windkraft-Potenzialflächen berechnen"
-	description="Datenquellen, Ausschlusskriterien und Rechenweg hinter der Windkraft-Potenzialkarte für Österreich — Mindestabstände, Schutzgebiete, Gelände und Windhöffigkeit, Schritt für Schritt erklärt."
+	description="Welche Daten wir verwenden, welche Flächen wir ausschließen und wie die Windkraft-Potenzialkarte für Österreich entsteht — Abstände, Schutzgebiete, Gelände und Wind."
 />
 
 <!-- Nav -->
@@ -19,18 +140,8 @@
 			class="flex items-center gap-2 text-sm font-semibold transition-colors rounded focus-visible:ring-2 focus-visible:ring-blue-400"
 			style="color: var(--blue-dark);"
 		>
-			<svg
-				class="w-4 h-4"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke="currentColor"
-				stroke-width="2.5"
-			>
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					d="M15 19l-7-7 7-7"
-				/>
+			<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
 			</svg>
 			Zur Karte
 		</a>
@@ -39,453 +150,316 @@
 	</div>
 </nav>
 
+{#snippet citation()}
+	<blockquote class="rounded-xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-700 leading-relaxed">
+		J. Hurt, „Wind power exclusion and suitability areas for Austria on a 25 m grid (Abschichtung
+		Windkraft Österreich)“,
+		<a href={DATASET_DOI} target="_blank" rel="noopener" class="underline underline-offset-2 break-all hover:text-slate-900"
+			>{DATASET_DOI}</a
+		>
+	</blockquote>
+{/snippet}
+
+{#snippet links(items: Link[])}
+	{#each items as link, i}<a
+			href={link.href}
+			target="_blank"
+			rel="noopener"
+			class="underline decoration-slate-300 underline-offset-2 hover:text-slate-900 hover:decoration-slate-500"
+			>{link.label}</a
+		>{i < items.length - 1 ? ", " : ""}{/each}
+{/snippet}
+
 <div class="max-w-4xl mx-auto px-4 sm:px-6 py-12">
 	<!-- Header -->
 	<div class="mb-8">
-		<p
-			class="text-[10px] font-bold uppercase tracking-widest mb-3"
-			style="color: var(--blue-sky);"
-		>
+		<p class="text-[10px] font-bold uppercase tracking-widest mb-3" style="color: var(--blue-sky);">
 			Methodik
 		</p>
 		<h1
-			class="font-extrabold text-4xl tracking-tight mb-4"
-			style="color: var(--text-dark); letter-spacing: -0.03em;"
+			class="font-extrabold text-3xl sm:text-4xl tracking-tight mb-4"
+			style="color: var(--text-dark); letter-spacing: -0.03em; text-wrap: balance;"
 		>
 			Wie berechnen wir die Windkraft-Potenzialflächen?
 		</h1>
 		<p class="text-lg text-slate-600 leading-relaxed max-w-2xl">
-			Diese Seite erklärt, welche Daten wir verwenden, wie wir Potenzialflächen
-			berechnen und wie sich unsere Visualisierungen zusammensetzen.
+			Diese Seite erklärt, welche Daten wir verwenden, wie wir die Potenzialflächen berechnen und
+			was die Karte zeigt.
 		</p>
+		<p class="text-xs text-slate-400 mt-3">Letztes Update: November 2026</p>
 	</div>
 
-	<!-- Kurzfassung -->
+	<!-- Kurz gesagt -->
 	<div class="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 mb-8">
-		<p class="text-sm font-semibold mb-2" style="color: var(--text-dark);">
-			Kurz gesagt
-		</p>
+		<p class="text-sm font-semibold mb-2" style="color: var(--text-dark);">Kurz gesagt</p>
 		<p class="text-sm text-slate-600 leading-relaxed">
-			Wir gehen von der gesamten Fläche Österreichs aus und ziehen Stück für
-			Stück alles ab, wo aus rechtlichen, technischen oder ökologischen Gründen
-			kein Windrad stehen darf oder soll: Siedlungen und einzelne Wohngebäude
-			(mit Sicherheitsabstand), Naturschutzgebiete, Straßen, Bahnstrecken,
-			Seilbahnen, Hochspannungsfreileitungen ab 110 kV, Gewässer, zu steiles
-			oder zu hoch gelegenes Gelände und Standorte mit zu wenig Wind. Was danach übrig bleibt und mindestens 10
-			Hektar zusammenhängende Fläche bietet, zeigen wir als
-			<strong>Potenzialfläche</strong>.
+			Wir legen über ganz Österreich alle Flächen, auf denen nach einheitlichen Kriterien kein
+			Windrad stehen kann: Abstände zu Siedlungen und Gebäuden, Verkehrswege, Militärgebiete und
+			Flughäfen, Schutzgebiete, zu steiles oder zu hoch gelegenes Gelände, Gewässer und Standorte
+			mit zu wenig Wind. Was danach übrig bleibt und zusammenhängend mindestens 10&nbsp;Hektar groß
+			ist, zeigen wir als <strong>Potenzialfläche</strong>.
 		</p>
 	</div>
 
-	<!-- Disclaimer -->
-	<div
-		class="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 mb-10 flex gap-3"
-	>
-		<svg
-			class="w-5 h-5 flex-shrink-0 mt-0.5 text-amber-500"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke="currentColor"
-			stroke-width="2"
-		>
+	<!-- Datengrundlage: dasselbe Zitat wie unten unter „Zitat und Quellen“ (Redaktion, 18.11.2026) -->
+	<div class="mb-8">
+		<p class="text-sm font-semibold mb-2" style="color: var(--text-dark);">Datengrundlage</p>
+		{@render citation()}
+	</div>
+
+	<!-- Grobscreening -->
+	<div class="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 mb-12 flex gap-3">
+		<svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
 			<path
 				stroke-linecap="round"
 				stroke-linejoin="round"
 				d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
 			/>
 		</svg>
-		<div>
-			<p class="text-sm font-semibold text-amber-800 mb-1">
-				Ein Grobscreening, kein Gutachten
+		<div class="space-y-2">
+			<p class="text-sm font-semibold text-amber-800">Ein Grobscreening, kein Gutachten</p>
+			<p class="text-sm text-amber-800/90 leading-relaxed">
+				Die Karte zeigt, wo ein Windrad grundsätzlich denkbar wäre. Sie ersetzt keine
+				Standortprüfung und ist keine Grundlage für eine Genehmigung. Für jedes konkrete Projekt
+				müssen Naturschutz, Schall und Schattenwurf einzeln geprüft werden. Die Karte gibt außerdem
+				keine Auskunft über einen möglichen Netzanschluss oder die Verfügbarkeit der Grundstücke.
+				Für jedes Projekt ist zudem eine eigene Windmessung vor Ort nötig, um die
+				Wirtschaftlichkeit zu prüfen.
 			</p>
-			<p class="text-sm text-amber-700 leading-relaxed">
-				Diese Karte zeigt, wo eine Windkraftanlage grundsätzlich <em>denkbar</em
-				>
-				wäre — sie ersetzt keine rechtsverbindliche Standortprüfung. Für jedes konkrete
-				Projekt kommen Themen dazu, die wir hier nicht abbilden: Flugkorridore, Radar-
-				und Richtfunkstrecken, Gasleitungen, vertragliche Abstände zwischen Betreibern,
-				Windmessungen vor Ort und eine detaillierte Umweltprüfung. Auch die Flächenwidmung
-				ändert sich laufend; wir rechnen mit einem Datenstand vom Sommer 2026, maßgeblich
-				ist immer der aktuelle Plan der Gemeinde.
+			<p class="text-sm text-amber-800/90 leading-relaxed">
+				Wir haben ausschließlich mit öffentlich zugänglichen Daten gearbeitet und zur Vereinfachung
+				einheitliche Annahmen getroffen. Die Karte kann daher Flächen enthalten, die wir als
+				Potenzialfläche zeigen, bei einer genaueren Prüfung jedoch wegfallen. Umgekehrt können
+				Flächen, die wir nicht als Potenzialfläche ausweisen, sich bei genauer Prüfung als geeignet
+				herausstellen.
 			</p>
 		</div>
 	</div>
 
-	<!-- Sections -->
-	<div class="space-y-12">
-		<!-- Siedlungsmethode -->
+	<div class="space-y-14">
+		<!-- Drei Gruppen -->
 		<section>
-			<h2 class="font-bold text-xl mb-4" style="color: var(--text-dark);">
-				Wie erkennen wir Siedlungen?
-			</h2>
-			<p class="text-base text-slate-700 leading-relaxed mb-3">
-				Wo Menschen wohnen, entnehmen wir der <strong>Flächenwidmung</strong> — dem
-				amtlichen Plan, in dem jede Gemeinde festlegt, wofür ein Grundstück genutzt
-				werden darf. Als Siedlung zählt, was dort als Wohngebiet, Mischgebiet, Kerngebiet
-				oder Dorfgebiet ausgewiesen ist.
-			</p>
-			<p class="text-base text-slate-700 leading-relaxed mb-3">
-				Diese Pläne liegen uns für <strong>alle neun Bundesländer</strong> vor. Damit
-				richtet sich die Karte nach dem, was rechtlich gilt, und nicht danach, wo
-				zufällig Häuser eingezeichnet sind. Um jede so erkannte Siedlung ziehen wir
-				den Mindestabstand, den das jeweilige Bundesland vorschreibt (siehe Tabelle
-				unten).
-			</p>
-			<p class="text-base text-slate-700 leading-relaxed mb-3">
-				Einzelne Wohnhäuser außerhalb der Siedlungen — im Plan oft als „Häuser
-				im Grünen" bezeichnet — behandeln wir gesondert: Liegen mindestens fünf
-				Adressen in einer Kette von je höchstens 200 Metern beieinander, gilt
-				die Gruppe als bewohnte Lage und bekommt einen eigenen Abstand von 750
-				Metern. Grundlage sind die amtliche Widmung, das Adressregister des
-				Bundesamts für Eich- und Vermessungswesen und die Gebäudeumrisse des
-				Katasters.
-			</p>
-			<p class="text-sm text-slate-500 leading-relaxed">
-				Die Berechnung läuft auf einem Raster von 25 mal 25 Metern. Österreich
-				wird also in rund 13 Millionen Quadrate zerlegt, und für jedes einzelne
-				wird geprüft, ob dort ein Windrad stehen könnte — deshalb folgen die
-				Abstandsgrenzen auf der Karte so genau dem Gelände.
-			</p>
-		</section>
-
-		<!-- Abstände -->
-		<section>
-			<h2 class="font-bold text-xl mb-4" style="color: var(--text-dark);">
-				Mindestabstände je Bundesland
-			</h2>
-			<p class="text-base text-slate-700 leading-relaxed mb-3">
-				Wie weit ein Windrad von der nächsten Siedlung entfernt sein muss, legt
-				jedes Bundesland selbst fest. Die folgende Tabelle zeigt die Abstände,
-				mit denen unsere Karte rechnet.
-			</p>
-			<div class="overflow-x-auto">
-				<table class="w-full text-sm border-collapse">
-					<caption class="sr-only"
-						>Mindestabstand zu Siedlungen und Einzelgebäuden je Bundesland</caption
-					>
-					<thead>
-						<tr class="border-b-2 border-slate-200">
-							<th
-								scope="col"
-								class="text-left py-2 pr-6 font-semibold text-slate-700"
-								>Bundesland</th
-							>
-							<th
-								scope="col"
-								class="text-right py-2 pr-6 font-semibold text-slate-700"
-								>Abstand zu Siedlungen</th
-							>
-							<th
-								scope="col"
-								class="text-right py-2 font-semibold text-slate-700"
-								>Abstand zu Einzelgebäuden</th
-							>
-						</tr>
-					</thead>
-					<tbody>
-						{#each [["Burgenland", "1.000 m", "750 m"], ["Niederösterreich", "1.200 m", "750 m"], ["Oberösterreich", "1.000 m", "750 m"], ["Steiermark", "1.000 m", "750 m"], ["Kärnten", "1.000 m", "750 m"], ["Salzburg", "1.000 m", "750 m"], ["Tirol", "1.000 m", "750 m"], ["Vorarlberg", "1.000 m", "750 m"], ["Wien", "1.000 m", "750 m"]] as row}
-							<tr
-								class="border-b border-slate-100 hover:bg-slate-50 transition-colors"
-							>
-								<td class="py-2.5 pr-6 text-slate-800 font-medium">{row[0]}</td>
-								<td class="py-2.5 pr-6 text-right text-slate-600">{row[1]}</td>
-								<td class="py-2.5 text-right text-slate-600">{row[2]}</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
-			<p class="text-xs text-slate-500 mt-3 leading-relaxed">
-				<strong class="text-slate-600">Hinweis:</strong> Die Tabelle zeigt die Abstände,
-				mit denen unsere Karte tatsächlich rechnet. In der Datenlieferung vom September
-				2026 wurden sie für das Burgenland von 1.200 m und für Kärnten von 1.500
-				m auf jeweils 1.000 m vereinheitlicht. Ob das den landesrechtlichen Vorgaben
-				entspricht, klären wir gerade mit dem Datenanbieter — in einzelnen Bundesländern
-				können die gesetzlichen Mindestabstände höher liegen als hier gerechnet.
-			</p>
-			<p class="text-xs text-slate-500 mt-3 leading-relaxed">
-				„Einzelgebäude“ sind einzelne Wohnhäuser außerhalb von Siedlungen — etwa
-				ein einzelnes Bauernhaus. Weil sie nicht Teil eines größeren
-				Siedlungsgebiets sind, gilt für sie ein kleinerer Abstand als für
-				Siedlungen.
-			</p>
-		</section>
-
-		<!-- Neue Objektkategorien -->
-		<section>
-			<h2 class="font-bold text-xl mb-2" style="color: var(--text-dark);">
-				Zusätzliche Sicherheitsabstände zu einzelnen Objekten
-			</h2>
-			<p class="text-sm text-slate-700 leading-relaxed mb-3">
-				Neben Siedlungen halten wir auch zu einzelnen, empfindlichen oder
-				sicherheitsrelevanten Objekten einen Mindestabstand ein.
-			</p>
-			<p class="text-xs text-slate-500 leading-relaxed mb-3">
-				Die Kategorie „Wichtige Objekte“ (250 m um Kirchen, Schlösser und
-				ähnliche Landmarken) ist mit der Datenlieferung vom September 2026
-				entfallen und beim Datenanbieter angefragt. Der Abstand zu
-				Hochspannungsfreileitungen war zwischenzeitlich ebenfalls entfallen
-				und ist seit der Lieferung vom 30.&nbsp;September 2026 wieder
-				enthalten — siehe unten.
-			</p>
-			<div class="space-y-3">
-				{#each [{ title: "Einzelgebäude im Grünland", buffer: "750 m", note: "Einzelne Wohngebäude außerhalb von Siedlungsflächen (siehe Tabelle oben)." }, { title: "Gebäude an Seilbahnen", buffer: "50 m", note: "Gebäude im unmittelbaren Umfeld von Seilbahnanlagen, etwa Stationsgebäude." }, { title: "Nicht-Wohn-Hüllen", buffer: "25 m", note: "Gebäudehüllen ohne Wohnnutzung, etwa Betriebs- und Nebengebäude." }, { title: "Sonstige Gebäude", buffer: "25 m", note: "Alle übrigen Gebäude, die keiner anderen Kategorie zugeordnet sind." }, { title: "Hochspannungsfreileitungen", buffer: "116–136 m", note: "Abstand beiderseits der Leitungsachse, gemessen ab 110 kV: 116 m bei 110 kV, 136 m ab 220 kV. Die Werte ergeben sich aus dem halben Rotordurchmesser der Referenzanlage (86 m), dem Sicherheitsabstand zum äußersten Leiter und dem Versatz von der Mastachse. Erdkabel und Mittelspannung unter 110 kV erzeugen keinen Abstand." }] as cat}
-					<div class="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
-						<p
-							class="text-sm font-semibold mb-1"
-							style="color: var(--text-dark);"
-						>
-							{cat.title}
-							<span class="ml-1 text-xs font-normal text-slate-400"
-								>— {cat.buffer}</span
-							>
-						</p>
-						<p class="text-xs text-slate-600">{cat.note}</p>
-					</div>
-				{/each}
-			</div>
-		</section>
-
-		<!-- Verkehrsinfrastruktur -->
-		<section>
-			<h2 class="font-bold text-xl mb-4" style="color: var(--text-dark);">
-				Straßen, Bahnen und Seilbahnen
-			</h2>
-			<p class="text-sm text-slate-700 leading-relaxed mb-4">
-				Zu allen folgenden Verkehrswegen gilt ein Mindestabstand von 150 Metern
-				— aus Sicherheitsgründen (Eiswurf, Rotorblattbruch) und weil dort
-				ohnehin oft keine Fläche für ein Windrad frei wäre.
-			</p>
-			<div class="space-y-3">
-				{#each [{ title: "Höherrangige Straßen", items: ["Autobahnen, Schnellstraßen sowie überregionale, regionale und lokale Hauptstraßen — inklusive ihrer Ein- und Ausfahrtsrampen.", "Straßenabschnitte in Tunneln zählen nicht dazu, da dort ohnehin kein Windrad stehen könnte."] }, { title: "Bahnstrecken", items: ["Haupt- und Regionalbahnen (Normalspur) sowie Schmalspurbahnen.", "Streckenabschnitte in Tunneln zählen nicht dazu."] }, { title: "Seilbahnen und Lifte", items: ["Anlagen für den Personentransport: Kabinenbahnen, Seilbahnen, Sessellifte sowie Schlepplifte (Anker-, Bügel- und Tellerlifte, Seilrollen) und Förderbänder.", "Reine Materialseilbahnen ohne Personentransport sind nicht mitgezählt."] }] as group}
-					<div class="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
-						<p
-							class="text-sm font-semibold mb-1.5"
-							style="color: var(--text-dark);"
-						>
-							{group.title}
-							<span class="ml-1 text-xs font-normal text-slate-400"
-								>— 150 m</span
-							>
-						</p>
-						<ul class="space-y-0.5">
-							{#each group.items as item}
-								<li class="text-xs text-slate-600 flex gap-2">
-									<span class="text-slate-300 mt-0.5">•</span>{item}
-								</li>
-							{/each}
-						</ul>
-					</div>
-				{/each}
-			</div>
-		</section>
-
-		<!-- Weitere Ausschlüsse -->
-		<section>
-			<h2 class="font-bold text-xl mb-4" style="color: var(--text-dark);">
-				Naturschutz, Gelände und Wind
-			</h2>
-			<div class="space-y-3">
-				<div class="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
-					<p
-						class="text-sm font-semibold mb-1"
-						style="color: var(--text-dark);"
-					>
-						Naturschutzgebiete
-					</p>
-					<p class="text-xs text-slate-600 leading-relaxed">
-						Ausgeschlossen sind die amtlichen Schutzgebiete des Umweltbundesamts,
-						also Flächen, die nach dem Naturschutzrecht der Länder per Verordnung
-						oder Bescheid festgelegt sind: Nationalparks, Naturschutzgebiete,
-						Europaschutzgebiete nach Natura 2000, Ramsar-Gebiete, geschützte
-						Landschaftsteile, Naturdenkmäler, geschützte Biotope, örtliche
-						Schutzgebiete, Ruhegebiete und Pflanzenschutzgebiete.
-						<strong>Landschaftsschutzgebiete</strong> sind kein Ausschlusskriterium:
-						sie verbieten Windkraft nicht grundsätzlich, sondern machen sie
-						genehmigungspflichtig. Naturparks sind keine eigene Schutzkategorie
-						und daher ebenfalls nicht enthalten.
-					</p>
-				</div>
-				<div class="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
-					<p
-						class="text-sm font-semibold mb-1"
-						style="color: var(--text-dark);"
-					>
-						Zu steiles oder zu hoch gelegenes Gelände
-					</p>
-					<p class="text-xs text-slate-600 leading-relaxed">
-						Hänge mit einer Neigung über 15° gelten als technisch ungeeignet.
-						Ebenso ausgeschlossen sind Standorte über 2.500 m Seehöhe.
-					</p>
-				</div>
-				<div class="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
-					<p
-						class="text-sm font-semibold mb-1"
-						style="color: var(--text-dark);"
-					>
-						Zu wenig Wind
-					</p>
-					<p class="text-xs text-slate-600 leading-relaxed">
-						Standorte mit einer mittleren Windleistungsdichte unter 150 W/m² in
-						130 m Nabenhöhe lohnen sich wirtschaftlich in aller Regel nicht und
-						sind daher ausgeschlossen. Die Daten stammen aus dem Global Wind
-						Atlas, der die Leistungsdichte für 150 m Höhe ausweist — dort
-						entspricht die Schwelle rund 160 W/m². Fehlen für einen Standort
-						Winddaten, wird er sicherheitshalber ebenfalls ausgeschlossen.
-						Wichtig: eine Windmessung vor Ort ist auf jeden Fall dennoch
-						notwendig und liefert detailliertere Daten als die Modelle, die
-						unserer Karte zu Grunde liegen.
-					</p>
-				</div>
-			</div>
-		</section>
-	</div>
-
-	<!-- Technischer Anhang -->
-	<!-- Woher die Daten kommen -->
-	<section class="mt-12">
-		<h2 class="font-bold text-xl mb-4" style="color: var(--text-dark);">
-			Woher die Daten kommen
-		</h2>
-		<p class="text-base text-slate-700 leading-relaxed mb-4">
-			Die Karte rechnet nicht mit einer einzigen Quelle, sondern kombiniert
-			mehrere. Welche wofür zuständig ist:
-		</p>
-		<div class="space-y-3">
-			{#each [{ q: "Amtliche Flächenwidmung der neun Bundesländer", w: "Wo Siedlungen liegen und welcher Mindestabstand dort gilt. Stand der Pläne: Sommer 2026." }, { q: "Adressregister und Kataster", w: "Einzelne Wohnhäuser außerhalb der Siedlungen sowie Gebäudeumrisse. Vom Bundesamt für Eich- und Vermessungswesen." }, { q: "OpenStreetMap", w: "Straßen, Bahnstrecken, Seilbahnen, Hochspannungsfreileitungen ab 110 kV und größere Gewässer — eine frei zugängliche, von Freiwilligen gepflegte Landkarte, die für Österreich sehr detailliert ist. Stand: 30.3.2026." }, { q: "Digitales Geländemodell", w: "Hangneigung und Seehöhe, in einer Auflösung von 25 Metern." }, { q: "Global Wind Atlas", w: "Wie viel Wind an einem Standort weht, ausgedrückt als Leistungsdichte." }, { q: "Schutzgebietsverzeichnis des Umweltbundesamts", w: "Alle per Verordnung oder Bescheid festgelegten Schutzgebiete: Nationalparks, Naturschutzgebiete, Natura-2000- und Ramsar-Gebiete, geschützte Landschaftsteile, Naturdenkmäler, Biotope, Ruhegebiete. Landschaftsschutzgebiete und Naturparks sind nicht enthalten." }, { q: "Zonierungspläne der Bundesländer", w: "Die amtlich ausgewiesenen Windkraftzonen, die wir als eigene Ebene zeigen — sie schränken die berechneten Flächen nicht zusätzlich ein." }] as row}
-				<div class="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
-					<p
-						class="text-sm font-semibold mb-1"
-						style="color: var(--text-dark);"
-					>
-						{row.q}
-					</p>
-					<p class="text-sm text-slate-600 leading-relaxed">{row.w}</p>
-				</div>
-			{/each}
-		</div>
-	</section>
-
-	<details class="mt-14 group rounded-2xl border border-slate-200 open:pb-1">
-		<summary
-			class="cursor-pointer list-none px-5 py-4 flex items-center gap-3 select-none focus-visible:ring-2 focus-visible:ring-blue-400 rounded-2xl"
-		>
-			<svg
-				class="w-4 h-4 flex-shrink-0 text-slate-400 transition-transform group-open:rotate-90"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke="currentColor"
-				stroke-width="2.5"
-			>
-				<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-			</svg>
-			<span>
-				<span
-					class="text-sm font-semibold block"
-					style="color: var(--text-dark);">Technischer Anhang</span
-				>
-				<span class="text-xs text-slate-500"
-					>Für Entwickler:innen und GIS-Nutzer:innen, die mit den Rohdaten
-					arbeiten möchten.</span
-				>
-			</span>
-		</summary>
-		<div class="px-5 pb-5 pt-1 space-y-3">
-			<p class="text-sm text-slate-600 leading-relaxed">
-				Die gesamte Berechnung basiert auf einer einzigen Rasterdatei namens
-				<code class="bg-slate-100 rounded px-1.5 py-0.5 font-mono text-xs"
-					>abschichtung.tif</code
-				>: {manifest.band_count} Bänder (Ebenen), Datentyp {manifest.raster
-					.dtype}, Koordinatensystem {manifest.raster.crs} (österreichisches amtliches
-				Bezugssystem), Auflösung {manifest.raster.pixel_size_m} m pro Rasterzelle.
-				Jedes Band entspricht einer Zwischenstufe oder einem Teilergebnis der oben
-				beschriebenen Ausschlusskriterien:
-			</p>
-			<div class="rounded-2xl border border-slate-200 overflow-x-auto">
-				<table class="w-full text-sm">
-					<caption class="sr-only"
-						>Bandnummern und -namen der Quelldatei</caption
-					>
-					<thead>
-						<tr class="bg-slate-50 border-b border-slate-200">
-							<th
-								scope="col"
-								class="text-left px-4 py-2.5 font-semibold text-slate-600 w-16"
-								>Band</th
-							>
-							<th
-								scope="col"
-								class="text-left px-4 py-2.5 font-semibold text-slate-600"
-								>Name</th
-							>
-						</tr>
-					</thead>
-					<tbody>
-						{#each manifest.bands as band}
-							<tr
-								class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors"
-							>
-								<td
-									class="px-4 py-2 text-slate-400 font-mono text-xs tabular-nums"
-									>{band.index}</td
-								>
-								<td class="px-4 py-2 font-mono text-xs text-slate-700">
-									{band.name}
-									{#if band.label_de}
-										<span class="font-sans text-slate-400">
-											— {band.label_de}</span
-										>
-									{/if}
-								</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
-			<p class="text-xs text-slate-500 leading-relaxed">
-				<code class="font-mono">available_cleaned_min_10ha</code> ist die
-				verfügbare Fläche nach allen Ausschlüssen, bereinigt auf
-				zusammenhängende Flächen ab 10 ha — das Hauptergebnisband, aus dem die
-				Potenzialflächen auf der Karte erzeugt werden.
-				<code class="font-mono">official_wind_zoning</code> ist ein Referenzlayer
-				(amtlich ausgewiesene Zonen in Niederösterreich, dem Burgenland, der
-				Steiermark, Kärnten und Salzburg) und schränkt die berechneten Flächen
-				nicht zusätzlich ein — er wird separat auf der Karte dargestellt.
+			<h2 class="font-bold text-2xl mb-2" style="color: var(--text-dark);">Drei Gruppen von Ausschlüssen</h2>
+			<p class="text-base text-slate-600 leading-relaxed mb-6 max-w-2xl">
+				Jede Fläche, auf die eines der folgenden Kriterien zutrifft, ist ausgeschlossen.
 			</p>
 			<!--
-				Band 38 stand bis September 2026 in keiner Doku und in keinem Layer,
-				obwohl es 14.721 ha umfasst. Es gehört hierher, weil es das einzige
-				Band ist, das nicht aus dem Rasterverfahren stammt, sondern aus den
-				Anlagenstandorten.
+				Keine klassische Tabelle: vier Spalten mit langen Regeltexten und
+				Linklisten sind auf dem Telefon nicht lesbar. Stattdessen je Kriterium
+				eine Zeile, die ab sm in drei Spalten (Kriterium | Regel | Daten) läuft
+				und darunter untereinander steht.
 			-->
-			<p class="text-xs text-slate-500 leading-relaxed">
-				<code class="font-mono">wka_bestand_ausserhalb_zonen</code> ist der
-				zweite Referenzlayer: die Hüllen um die bestehenden Windparks, soweit
-				sie außerhalb der amtlichen Zonen liegen. Anlagen mit weniger als
-				750&nbsp;m Abstand zueinander gelten als ein Park; um dessen Umriss
-				werden 200&nbsp;m Rand gelegt, danach werden die amtlichen Zonen
-				abgezogen. Grundlage sind dieselben Anlagenstandorte, die auch als
-				Punkte auf der Karte liegen — jede Hülle enthält damit mindestens ein
-				Windrad. Auch dieser Layer schränkt die berechneten Flächen nicht ein.
+			<div class="space-y-8">
+				{#each GROUPS as group}
+					<div>
+						<div class="flex items-center gap-2 mb-2">
+							<span class="w-3 h-3 rounded-sm" style="background:{group.color};"></span>
+							<h3 class="text-xs font-bold uppercase tracking-widest" style="color:{group.color};">
+								{group.name}
+							</h3>
+						</div>
+						<div class="hidden sm:grid grid-cols-[9rem_1fr_13rem] gap-x-6 text-[11px] uppercase tracking-wide text-slate-400 font-semibold pb-1 border-b-2 border-slate-200">
+							<span>Kriterium</span><span>Regel</span><span>Daten</span>
+						</div>
+						<dl>
+							{#each group.rows as row}
+								<div class="grid sm:grid-cols-[9rem_1fr_13rem] gap-x-6 gap-y-1 py-3 border-b border-slate-100">
+									<dt class="font-semibold text-slate-800 text-sm">{row.kriterium}</dt>
+									<dd class="text-sm text-slate-700 leading-relaxed min-w-0">{row.regel}</dd>
+									<dd class="text-xs text-slate-500 leading-relaxed min-w-0">
+										<span class="sm:hidden font-semibold text-slate-400">Daten: </span>
+										{#if row.datenText}{row.datenText}{" "}{/if}{@render links(row.daten)}
+									</dd>
+								</div>
+							{/each}
+						</dl>
+					</div>
+				{/each}
+			</div>
+		</section>
+
+		<!-- Mensch -->
+		<section>
+			<h2 class="font-bold text-2xl mb-6" style="color: var(--text-dark);">
+				Mensch: Abstände zu Siedlungen, Gebäuden und Infrastruktur
+			</h2>
+			<h3 class="font-semibold text-lg mb-2" style="color: var(--text-dark);">Wie erkennen wir Siedlungen?</h3>
+			<p class="text-base text-slate-700 leading-relaxed mb-3 max-w-2xl">
+				Als Siedlung zählt, was als Wohn-, Misch-, Kern- oder Dorfgebiet gewidmet ist. Industrie-,
+				Betriebs- und Gewerbegebiete zählen nicht dazu. Die Daten entnehmen wir der
+				<strong>Flächenwidmung</strong>, also dem amtlichen Plan, in dem jede Gemeinde festlegt,
+				wofür ein Grundstück genutzt werden darf.
 			</p>
-			<p class="text-xs text-slate-500 leading-relaxed">
-				Wasserflächen (Seen, Flüsse) werden separat aus zwei Quellen
-				ausgeschlossen: stehende Gewässer aus dem „Gesamtgewässernetz
-				Österreich" des Umweltbundesamts, Fließgewässer-Flächen aus
-				OpenStreetMap — Details siehe Repository-Dokumentation.
+			<p class="text-base text-slate-700 leading-relaxed mb-8 max-w-2xl">
+				Die Widmungspläne liegen uns für alle neun Bundesländer vor. Die Länder benennen ihre
+				Widmungen unterschiedlich, deshalb haben wir für jedes Land festgelegt, welche Widmungen als
+				Siedlung gelten. Für Wien ist nur der vereinfachte Widmungsplan offen verfügbar.
 			</p>
-		</div>
-	</details>
+
+			<h3 class="font-semibold text-lg mb-2" style="color: var(--text-dark);">Was sind Häuser im Grünen?</h3>
+			<p class="text-base text-slate-700 leading-relaxed mb-3 max-w-2xl">
+				Um bewohnte Häuser außerhalb des Baulands gilt ein Abstand von 750&nbsp;m. Dazu zählen zwei
+				Arten von Flächen:
+			</p>
+			<ul class="list-disc pl-5 space-y-2 text-base text-slate-700 leading-relaxed mb-3 max-w-2xl">
+				<li>
+					<strong>Sonderwidmungen außerhalb des Baulands</strong>, etwa Hofstellen, Campingplätze,
+					Kleingärten, Golfplätze sowie Ferienhaus- und Tourismusgebiete. Welche Widmungen das sind,
+					ist je Land verschieden.
+				</li>
+				<li>
+					<strong>Streusiedlungen</strong>, die in keiner Widmung stehen. Wir erkennen sie aus dem
+					Kataster und dem Adressregister: Bebaute Flächen, die höchstens rund 200&nbsp;m
+					auseinanderliegen, bilden eine Gruppe. Haben mindestens fünf davon eine Hausnummer im
+					Umkreis von 100&nbsp;m, gilt die Gruppe als Streusiedlung.
+				</li>
+			</ul>
+			<p class="text-base text-slate-700 leading-relaxed max-w-2xl">
+				In Niederösterreich gelten stattdessen die
+				<a href={NOE_SEKROP} target="_blank" rel="noopener" class="underline underline-offset-2 hover:text-slate-900"
+					>amtlichen Mindestabstandszonen des Landes</a
+				>.
+			</p>
+		</section>
+
+		<!-- Natur -->
+		<section>
+			<h2 class="font-bold text-2xl mb-4" style="color: var(--text-dark);">Natur: Schutzgebiete</h2>
+			<p class="text-base text-slate-700 leading-relaxed max-w-2xl">
+				Ausgeschlossen sind Gebiete, die nach dem Naturschutzrecht der Länder per Verordnung oder
+				Bescheid geschützt sind. Die Daten stammen ausschließlich vom
+				<a
+					href="https://www.umweltbundesamt.at/umweltthemen/naturschutz/schutzgebiete"
+					target="_blank"
+					rel="noopener"
+					class="underline underline-offset-2 hover:text-slate-900">Umweltbundesamt</a
+				>. Zusammen sind das 15.683&nbsp;km², also 18,7&nbsp;% der Fläche Österreichs.
+			</p>
+		</section>
+
+		<!-- Geografie -->
+		<section>
+			<h2 class="font-bold text-2xl mb-6" style="color: var(--text-dark);">Geografie: Gelände, Wind und Gewässer</h2>
+
+			<h3 class="font-semibold text-lg mb-2" style="color: var(--text-dark);">Zu steiles oder zu hoch gelegenes Gelände</h3>
+			<p class="text-base text-slate-700 leading-relaxed mb-8 max-w-2xl">
+				Flächen mit einer Hangneigung über 15° gelten als technisch ungeeignet. Die Neigung berechnen
+				wir über eine Fläche von rund 300&nbsp;×&nbsp;300&nbsp;m, damit einzelne kleine Böschungen nicht
+				ins Gewicht fallen. Ebenso ausgeschlossen sind Standorte über 2.500&nbsp;m Seehöhe.
+			</p>
+
+			<h3 class="font-semibold text-lg mb-2" style="color: var(--text-dark);">Zu wenig Wind</h3>
+			<p class="text-base text-slate-700 leading-relaxed mb-3 max-w-2xl">
+				Standorte mit einer mittleren Windleistungsdichte unter 150&nbsp;W/m² in 130&nbsp;m Nabenhöhe
+				lohnen sich wirtschaftlich in aller Regel nicht und sind daher ausgeschlossen. Die Daten
+				stammen aus dem Global Wind Atlas der Technischen Universität Dänemark und der Weltbank. Er
+				weist die Leistungsdichte für 150&nbsp;m Höhe aus, dort entspricht die Schwelle rund
+				160&nbsp;W/m². Fehlen für einen Standort Winddaten, wird er ebenfalls ausgeschlossen.
+			</p>
+			<p class="text-base text-slate-700 leading-relaxed mb-3 max-w-2xl">
+				Eine Windmessung vor Ort ist trotzdem immer notwendig. Sie dauert in der Regel ein Jahr und
+				liefert genauere Daten als das Modell, das unserer Karte zugrunde liegt.
+			</p>
+			<p class="text-xs text-slate-500 leading-relaxed mb-8 max-w-2xl">
+				Quelle: Davis, N. N., Badger, J., Hahmann, A. N. et al. (2023): The Global Wind Atlas: A
+				high-resolution dataset of climatologies and associated web-based application. Bulletin of
+				the American Meteorological Society 104(8), E1507–E1525.
+				<a href="https://doi.org/10.1175/BAMS-D-21-0075.1" target="_blank" rel="noopener" class="underline underline-offset-2"
+					>doi:10.1175/BAMS-D-21-0075.1</a
+				>. Daten: Global Wind Atlas, Leistungsdichte in 150&nbsp;m Höhe,
+				<a href="https://globalwindatlas.info" target="_blank" rel="noopener" class="underline underline-offset-2"
+					>globalwindatlas.info</a
+				>.
+			</p>
+
+			<h3 class="font-semibold text-lg mb-2" style="color: var(--text-dark);">Gewässer</h3>
+			<p class="text-base text-slate-700 leading-relaxed max-w-2xl">
+				Seen, Stauseen und Flüsse sind ausgeschlossen, sobald sie zusammenhängend mindestens
+				1&nbsp;ha groß sind.
+			</p>
+		</section>
+
+		<!-- Weitere Hinweise -->
+		<section>
+			<h2 class="font-bold text-2xl mb-6" style="color: var(--text-dark);">Weitere methodische Hinweise</h2>
+			<dl class="divide-y divide-slate-100 border-y border-slate-200">
+				<div class="grid sm:grid-cols-[13rem_1fr] gap-x-6 gap-y-1 py-4">
+					<dt class="font-semibold text-slate-800 text-sm">Windkraftzonen der Bundesländer</dt>
+					<dd class="text-sm text-slate-700 leading-relaxed min-w-0 space-y-2">
+						<p>{@render links(ZONEN)}</p>
+						<p>
+							In Oberösterreich, Vorarlberg, Tirol und Wien gibt es keine vom Land ausgewiesenen
+							Windkraft-Zonen.
+						</p>
+						<p class="text-xs text-slate-500">
+							*Das Land Burgenland veröffentlicht nur die aktuellen Eignungszonen, nicht die älteren
+							Zonen, in denen bereits Windräder stehen. Deshalb liegen auf der Karte viele
+							burgenländische Windräder scheinbar außerhalb der Zonen. Um solche bestehenden Windparks
+							haben wir eine eigene (türkise) Fläche berechnet. Sie sind kein Rechtsakt, sondern
+							dienen nur zur Orientierung.
+						</p>
+					</dd>
+				</div>
+				<div class="grid sm:grid-cols-[13rem_1fr] gap-x-6 gap-y-1 py-4">
+					<dt class="font-semibold text-slate-800 text-sm">Bestehende Windräder</dt>
+					<dd class="text-sm text-slate-700 leading-relaxed">
+						<a href="https://www.wind.at/aktuelles/windrad-karte" target="_blank" rel="noopener" class="underline underline-offset-2 hover:text-slate-900"
+							>Windkraft Österreich, Windrad-Karte</a
+						>, Stand: Jänner 2026
+					</dd>
+				</div>
+				<div class="grid sm:grid-cols-[13rem_1fr] gap-x-6 gap-y-1 py-4">
+					<dt class="font-semibold text-slate-800 text-sm">OpenStreetMap</dt>
+					<dd class="text-sm text-slate-700 leading-relaxed">
+						OpenStreetMap-Mitwirkende (2026): OpenStreetMap-Extrakt Österreich, bereitgestellt von der
+						<a href="https://download.geofabrik.de/europe/austria.html" target="_blank" rel="noopener" class="underline underline-offset-2 hover:text-slate-900"
+							>Geofabrik GmbH</a
+						>. Lizenz ODbL 1.0. Datenstand 12.11.2026.
+					</dd>
+				</div>
+			</dl>
+		</section>
+
+		<!-- Zitat & Quellen -->
+		<section>
+			<h2 class="font-bold text-2xl mb-4" style="color: var(--text-dark);">Zitat und Quellen</h2>
+			<p class="text-base text-slate-700 leading-relaxed mb-3 max-w-2xl">
+				Die Ausschluss- und Potenzialflächen beruhen auf diesem Datensatz. Bitte zitiere ihn so:
+			</p>
+			<div class="mb-8 max-w-2xl">{@render citation()}</div>
+			<h3 class="font-semibold text-lg mb-3" style="color: var(--text-dark);">Weitere Quellen</h3>
+			<ul class="space-y-2 text-sm text-slate-700 leading-relaxed max-w-2xl">
+				<li>
+					<strong>Gemeindegrenzen</strong> für die Gemeindeseiten:
+					<a href="https://data.statistik.gv.at" target="_blank" rel="noopener" class="underline underline-offset-2 hover:text-slate-900"
+						>Statistik Austria</a
+					>, Stand 1.1.2026, Lizenz CC BY 4.0
+				</li>
+				<li>
+					<strong>Fläche Österreichs</strong> (8.388.387&nbsp;ha): Bundesamt für Eich- und
+					Vermessungswesen / Statistik Austria, „Fläche und Benützungsarten“, Stand 1.1.2025
+				</li>
+				<li>
+					<strong>Stromerzeugung aus Windkraft:</strong>
+					<a href="https://www.energy-charts.info/charts/energy/chart.htm?l=de&c=AT&interval=year" target="_blank" rel="noopener" class="underline underline-offset-2 hover:text-slate-900"
+						>Energy-Charts</a
+					>, Fraunhofer ISE
+				</li>
+				<li>
+					<strong>Hintergrundkarte:</strong> © OpenStreetMap-Mitwirkende, © CARTO
+				</li>
+			</ul>
+		</section>
+	</div>
 
 	<!-- Footer -->
-	<div class="mt-10 pt-6 border-t border-slate-200 flex items-center gap-6">
+	<div class="mt-14 pt-6 border-t border-slate-200 flex items-center gap-6">
 		<span class="text-xs text-slate-400">© Klimadashboard.org</span>
 		<a
 			href="https://klimadashboard.org/impressum"
 			target="_blank"
 			rel="noopener"
-			class="text-xs text-slate-400 hover:text-slate-700 transition-colors"
-			>Impressum</a
+			class="text-xs text-slate-400 hover:text-slate-700 transition-colors">Impressum</a
 		>
 	</div>
 </div>

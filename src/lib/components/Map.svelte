@@ -12,12 +12,13 @@
 		austriaOutline,
 		storyStep,
 		hiddenBands,
+		hiddenVectorLayers,
 		detailLayersReady,
 		emptyBands,
 		mapZoom,
 		centerBundesland,
 	} from "$lib/stores/windStore";
-	import type { VizMode } from "$lib/stores/windStore";
+	import type { VizMode, VectorLayerKey } from "$lib/stores/windStore";
 	import { BAND_DEFS, bandLayerId, EXCLUSION_BANDS_SOURCE, EXCLUSION_BANDS_TILES } from "$lib/config/bands";
 	import type { BandGroup, BandDef } from "$lib/config/bands";
 	import {
@@ -519,7 +520,12 @@
 			// applyStoryVisibility()-Aufruf nach addLayers() greift oft nicht, weil
 			// er bei noch ladenden Quellen (isStyleLoaded() === false) abbricht.
 			if (!map.hasImage("exclusion-hatch")) map.addImage("exclusion-hatch", hatchPattern());
-			const exclusionVisibility = get(storyStep) < 0 ? "visible" : "none";
+			// Nur in der Detailansicht und nur, wenn nicht in der Legende ausgeblendet
+			// (Redaktion, 18.11.2026: beim ersten Anblick nicht zeigen).
+			const exclusionVisibility =
+				get(storyStep) < 0 && get(expertMode) && !get(hiddenVectorLayers).has("exclusion")
+					? "visible"
+					: "none";
 			map.addLayer({ id: "official-exclusion-fill", type: "fill", source: "official-exclusion", layout: { visibility: exclusionVisibility }, paint: { "fill-pattern": "exclusion-hatch", "fill-opacity": 0.3 } }, B);
 			map.addLayer({ id: "official-exclusion-outline", type: "line", source: "official-exclusion", layout: { visibility: exclusionVisibility }, paint: { "line-color": "#475569", "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.8, 10, 1.5], "line-opacity": 0.35 } }, B);
 
@@ -1013,6 +1019,28 @@
 		// Einpassen auf die gesuchte Gemeinde.
 		let currentStoryStep: number = get(storyStep);
 
+		// Sichtbarkeit der Vektorebenen außerhalb der Story: aus der Legende
+		// abwählbar (hiddenVectorLayers), die Ausschlusszonen zusätzlich nur in der
+		// Detailansicht. Die Hit-Layer folgen ihrer Ebene, sonst würden
+		// ausgeblendete Flächen weiter Klicks abfangen. Während der Story steuert
+		// applyStoryVisibility allein.
+		const VECTOR_LAYER_IDS: Record<VectorLayerKey, string[]> = {
+			zones: ["official-zones-fill", "official-zones-outline", "official-zones-hit"],
+			exclusion: ["official-exclusion-fill", "official-exclusion-outline"],
+			hulls: ["wka-hulls-fill", "wka-hulls-outline", "wka-hulls-hit"],
+			turbines: ["turbines"],
+		};
+		function applyVectorVisibility() {
+			if (currentStoryStep >= 0) return;
+			const hidden = get(hiddenVectorLayers);
+			for (const [key, ids] of Object.entries(VECTOR_LAYER_IDS) as [VectorLayerKey, string[]][]) {
+				const visible = !hidden.has(key) && (key !== "exclusion" || currentExpert);
+				for (const id of ids) {
+					if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", visible ? "visible" : "none");
+				}
+			}
+		}
+
 		function applyStoryVisibility(step: number) {
 			if (!map.isStyleLoaded()) return;
 
@@ -1037,9 +1065,7 @@
 					(id) => show(id, false),
 				);
 				updateLayers(currentExpert, currentViz);
-				["official-zones-fill", "official-zones-outline", "wka-hulls-fill", "wka-hulls-outline", "turbines", "official-exclusion-fill", "official-exclusion-outline"].forEach(
-					(id) => show(id, true),
-				);
+				applyVectorVisibility();
 				if (map.getLayer("turbines")) {
 					map.setLayerZoomRange("turbines", 4.5, 24);
 					map.setPaintProperty("turbines", "circle-radius", [
@@ -1189,7 +1215,14 @@
 
 		const unsubExpert = expertMode.subscribe((expert) => {
 			currentExpert = expert;
-			if (currentStoryStep < 0) updateLayers(currentExpert, currentViz);
+			if (currentStoryStep < 0) {
+				updateLayers(currentExpert, currentViz);
+				applyVectorVisibility();
+			}
+		});
+
+		const unsubVectors = hiddenVectorLayers.subscribe(() => {
+			if (map && sourcesReady) applyVectorVisibility();
 		});
 
 		const unsubViz = vizMode.subscribe((viz) => {
@@ -1256,6 +1289,7 @@
 			unsubRegion();
 			unsubStory();
 			unsubBands();
+			unsubVectors();
 			// Reset per-map state so the next map instance starts clean
 			activatedSlugs.clear();
 			expertMode.set(false);

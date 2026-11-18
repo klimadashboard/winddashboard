@@ -44,9 +44,12 @@
 	// Textkarte eingeklappt, um die ganze Karte zu sehen (slidePanel). Gilt nur
 	// für den aktuellen Schritt: jeder Schrittwechsel klappt wieder auf.
 	let panelCollapsed = $state(false);
+	// Popup „Bestehende Windparks“ im Zonierungsschritt (Fragezeichen).
+	let hullInfoOpen = $state(false);
 	$effect(() => {
 		step;
 		panelCollapsed = false;
+		hullInfoOpen = false;
 	});
 	let exiting = $state(false);
 	let dataReady = $state(false);
@@ -291,6 +294,11 @@
 	// keyboard users the same step-by-step control, Escape matches the usual
 	// "leave the overlay" convention for full-screen takeovers.
 	function handleKeydown(e: KeyboardEvent) {
+		// Escape schließt zuerst das Popup, statt etwas anderes auszulösen.
+		if (e.key === "Escape" && hullInfoOpen) {
+			hullInfoOpen = false;
+			return;
+		}
 		switch (e.key) {
 			case "ArrowDown":
 			case "ArrowRight":
@@ -915,7 +923,7 @@
 					ausdrücklich — vorher las er sich wie ein Regelverstoß.
 				-->
 				<div
-					class="rounded-lg px-3 py-2.5 mb-3"
+					class="relative rounded-lg px-3 py-2.5 mb-3"
 					style="background:#ecfeff; border:1px solid #a5f3fc;"
 				>
 					<div class="flex items-center gap-2 mb-1.5">
@@ -930,16 +938,60 @@
 							Bestehende Windparks
 						</p>
 					</div>
+					<!--
+						Kurzfassung im Kasten, die ausführliche Erklärung im Popup hinter dem
+						Fragezeichen (Redaktion, 18.11.2026). Das Popup hängt am Kasten selbst
+						und nicht am Bildschirm: die Textkarte hat backdrop-blur, und darin
+						würde position: fixed ohnehin relativ zur Karte rechnen.
+					-->
 					<p class="text-xs sm:text-sm leading-relaxed text-slate-700">
-						Manche Windräder liegen außerhalb der auf der Karte ersichtlichen
-						Zonen der Bundesländer. Das kann daran liegen, dass sie vor der
-						Zonierung gebaut wurden oder ihre Zone nicht mehr öffentlich
-						zugänglich ist wie im Burgenland. Das Burgenland stellt nur die noch
-						unbebauten Zonen öffentlich zur Verfügung, nicht die bereits
-						bebauten. Deshalb wurden bestehende Windparks türkis umrandet. Diese
-						Fläche haben wir berechnet (Windräder unter 750&thinsp;m Abstand plus
-						200&thinsp;m Rand), sie ist kein amtlicher Plan.
+						Manche Windräder, die schon länger in Betrieb sind, liegen außerhalb
+						der aktuell gültigen Zonierungen. Diese Windparks erhalten eine von
+						uns berechnete, türkis eingefärbte Fläche.
+						<button
+							type="button"
+							class="inline-flex items-center justify-center w-4 h-4 ml-0.5 align-[-2px] rounded-full text-[10px] font-bold
+								text-white transition-opacity hover:opacity-80
+								focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-cyan-600"
+							style="background:#0e7490;"
+							aria-label="Mehr zu den bestehenden Windparks"
+							aria-expanded={hullInfoOpen}
+							aria-controls="hull-info"
+							onclick={() => (hullInfoOpen = !hullInfoOpen)}
+						>?</button>
 					</p>
+					{#if hullInfoOpen}
+						<div
+							id="hull-info"
+							role="dialog"
+							aria-label="Bestehende Windparks"
+							class="absolute left-0 right-0 top-full mt-2 z-20 rounded-lg bg-white shadow-xl border border-cyan-200
+								px-4 py-3 text-xs sm:text-sm leading-relaxed text-slate-700"
+							transition:fade={{ duration: 120 }}
+						>
+							<button
+								type="button"
+								class="absolute top-1.5 right-1.5 w-6 h-6 flex items-center justify-center rounded text-slate-400
+									hover:text-slate-700 hover:bg-slate-100"
+								aria-label="Schließen"
+								onclick={() => (hullInfoOpen = false)}
+							>
+								<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+								</svg>
+							</button>
+							<p class="pr-5">
+								Manche Windräder liegen außerhalb der auf der Karte ersichtlichen
+								Zonen der Bundesländer. Das kann daran liegen, dass sie vor der
+								Zonierung gebaut wurden oder ihre Zone nicht mehr öffentlich
+								zugänglich ist wie im Burgenland. Das Burgenland stellt nur die
+								noch unbebauten Zonen öffentlich zur Verfügung, nicht die bereits
+								bebauten. Deshalb wurden bestehende Windparks türkis umrandet.
+								Diese Fläche haben wir berechnet (Windräder unter 750&thinsp;m
+								Abstand plus 200&thinsp;m Rand), sie ist kein amtlicher Plan.
+							</p>
+						</div>
+					{/if}
 				</div>
 
 				<!-- Bundesland bars: potential (light blue) + zoned (purple) overlay,
