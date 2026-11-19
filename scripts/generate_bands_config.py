@@ -36,6 +36,12 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MANIFEST = os.path.join(REPO, "scripts/raster/abschichtung.bands.json")
 OUT = os.path.join(REPO, "src/lib/config/bands.ts")
 
+# Kachel-ID auf dem Tileserver. Neue Lieferungen bekommen eine neue ID statt die
+# alte Datei zu überschreiben — sonst passen bis zum Deploy die band_id in den
+# Kacheln nicht mehr zu bands.ts der Live-Seite. Lokal heißt die Datei weiter
+# windkraft_exclusion_bands.mbtiles, hochgeladen wird sie als <TILESET_ID>.mbtiles.
+TILESET_ID = "windkraft_exclusion_bands_v3"
+
 # Zusätzlich zu den "bedingung"-Bändern aufgenommen, siehe Modulkopf.
 EXTRA_BANDS = ["exclusion_nature"]
 
@@ -66,6 +72,7 @@ def select_bands(manifest: dict) -> list[dict]:
     chosen = [
         b for b in manifest["bands"]
         if b.get("dashboard_layer") is not False and b.get("rolle") == "bedingung"
+        and not b.get("variante_von")
     ]
     by_name = {b["name"]: b for b in manifest["bands"]}
     for name in EXTRA_BANDS:
@@ -73,6 +80,27 @@ def select_bands(manifest: dict) -> list[dict]:
             chosen.append(by_name[name])
     chosen.sort(key=lambda b: b["index"])
     return chosen
+
+
+def variant_bands(manifest: dict, base: dict) -> dict[str, dict]:
+    """Varianten eines Bands ({Variantenschlüssel: Band}), seit Schema 3.0.
+
+    Die Varianten tragen `dashboard_layer: false` — sie sind kein eigener
+    Schalter, sondern ersetzen ihr Default-Band, wenn in der Detailansicht eine
+    andere Siedlungsabstands-Variante gewählt ist.
+    """
+    return {
+        b["variante"]: b for b in manifest["bands"]
+        if b.get("variante_von") == base["name"]
+    }
+
+
+def variant_layer_bands(manifest: dict) -> list[dict]:
+    """Alle Variantenbänder der gewählten Layer — für Extraktion und Kacheln."""
+    out = []
+    for b in select_bands(manifest):
+        out.extend(variant_bands(manifest, b).values())
+    return sorted(out, key=lambda b: b["index"])
 
 
 def main() -> None:
@@ -90,6 +118,11 @@ def main() -> None:
         if b.get("puffer_m"):
             metres = f"{b['puffer_m']:,.0f}".replace(",", ".")
             label = f"{label} ({metres} m)" if "(" not in label else label
+        variants = variant_bands(manifest, b)
+        variant_line = ""
+        if variants:
+            entries = ", ".join(f'"{k}": "{v["name"]}"' for k, v in variants.items())
+            variant_line = f"\t\tvariants: {{ {entries} }},\n"
         lines.append(
             "\t{\n"
             f"\t\tband: {b['index']},\n"
@@ -98,6 +131,17 @@ def main() -> None:
             f'\t\tdescription:\n\t\t\t"{escape(desc)}",\n'
             f'\t\tcolor: "{to_hex(b["color_rgba"])}",\n'
             f'\t\tgroup: "{group}",\n'
+            f"{variant_line}"
+            "\t},"
+        )
+    variant_defs = []
+    for v in manifest.get("varianten", []):
+        variant_defs.append(
+            "\t{\n"
+            f'\t\tkey: "{v["key"]}",\n'
+            f'\t\tlabel: "{escape(v.get("label_de") or v["key"])}",\n'
+            f'\t\tdescription: "{escape(v.get("description_de") or "")}",\n'
+            f'\t\tisDefault: {"true" if v.get("default") else "false"},\n'
             "\t},"
         )
 
@@ -120,6 +164,29 @@ export interface BandDef {{
 \tdescription: string;
 \tcolor: string; // 8-digit hex RRGGBBAA
 \tgroup: BandGroup;
+\t/** Ersatzbänder je Siedlungsabstands-Variante (Schlüssel aus SETTLEMENT_VARIANTS). */
+\tvariants?: Record<string, string>;
+}}
+
+export interface SettlementVariantDef {{
+\tkey: string;
+\tlabel: string;
+\tdescription: string;
+\tisDefault: boolean;
+}}
+
+// Siedlungsabstands-Varianten aus `varianten` im Manifest (Schema 3.0). Die
+// Default-Variante speist Story, Texte und Gemeindezahlen; die übrigen sind
+// nur in der Detailansicht wählbar.
+export const SETTLEMENT_VARIANTS: SettlementVariantDef[] = [
+{chr(10).join(variant_defs)}
+];
+export const DEFAULT_VARIANT: string =
+\tSETTLEMENT_VARIANTS.find((v) => v.isDefault)?.key ?? "default";
+
+/** source-layer eines Bands für die gewählte Variante. */
+export function bandSourceLayer(def: BandDef, variant: string): string {{
+\treturn def.variants?.[variant] ?? def.slug;
 }}
 
 export type BandGroup = "human" | "nature" | "terrain" | "wind";
@@ -148,7 +215,7 @@ export function bandSourceId(slug: string): string {{
 
 export const EXCLUSION_BANDS_SOURCE = "exclusion-bands";
 export const EXCLUSION_BANDS_TILES =
-\t"https://tiles.klimadashboard.org/data/windkraft_exclusion_bands/{{z}}/{{x}}/{{y}}.pbf";
+\t"https://tiles.klimadashboard.org/data/{TILESET_ID}/{{z}}/{{x}}/{{y}}.pbf";
 '''
     with open(OUT, "w", encoding="utf-8") as fh:
         fh.write(content)

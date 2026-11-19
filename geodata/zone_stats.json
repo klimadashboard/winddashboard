@@ -1,16 +1,50 @@
 {
-  "count": 4064,
-  "totalHa": 365949,
+  "count": 4032,
+  "totalHa": 355105,
   "perBundesland": {
-    "Niederösterreich": 141089,
-    "Burgenland": 69439,
-    "Steiermark": 47409,
-    "Oberösterreich": 37167,
+    "Niederösterreich": 143657,
+    "Burgenland": 55252,
+    "Steiermark": 48254,
+    "Oberösterreich": 37162,
     "Kärnten": 27132,
-    "Salzburg": 19605,
-    "Tirol": 18840,
+    "Salzburg": 19448,
+    "Tirol": 18948,
     "Vorarlberg": 4917,
     "Wien": 253,
-    "(unassigned)": 98
+    "(unassigned)": 81
+  },
+  "variants": {
+    "1km": {
+      "count": 4311,
+      "totalHa": 416353,
+      "perBundesland": {
+        "Niederösterreich": 189513,
+        "Burgenland": 70342,
+        "Steiermark": 48474,
+        "Oberösterreich": 37284,
+        "Kärnten": 27132,
+        "Salzburg": 19448,
+        "Tirol": 18948,
+        "Vorarlberg": 4917,
+        "Wien": 180,
+        "(unassigned)": 116
+      }
+    },
+    "1d2km": {
+      "count": 3821,
+      "totalHa": 341685,
+      "perBundesland": {
+        "Niederösterreich": 143692,
+        "Burgenland": 55239,
+        "Steiermark": 45484,
+        "Oberösterreich": 31281,
+        "Kärnten": 24439,
+        "Salzburg": 18508,
+        "Tirol": 18195,
+        "Vorarlberg": 4711,
+        "(unassigned)": 81,
+        "Wien": 54
+      }
+    }
   }
 }

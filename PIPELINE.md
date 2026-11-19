@@ -3,8 +3,10 @@
 Dieses Dokument beschreibt alle Schritte, die beim Einspielen neuer Quelldaten durchzuführen sind.
 
 > **Kurzfassung:** Neue `abschichtung.tif` ablegen → Schritte 1–5c ausführen →
-> **vier** MBTiles hochladen (Klassifikation, Ausschlussbänder, Potenzialflächen,
-> Bestandsanlagen) → App-Konstanten prüfen (Schritt 6).
+> MBTiles hochladen (Ausschlussbänder, Potenzialflächen je Variante, bei neuen
+> Anlagen auch Bestandsanlagen; Klassifikation nur noch als Rückfall) → bei
+> Schemaänderungen unter neuer Kachel-ID (siehe Lieferung varianten-50) →
+> App-Konstanten prüfen (Schritt 6).
 
 ---
 
@@ -33,6 +35,82 @@ osm_wka_distance_zones_widmung.tif  (Quelldaten, extern generiert, "widmung_v1")
 ```
 
 Danach in Schritt 6 die App-Konstanten aktualisieren.
+
+---
+
+## Lieferung varianten-50 (19.11.2026) — Burgenland 1,2 km, Siedlungsabstands-Varianten
+
+Paket `dashboard-data-jan`: `abschichtung.tif` (117 MB, sha256
+`ae987406999aa978e30b209dd25b8177facb20694f0b647ad58a1074f6c2d961`),
+`abschichtung.bands.json`, `LAYER.md`, `LAYER-MANIFEST.md`. **Schema 3.0.0**,
+Bandschema `varianten-50-nov-2026`, **50 Bänder**, EPSG:31287, 24001×14001, 25 m.
+Die Vorlieferung liegt als `scripts/raster/abschichtung.tif.bak-clean44-ohne-lsg`.
+
+**Schemabruch:** Die vier Unschärfebänder (`available_blur_sigma_*`) sind
+entfallen, dadurch rutschen die Bänder ab 32 um vier Nummern nach unten
+(`official_wind_zoning` 36 → 32, `power_lines_110kv_plus` 44 → 40 usw.). Neu sind
+die Bänder 41–50: je Variante Siedlungsabstand, Ausschluss Mensch, Ausschluss
+gesamt, verfügbare Fläche roh und Eignungsflächen. Die Skripte ordnen über Namen
+zu, die Verschiebung schadet nicht; `band_id` in den Kacheln ändert sich aber
+(deshalb neue Kachel-IDs, siehe unten).
+
+**Siedlungsabstands-Varianten** (`varianten` im Manifest, Feld `variante_von` an
+den Bändern):
+
+| Schlüssel | Anbieter-Label | Im Dashboard | Abstand | Flächen | Eignungsfläche |
+|---|---|---|---|---:|---:|
+| `default` | Länderregel | Gesetzliche Abstände | NÖ und Bgld 1.200 m, sonst 1.000 m | 4.032 | 355.105 ha |
+| `1km` | 1 km überall | 1 km überall | 1.000 m | 4.311 | 416.353 ha |
+| `1d2km` | 1,2 km überall | 1,2 km überall | 1.200 m | 3.821 | 341.685 ha |
+
+Story, Gemeindetexte und alle Zahlen außerhalb der Detailansicht rechnen mit dem
+Default (Entscheidung 19.11.2026). Die Detailansicht hat ein Dropdown
+„Siedlungsabstand“, das die Potenzialflächen und die Ebene „Siedlungsabstand“
+tauscht und darunter Flächenzahl und Hektar der Variante nennt.
+
+Geprüft Band für Band gegen clean-44-ohne-lsg (Pixel für Pixel):
+
+| | |
+|---|---|
+| `settlement_buffer` | +29.452 ha: **Burgenland jetzt 1.200 m** (vorher 1.000 m) |
+| `nature_protection_areas`, `exclusion_nature` | −24.875 ha: **Ramsar-Gebiete sind kein Ausschlusskriterium mehr** (deckt sich mit dem Methodik-Text, der Ramsar nie nannte) |
+| OSM-Bänder (Straßen, Bahn, Seilbahnen, Militär, Gebäude, Gewässer, Freileitungen) | kleine Änderungen (20–2.600 ha): **OpenStreetMap jetzt Stand 12.11.2026** statt 30.3.2026 |
+| Geografie (Hang, Seehöhe, Wind), Widmung, Häuser im Grünen, Flughäfen, `official_wind_zoning`, `wka_bestand_ausserhalb_zonen` | identisch |
+| **`available_cleaned_min_10ha`** | **366.846 → 355.967 ha (−10.879)**; Burgenland −14.207 ha, NÖ +2.600 ha (Ramsar an March und Thaya) |
+
+Neu nach der Pipeline: Story-Konstanten (`SCHUTZ_HA` 902.213, `SIEDLUNG_HA`
+4.596.367, `SONSTIGE_HA` 2.426.339, `WIND_HA` 41.417, `POTENTIAL_HA` 355.139,
+`POTENTIAL_VECTOR_HA` 355.105, `BUNDESLAENDER`, `BUNDESLAND_HA`), Inspector-Fallback,
+Methodik (Schutzgebiete 15.435 km², 18,4 %).
+
+**Kacheln mit neuer ID.** Bis zum Deploy liest die Live-Seite die alten Kacheln;
+würden die überschrieben, passten Flächen und `band_id` nicht mehr zu ihren Texten.
+Deshalb wird hochgeladen als:
+
+| lokal | auf dem Tileserver |
+|---|---|
+| `windkraft_exclusion_bands.mbtiles` | `windkraft_exclusion_bands_v3.mbtiles` (18 Layer + 2 Varianten-Layer) |
+| `windkraft_possible_zones.mbtiles` | `windkraft_possible_zones_v3.mbtiles` |
+| `windkraft_possible_zones_1km.mbtiles` | `windkraft_possible_zones_v3_1km.mbtiles` |
+| `windkraft_possible_zones_1d2km.mbtiles` | `windkraft_possible_zones_v3_1d2km.mbtiles` |
+
+je mit Eintrag in `/var/www/tiles/config.json`. Die IDs stehen in
+`src/lib/config/tiles.ts` (`POSSIBLE_ZONES_ID`) und
+`scripts/generate_bands_config.py` (`TILESET_ID`). Nach dem Deploy können die
+alten Dateien vom Server.
+
+**Metadaten ohne lokale Pfade.** tippecanoe schreibt die Kommandozeile
+(`generator_options`) und den Ausgabepfad (`name`, `description`) mit
+Benutzernamen in die MBTiles, und TileServer GL liefert das öffentlich im
+TileJSON aus. Die drei `build_*_tiles.py` bereinigen das seit 19.11.2026 selbst.
+
+> **Nie die Metadaten auf dem Server per `sqlite3`-Einzeiler ändern.** Am
+> 19.11.2026 machte ein `… where name in ("name","description")` in doppelten
+> Anführungszeichen daraus Spaltennamen — die Bedingung galt für jede Zeile, alle
+> Metadaten inklusive `json` wurden überschrieben, und TileServer GL stürzte beim
+> Start in einer Schleife ab. **Rund fünf Minuten lang lieferte der ganze
+> Tileserver nichts aus** (alle Klimadashboard-Karten). Metadaten lokal
+> bereinigen und die Datei neu hochladen.
 
 ---
 

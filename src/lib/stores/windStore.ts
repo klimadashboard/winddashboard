@@ -40,6 +40,8 @@ export interface ZoneStatsTotals {
 	count: number;
 	totalHa: number;
 	perBundesland: Record<string, number>;
+	/** Siedlungsabstands-Varianten außer dem Default (seit 19.11.2026). */
+	variants?: Record<string, Omit<ZoneStatsTotals, 'variants'>>;
 }
 
 export const mapInstance    = writable<Map | null>(null);
@@ -59,6 +61,10 @@ export const hiddenBands       = writable<Set<number>>(new Set<number>());
 // Eintrag). Die Ausschlusszonen sind zusätzlich nur in der Detailansicht sichtbar.
 export type VectorLayerKey = 'zones' | 'exclusion' | 'hulls' | 'turbines';
 export const hiddenVectorLayers = writable<Set<VectorLayerKey>>(new Set<VectorLayerKey>());
+// Siedlungsabstands-Variante der Detailansicht (Schlüssel aus SETTLEMENT_VARIANTS
+// in bands.ts). Story, Texte und Gemeindezahlen nutzen immer den Default; die
+// Karte zeigt die Variante nur in der Detailansicht.
+export const settlementVariant = writable<string>('default');
 export const detailLayersReady = writable(false);
 // Band IDs with no rendered features in the current viewport (updated on map idle)
 export const emptyBands        = writable<Set<number>>(new Set<number>());

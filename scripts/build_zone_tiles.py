@@ -27,9 +27,11 @@ import subprocess
 import sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC = os.path.join(REPO, "geodata/possible_zones.geojson")
-OUT = os.path.join(REPO, "scripts/raster/windkraft_possible_zones.mbtiles")
 LAYER = "possible_zones"
+# Default plus Siedlungsabstands-Varianten (Schema 3.0): je Variante eine eigene
+# MBTiles-Datei mit demselben Layernamen. Die Karte tauscht bei Variantenwahl
+# nur die Kachel-URL der Quelle — Layer, Stil und Hover bleiben gleich.
+VARIANT_SUFFIXES = ["", "_1km", "_1d2km"]
 
 TIPPECANOE_OPTS = [
     "--force",
@@ -50,9 +52,9 @@ TIPPECANOE_OPTS = [
 ]
 
 
-def main() -> None:
-    if not shutil.which("tippecanoe"):
-        sys.exit("tippecanoe nicht gefunden (brew install tippecanoe)")
+def build(suffix: str) -> None:
+    SRC = os.path.join(REPO, f"geodata/possible_zones{suffix}.geojson")
+    OUT = os.path.join(REPO, f"scripts/raster/windkraft_possible_zones{suffix}.mbtiles")
     if not os.path.exists(SRC):
         sys.exit(f"Fehlt: {SRC} — erst extract_possible_zones.py laufen lassen")
 
@@ -67,7 +69,14 @@ def main() -> None:
 
     # Ergebnis prüfen, statt der Rückgabe zu vertrauen: ein Lauf ohne gültige
     # Geometrien endet ebenfalls mit Code 0 und hinterlässt eine leere Datei.
+    # tippecanoe schreibt die volle Kommandozeile (mit lokalen Pfaden und
+    # Benutzernamen) als `generator_options` und den Ausgabepfad als name und
+    # description in die Metadaten; TileServer GL liefert beides öffentlich aus.
     con = sqlite3.connect(OUT)
+    con.execute("delete from metadata where name = 'generator_options'")
+    con.execute("update metadata set value = ? where name in ('name', 'description')",
+                (os.path.splitext(os.path.basename(OUT))[0],))
+    con.commit()
     meta = dict(con.execute("select name, value from metadata").fetchall())
     layers = json.loads(meta.get("json", "{}")).get("vector_layers", [])
     tiles = con.execute("select count(*) from tiles").fetchone()[0]
@@ -85,7 +94,14 @@ def main() -> None:
                  f"bekommen {names} / {tiles} Kacheln")
     if "zone_id" not in layers[0].get("fields", {}):
         sys.exit("FEHLER: zone_id fehlt in den Kacheln — promoteId würde brechen")
-    print("\nOK — bereit zum Hochladen.")
+    print("OK — bereit zum Hochladen.\n")
+
+
+def main() -> None:
+    if not shutil.which("tippecanoe"):
+        sys.exit("tippecanoe nicht gefunden (brew install tippecanoe)")
+    for suffix in VARIANT_SUFFIXES:
+        build(suffix)
 
 
 if __name__ == "__main__":

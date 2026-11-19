@@ -56,9 +56,9 @@
 	const stats = $derived($regionStats ?? $page.data?.stats ?? null);
 	const intro = $derived(region ? getRegionIntro(region, stats) : null);
 	// Fällt auf die zuletzt bekannten Zahlen zurück, solange zone_stats.json lädt.
-	// Stand widmung_v2 (abschichtung.tif, Schema clean-44-ohne-lsg, 21.10.2026).
-	const zoneCount = $derived($zoneStats?.count ?? 4064);
-	const totalAreaHa = $derived($zoneStats?.totalHa ?? 365949);
+	// Stand widmung_v2 (abschichtung.tif, Schema varianten-50, 19.11.2026), Default-Variante.
+	const zoneCount = $derived($zoneStats?.count ?? 4032);
+	const totalAreaHa = $derived($zoneStats?.totalHa ?? 355105);
 	const potentialPct = $derived(Math.round((totalAreaHa / AUSTRIA_HA) * 1000) / 10);
 
 	// ── Bento card modal ──

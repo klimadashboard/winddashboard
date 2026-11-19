@@ -37,8 +37,24 @@ export const AUSTRIA_ZOOM = 6.8;
 // Potenzialflächen als Vektorkacheln statt als 15-MB-GeoJSON. Der Layername in
 // den Kacheln ist `possible_zones`; `zone_id` dient als promoteId, damit der
 // Hover-Zustand über Kachelgrenzen hinweg stabil bleibt.
+//
+// `_v3` (Bandschema 3.0, Lieferung 19.11.2026): neue Lieferungen bekommen eine
+// eigene Kachel-ID, statt die alte Datei zu überschreiben. So zeigt die Seite
+// bis zum Deploy weiter die zu ihren Texten passenden Flächen, und der neue
+// Code schaltet mit dem Deploy um.
+const POSSIBLE_ZONES_ID = 'windkraft_possible_zones_v3';
 export const POSSIBLE_ZONES_TILES =
-	`${TILE_SERVER_BASE}/data/windkraft_possible_zones/{z}/{x}/{y}.pbf`;
+	`${TILE_SERVER_BASE}/data/${POSSIBLE_ZONES_ID}/{z}/{x}/{y}.pbf`;
+/**
+ * Kachel-URL der Potenzialflächen für eine Siedlungsabstands-Variante. Jede
+ * Variante ist eine eigene MBTiles-Datei mit demselben Layernamen
+ * (scripts/build_zone_tiles.py); die Karte tauscht nur die URL der Quelle.
+ */
+export function possibleZonesTiles(variant: string): string {
+	return variant === 'default'
+		? POSSIBLE_ZONES_TILES
+		: `${TILE_SERVER_BASE}/data/${POSSIBLE_ZONES_ID}_${variant}/{z}/{x}/{y}.pbf`;
+}
 export const POSSIBLE_ZONES_LAYER = 'possible_zones';
 // 4, nicht 5: die Karte lässt auf schmalen Fenstern minZoom 4.5 zu. Mit einer
 // Quelle ab Zoom 5 war der Bereich 4,5–5 eine tote Zone — die Potenzialflächen

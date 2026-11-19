@@ -29,7 +29,7 @@ import sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(REPO, "scripts"))
-from generate_bands_config import MANIFEST, select_bands  # noqa: E402
+from generate_bands_config import MANIFEST, select_bands, variant_layer_bands  # noqa: E402
 
 GEODATA = os.path.join(REPO, "geodata")
 OUT = os.path.join(REPO, "scripts/raster/windkraft_exclusion_bands.mbtiles")
@@ -56,7 +56,9 @@ def main() -> None:
 
     with open(MANIFEST, encoding="utf-8") as fh:
         manifest = json.load(fh)
-    bands = select_bands(manifest)
+    # Default-Layer plus ihre Siedlungsabstands-Varianten (Schema 3.0) — die
+    # Karte tauscht bei Variantenwahl nur das source-layer.
+    bands = select_bands(manifest) + variant_layer_bands(manifest)
 
     args = ["tippecanoe", "--output", OUT, *TIPPECANOE_OPTS]
     missing = []
@@ -76,7 +78,14 @@ def main() -> None:
 
     # Ergebnis prüfen, statt der Rückgabe zu vertrauen: ein Lauf ohne gültige
     # Geometrien endet ebenfalls mit Code 0 und hinterlässt eine leere Datei.
+    # tippecanoe schreibt die volle Kommandozeile (mit lokalen Pfaden und
+    # Benutzernamen) als `generator_options` und den Ausgabepfad als name und
+    # description in die Metadaten; TileServer GL liefert beides öffentlich aus.
     con = sqlite3.connect(OUT)
+    con.execute("delete from metadata where name = 'generator_options'")
+    con.execute("update metadata set value = ? where name in ('name', 'description')",
+                ("windkraft_exclusion_bands",))
+    con.commit()
     meta = dict(con.execute("select name, value from metadata").fetchall())
     layers = json.loads(meta.get("json", "{}")).get("vector_layers", [])
     tiles = con.execute("select count(*) from tiles").fetchone()[0]

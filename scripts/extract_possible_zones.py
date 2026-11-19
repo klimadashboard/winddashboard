@@ -279,7 +279,7 @@ def bundesland_totals(zones: list[dict]) -> dict:
 
 def process(
     band_name: str, states: list[dict], turbines: list,
-    austria_mask_arr: np.ndarray, water_mask_arr: np.ndarray,
+    austria_mask_arr: np.ndarray, water_mask_arr: np.ndarray, suffix: str = "",
 ) -> dict:
     print(f"\n=== Eignungsflächen (Band: {band_name}) ===")
     with rasterio.open(SRC) as src:
@@ -297,8 +297,10 @@ def process(
     print(f"  Summary: {len(zones)} zones, {total_ha:,.0f} ha total, "
           f"{with_turbines} zones with existing turbines")
 
-    write_zones(zones, f"{OUT_DIR}/possible_zones.geojson")
-    write_centroids(zones, f"{OUT_DIR}/zone_centroids.geojson")
+    write_zones(zones, f"{OUT_DIR}/possible_zones{suffix}.geojson")
+    if not suffix:
+        # Zentroide speisen nur die Heatmap der Story — die bleibt beim Default.
+        write_centroids(zones, f"{OUT_DIR}/zone_centroids.geojson")
 
     return {
         "count": len(zones),
@@ -327,6 +329,21 @@ def main():
             water_mask_arr = load_water_mask(src.shape, src.transform, src.crs)
 
     stats = process(band_name, states, turbines, austria_mask_arr, water_mask_arr)
+
+    # Siedlungsabstands-Varianten (Schema 3.0, 19.11.2026): je Variante ein
+    # eigenes Ergebnisband `available_cleaned_min_10ha_<key>`. Sie landen in
+    # possible_zones_<key>.geojson und als `variants` in zone_stats.json; Story,
+    # Texte und Gemeindezahlen bleiben beim Default.
+    with rasterio.open(SRC) as src:
+        names = [d for d in src.descriptions if d]
+    variants = {}
+    for name in names:
+        if name.startswith(f"{band_name}_"):
+            key = name[len(band_name) + 1:]
+            variants[key] = process(name, states, turbines, austria_mask_arr,
+                                    water_mask_arr, suffix=f"_{key}")
+    if variants:
+        stats["variants"] = variants
 
     with open(STATS_OUT, "w") as f:
         json.dump(stats, f, indent=2, ensure_ascii=False)

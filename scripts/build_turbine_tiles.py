@@ -121,7 +121,12 @@ def main() -> None:
 
     # Ergebnis prüfen, statt der Rückgabe zu vertrauen: ein Lauf ohne gültige
     # Geometrien endet ebenfalls mit Code 0 und hinterlässt eine leere Datei.
+    # tippecanoe schreibt die volle Kommandozeile (mit lokalen Pfaden und
+    # Benutzernamen) als `generator_options` und den Ausgabepfad als name und
+    # description in die Metadaten; TileServer GL liefert beides öffentlich aus.
     con = sqlite3.connect(OUT)
+    con.execute("delete from metadata where name = 'generator_options'")
+    con.commit()
     meta = dict(con.execute("select name, value from metadata").fetchall())
     layers = json.loads(meta.get("json", "{}")).get("vector_layers", [])
     tiles = con.execute("select count(*) from tiles").fetchone()[0]

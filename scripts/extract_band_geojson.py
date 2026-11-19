@@ -36,7 +36,7 @@ OUT_DIR = "geodata"
 
 # Die Layerauswahl kommt aus dem Manifest — siehe generate_bands_config.py.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from generate_bands_config import MANIFEST, select_bands  # noqa: E402
+from generate_bands_config import MANIFEST, select_bands, variant_layer_bands  # noqa: E402
 
 # Simplification tolerance — keep fine; Tippecanoe will handle LOD simplification
 SIMPLIFY_TOL = 0.00005  # degrees (~5 m at Austrian latitudes) — fine since source is 25 m
@@ -157,14 +157,20 @@ def main():
             manifest = json.load(fh)
         names = list(src.descriptions)
         bands = select_bands(manifest)
-        print(f"  {len(bands)} Layer laut Manifest")
+        # Variantenbänder (Schema 3.0) tragen die band_id ihres Default-Bands:
+        # Legende, Tooltip und Sichtbarkeit hängen an dieser ID, die Variante
+        # tauscht in der Karte nur das source-layer.
+        by_name = {b["name"]: b for b in manifest["bands"]}
+        jobs = [(b["name"], b["index"]) for b in bands]
+        jobs += [(v["name"], by_name[v["variante_von"]]["index"])
+                 for v in variant_layer_bands(manifest)]
+        print(f"  {len(jobs)} Layer laut Manifest ({len(jobs) - len(bands)} Varianten)")
 
-        for b in bands:
-            if b["name"] not in names:
-                print(f"  {b['name']}: nicht im Raster, übersprungen")
-                continue
-            band_idx = names.index(b["name"]) + 1
-            extract_band(src, band_idx, b["name"], b["index"], austria_mask_arr)
+        for name, band_id in jobs:
+            if name not in names:
+                sys.exit(f"  {name}: steht im Manifest, fehlt im Raster")
+            band_idx = names.index(name) + 1
+            extract_band(src, band_idx, name, band_id, austria_mask_arr)
 
     print("Done.")
 

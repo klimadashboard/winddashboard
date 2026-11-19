@@ -1,7 +1,7 @@
 // ⚠️ Erzeugt von scripts/generate_bands_config.py — nicht von Hand ändern.
 // Quelle: scripts/raster/abschichtung.bands.json
-// Bandschema: clean-44-ohne-lsg-okt-2026
-// Manifest erzeugt: 2026-10-21T13:36:05Z
+// Bandschema: varianten-50-nov-2026
+// Manifest erzeugt: 2026-11-18T14:22:53Z
 //
 // Layer sind alle Bänder mit `dashboard_layer: true` und `rolle: "bedingung"`,
 // plus `exclusion_nature` (widmung_v2 blendet die einzelnen Schutzgebietsbänder
@@ -15,6 +15,46 @@ export interface BandDef {
 	description: string;
 	color: string; // 8-digit hex RRGGBBAA
 	group: BandGroup;
+	/** Ersatzbänder je Siedlungsabstands-Variante (Schlüssel aus SETTLEMENT_VARIANTS). */
+	variants?: Record<string, string>;
+}
+
+export interface SettlementVariantDef {
+	key: string;
+	label: string;
+	description: string;
+	isDefault: boolean;
+}
+
+// Siedlungsabstands-Varianten aus `varianten` im Manifest (Schema 3.0). Die
+// Default-Variante speist Story, Texte und Gemeindezahlen; die übrigen sind
+// nur in der Detailansicht wählbar.
+export const SETTLEMENT_VARIANTS: SettlementVariantDef[] = [
+	{
+		key: "default",
+		label: "Länderregel",
+		description: "1.200 m in Niederösterreich und im Burgenland, sonst 1.000 m.",
+		isDefault: true,
+	},
+	{
+		key: "1km",
+		label: "1 km überall",
+		description: "1.000 m in ganz Österreich.",
+		isDefault: false,
+	},
+	{
+		key: "1d2km",
+		label: "1,2 km überall",
+		description: "1.200 m in ganz Österreich.",
+		isDefault: false,
+	},
+];
+export const DEFAULT_VARIANT: string =
+	SETTLEMENT_VARIANTS.find((v) => v.isDefault)?.key ?? "default";
+
+/** source-layer eines Bands für die gewählte Variante. */
+export function bandSourceLayer(def: BandDef, variant: string): string {
+	return def.variants?.[variant] ?? def.slug;
 }
 
 export type BandGroup = "human" | "nature" | "terrain" | "wind";
@@ -33,9 +73,10 @@ export const BAND_DEFS: BandDef[] = [
 		slug: "settlement_buffer",
 		label: "Siedlungsabstand",
 		description:
-			"Abstand von 1.000 m um amtliches Wohn-, Misch-, Kern- und Dorfgebiet aller neun Bundesländer; in Niederösterreich 1.200 m.",
+			"Abstand von 1.000 m um amtliches Wohn-, Misch-, Kern- und Dorfgebiet aller neun Bundesländer; in Niederösterreich und im Burgenland 1.200 m.",
 		color: "#4682dc8c",
 		group: "human",
+		variants: { "1km": "settlement_buffer_1km", "1d2km": "settlement_buffer_1d2km" },
 	},
 	{
 		band: 7,
@@ -114,7 +155,7 @@ export const BAND_DEFS: BandDef[] = [
 		slug: "military_restricted_area",
 		label: "Militärische Flächen",
 		description:
-			"Militärische Flächen aus OpenStreetMap, ohne zusätzlichen Abstand: Flächen mit landuse=military oder military=range, training_area, barracks, danger_area, airfield, naval_base oder base, also Truppen- und Schießübungsplätze, Kasernen, Militärflugplätze und Munitionslager.",
+			"Militärische Flächen aus OpenStreetMap, ohne zusätzlichen Abstand: Truppen- und Schießübungsplätze, Kasernen, Gefahrengebiete, Militärflugplätze, Marinestützpunkte und sonstige militärische Anlagen sowie Munitionslager.",
 		color: "#ff00008c",
 		group: "human",
 	},
@@ -177,16 +218,16 @@ export const BAND_DEFS: BandDef[] = [
 		slug: "exclusion_nature",
 		label: "Ausschluss Natur",
 		description:
-			"Amtliche Schutzgebiete, die nach Naturschutzrecht der Länder per Verordnung oder Bescheid festgelegt sind, einschließlich Naturdenkmälern (Band 21), auf das Staatsgebiet zugeschnitten. Ohne Abstandspuffer.",
+			"Amtliche Schutzgebiete, die nach Naturschutzrecht der Länder per Verordnung oder Bescheid festgelegt sind, einschließlich Naturdenkmälern (siehe „Amtliche Schutzgebiete“), auf das Staatsgebiet zugeschnitten. Ohne Abstandspuffer.",
 		color: "#00b40096",
 		group: "nature",
 	},
 	{
-		band: 44,
+		band: 40,
 		slug: "power_lines_110kv_plus",
 		label: "Hochspannungsfreileitungen (136 m)",
 		description:
-			"Abstand beiderseits der Achse von Hochspannungsfreileitungen ab 110 kV (110, 220, 380 und 400 kV) aus OpenStreetMap, je nach Spannung: 116 m bei 110 kV, 136 m bei 220, 380 und 400 kV. Der Abstand ergibt sich für die Referenzanlage Vestas V172 aus dem halben Rotordurchmesser von 86 m und dem Sicherheitsabstand zum äußersten Leiter (20 m bei 110 kV, 30 m bei 220 und 380 kV), zusammen 106 m bzw. 116 m, zuzüglich des Versatzes von der Mastachse zum äußersten Leiter (10 m bzw. 20 m). Die 116 m bzw. 136 m ab der Leitungsachse stellen so mindestens 106 m bzw. 116 m zum Leiter sicher. Leitungen mit mehreren Spannungsebenen erhalten den größeren Puffer. Dieses Band wird an der Vektorgeometrie der Leitung gepuffert und mit allen berührten Zellen gerastert, sodass jede Zelle innerhalb des Nennabstands ausgeschlossen ist; der Rand überschießt um höchstens eine Zelle. Untergrenze ohne Kranarbeitsfläche und ohne Nachweis gegen nachlaufinduzierte Schwingungen. Mittelspannung unter 110 kV erzeugt keine Zone, ebenso wenig Erdkabel.",
+			"Freileitungen ab 110 kV aus OpenStreetMap, als Streifen beiderseits der Leitungsachse: 116 m bei 110 kV, 136 m bei 220, 380 und 400 kV. Leitungen mit mehreren Spannungsebenen erhalten den größeren Abstand. Mittelspannung unter 110 kV und Erdkabel erzeugen keine Zone; die Herleitung steht im Whitepaper.",
 		color: "#9632dc96",
 		group: "human",
 	},
@@ -204,4 +245,4 @@ export function bandSourceId(slug: string): string {
 
 export const EXCLUSION_BANDS_SOURCE = "exclusion-bands";
 export const EXCLUSION_BANDS_TILES =
-	"https://tiles.klimadashboard.org/data/windkraft_exclusion_bands/{z}/{x}/{y}.pbf";
+	"https://tiles.klimadashboard.org/data/windkraft_exclusion_bands_v3/{z}/{x}/{y}.pbf";

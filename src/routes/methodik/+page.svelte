@@ -2,13 +2,14 @@
 	// Methodik nach der Kurzfassung „Methodik_Kurzfassung_Website“ (November 2026),
 	// die die frühere, ausführliche Seite mit Band-Tabelle vollständig ersetzt.
 	// Abweichungen vom Dokument, abgestimmt am 18.11.2026:
-	//   - Schutzgebiete: 15.683 km² statt 15.670 km² (exclusion_nature der
-	//     Lieferung, 1.568.322 ha; 18,7 % bleibt).
+	//   - Schutzgebiete: 15.435 km² (exclusion_nature der Lieferung vom
+	//     19.11.2026, 1.543.458 ha, 18,4 %). Ramsar-Gebiete zählen dort nicht
+	//     mehr; das Dokument nannte 15.670 km², die Vorlieferung 15.683 km².
 	//   - Freileitungen: 136 m gelten auch für 400 kV (Manifest).
 	//   - Zitat und Quellen am Ende ergänzt (Datensatz J. Hurt, Statistik Austria,
 	//     Energy-Charts, Hintergrundkarte).
-	// Burgenland steht mit 1.200 m drin, obwohl die aktuelle Lieferung dort noch
-	// mit 1.000 m rechnet — so entschieden, die neue Lieferung ist angefragt.
+	// Burgenland mit 1.200 m: seit der Lieferung vom 19.11.2026 rechnet auch die
+	// Karte so (Default-Variante „Länderregel“).
 	import SeoHead from "$lib/components/SeoHead.svelte";
 
 	type Link = { label: string; href: string };
@@ -333,7 +334,7 @@
 					target="_blank"
 					rel="noopener"
 					class="underline underline-offset-2 hover:text-slate-900">Umweltbundesamt</a
-				>. Zusammen sind das 15.683&nbsp;km², also 18,7&nbsp;% der Fläche Österreichs.
+				>. Zusammen sind das 15.435&nbsp;km², also 18,4&nbsp;% der Fläche Österreichs.
 			</p>
 		</section>
 

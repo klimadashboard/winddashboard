@@ -12,6 +12,7 @@
 		austriaOutline,
 		storyStep,
 		hiddenBands,
+		settlementVariant,
 		hiddenVectorLayers,
 		detailLayersReady,
 		emptyBands,
@@ -19,7 +20,7 @@
 		centerBundesland,
 	} from "$lib/stores/windStore";
 	import type { VizMode, VectorLayerKey } from "$lib/stores/windStore";
-	import { BAND_DEFS, bandLayerId, EXCLUSION_BANDS_SOURCE, EXCLUSION_BANDS_TILES } from "$lib/config/bands";
+	import { BAND_DEFS, bandLayerId, bandSourceLayer, EXCLUSION_BANDS_SOURCE, EXCLUSION_BANDS_TILES } from "$lib/config/bands";
 	import type { BandGroup, BandDef } from "$lib/config/bands";
 	import {
 		CARTO_BASEMAP,
@@ -32,6 +33,7 @@
 		CLASSIFICATION_TILES_MIN_ZOOM,
 		CLASSIFICATION_TILES_MAX_ZOOM,
 		POSSIBLE_ZONES_TILES,
+		possibleZonesTiles,
 		POSSIBLE_ZONES_LAYER,
 		POSSIBLE_ZONES_MIN_ZOOM,
 		POSSIBLE_ZONES_MAX_ZOOM,
@@ -475,7 +477,7 @@
 				const g = parseInt(def.color.slice(3,5),16);
 				const b2 = parseInt(def.color.slice(5,7),16);
 				const slug = def.slug;
-				map.addLayer({ id: bandLayerId(slug), type: "fill", source: EXCLUSION_BANDS_SOURCE, "source-layer": slug, paint: { "fill-color": `rgb(${r},${g},${b2})`, "fill-opacity": 0 } }, B);
+				map.addLayer({ id: bandLayerId(slug), type: "fill", source: EXCLUSION_BANDS_SOURCE, "source-layer": bandSourceLayer(def, appliedVariant), paint: { "fill-color": `rgb(${r},${g},${b2})`, "fill-opacity": 0 } }, B);
 			}
 			detailLayersReady.set(true);
 
@@ -991,6 +993,9 @@
 		// setPaintProperty works fine from the tile cache. Tracked per-slug so a
 		// band that is switched on later still gets its one-time activation.
 		let activatedSlugs = new Set<string>();
+		// Siedlungsabstands-Variante, die gerade auf der Karte liegt. Nur in der
+		// Detailansicht außerhalb der Story weicht sie vom Default ab.
+		let appliedVariant = "default";
 
 		function activateBandLayers() {
 			const hidden = get(hiddenBands);
@@ -1009,7 +1014,7 @@
 					id,
 					type: 'fill',
 					source: EXCLUSION_BANDS_SOURCE,
-					'source-layer': slug,
+					'source-layer': bandSourceLayer(def, appliedVariant),
 					paint: {
 						'fill-color': `rgb(${r},${g},${b})`,
 						'fill-opacity': hidden.has(def.band) ? 0 : baseOpacity,
@@ -1048,6 +1053,30 @@
 					if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", visible ? "visible" : "none");
 				}
 			}
+		}
+
+		// ── Siedlungsabstands-Variante ─────────────────────────────────────────
+		// Die Story und die einfache Ansicht zeigen immer den Default; erst die
+		// Detailansicht übernimmt die Auswahl aus dem Dropdown. Getauscht werden
+		// die Kachel-URL der Potenzialflächen (eine MBTiles-Datei je Variante)
+		// und das source-layer der Bänder mit Varianten (Siedlungsabstand).
+		function applyVariant() {
+			const wanted = currentStoryStep < 0 && currentExpert ? get(settlementVariant) : "default";
+			if (wanted === appliedVariant || !map) return;
+			// Vor dem Laden der Quellen nichts merken — sonst gilt die Variante
+			// als angewendet, obwohl die Karte noch den Default zeigt.
+			const zones = map.getSource("possible-zones") as { setTiles?: (t: string[]) => void } | undefined;
+			if (!zones?.setTiles) return;
+			appliedVariant = wanted;
+			zones.setTiles([possibleZonesTiles(wanted)]);
+			hoveredZoneId = null;
+			for (const def of BAND_DEFS) {
+				if (!def.variants) continue;
+				// Bereits aktivierte Layer neu anlegen — das source-layer eines
+				// bestehenden Layers lässt sich in MapLibre nicht umstellen.
+				if (activatedSlugs.delete(def.slug)) activateBandLayers();
+			}
+			if (currentStoryStep < 0) updateLayers(currentExpert, currentViz);
 		}
 
 		function applyStoryVisibility(step: number) {
@@ -1188,6 +1217,7 @@
 			updateLayers(currentExpert, currentViz);
 			// Override with story visibility if story is active
 			applyStoryVisibility(currentStoryStep);
+			applyVariant();
 			// Noch einmal, sobald alle Quellen geladen sind: der Aufruf direkt
 			// darüber bricht ab, solange GeoJSON-Quellen laden (isStyleLoaded()).
 			map.once("idle", () => applyStoryVisibility(get(storyStep)));
@@ -1228,6 +1258,7 @@
 				updateLayers(currentExpert, currentViz);
 				applyVectorVisibility();
 			}
+			applyVariant();
 		});
 
 		const unsubVectors = hiddenVectorLayers.subscribe(() => {
@@ -1284,7 +1315,10 @@
 				}, 920);
 			}
 			applyStoryVisibility(step);
+			applyVariant();
 		});
+
+		const unsubVariant = settlementVariant.subscribe(() => applyVariant());
 
 		const unsubBands = hiddenBands.subscribe(() => {
 			if (map && map.isStyleLoaded() && currentStoryStep < 0) {
@@ -1298,6 +1332,7 @@
 			unsubRegion();
 			unsubStory();
 			unsubBands();
+			unsubVariant();
 			unsubVectors();
 			narrow.removeEventListener("change", placeAttribution);
 			// Reset per-map state so the next map instance starts clean

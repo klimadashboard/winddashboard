@@ -6,10 +6,14 @@
 		hiddenBands,
 		hiddenVectorLayers,
 		emptyBands,
+		settlementVariant,
+		zoneStats,
 	} from "$lib/stores/windStore";
 	import type { VizMode, VectorLayerKey } from "$lib/stores/windStore";
 	import { LEGEND_CODES, GROUP_LABELS } from "$lib/config/legend";
-	import { BAND_DEFS, BAND_GROUPS, GROUP_ORDER } from "$lib/config/bands";
+	import { BAND_DEFS, BAND_GROUPS, GROUP_ORDER, SETTLEMENT_VARIANTS } from "$lib/config/bands";
+	import { AUSTRIA_HA } from "$lib/config/austria";
+	import { fmtNumber as fmt } from "$lib/format";
 	import type { BandGroup } from "$lib/config/bands";
 
 	const vizOptions: { value: VizMode; label: string }[] = [
@@ -89,6 +93,26 @@
 			hex.length >= 9 ? (parseInt(hex.slice(7, 9), 16) / 255).toFixed(2) : "1";
 		return `rgba(${r},${g},${b},${a})`;
 	}
+
+	// ── Siedlungsabstands-Varianten (Dropdown in der Detailansicht) ──
+	// Namen und Beschreibung kommen aus dem Manifest; nur der Default heißt hier
+	// „Gesetzliche Abstände“ statt „Länderregel“ (Entscheidung 19.11.2026).
+	const VARIANT_TEXT: Record<string, { label: string; note: string }> = {
+		default: { label: "Gesetzliche Abstände", note: "1,2 km in Niederösterreich und im Burgenland, sonst 1 km" },
+		"1km": { label: "1 km überall", note: "1 km in ganz Österreich" },
+		"1d2km": { label: "1,2 km überall", note: "1,2 km in ganz Österreich" },
+	};
+	function variantText(key: string) {
+		const v = SETTLEMENT_VARIANTS.find((d) => d.key === key);
+		return VARIANT_TEXT[key] ?? { label: v?.label ?? key, note: v?.description ?? "" };
+	}
+	// Immer eine Nachkommastelle („5,0 %“), sonst springt die Zeile beim Umschalten.
+	const pct = (ha: number) => ((ha / AUSTRIA_HA) * 100).toFixed(1).replace(".", ",");
+	const variantTotals = $derived.by(() => {
+		const st = $zoneStats;
+		if (!st) return null;
+		return $settlementVariant === "default" ? st : (st.variants?.[$settlementVariant] ?? null);
+	});
 
 	// Closed by default; onMount opens on desktop
 	let panelOpen = $state(false);
@@ -192,6 +216,42 @@
 				class="overflow-y-auto px-3 pt-3 pb-4 space-y-3"
 				style="max-height: calc(50vh - 80px);"
 			>
+				<!--
+					Siedlungsabstand als Variante: tauscht in der Karte die
+					Potenzialflächen und die Ebene „Siedlungsabstand“. Story, Texte
+					und Gemeindezahlen rechnen immer mit den gesetzlichen Abständen.
+				-->
+				{#if SETTLEMENT_VARIANTS.length > 1}
+					<div>
+						<label
+							for="settlement-variant"
+							class="block font-bold uppercase mb-1.5"
+							style="font-size:9px;letter-spacing:0.12em;color:var(--blue-sky);"
+						>
+							Siedlungsabstand
+						</label>
+						<select
+							id="settlement-variant"
+							class="w-full rounded-md border border-slate-200 bg-white px-1.5 py-1 cursor-pointer"
+							style="font-size:11px;color:#1f2937;"
+							bind:value={$settlementVariant}
+						>
+							{#each SETTLEMENT_VARIANTS as v}
+								<option value={v.key}>{variantText(v.key).label}</option>
+							{/each}
+						</select>
+						<p class="mt-1 leading-snug" style="font-size:10px;color:#64748b;">
+							{variantText($settlementVariant).note}.
+							{#if variantTotals}
+								<br /><span style="color:#1f2937;"
+									>{fmt(variantTotals.count)} Flächen, {fmt(variantTotals.totalHa)}&thinsp;ha
+									({pct(variantTotals.totalHa)}&thinsp;%)</span
+								>
+							{/if}
+						</p>
+					</div>
+				{/if}
+
 				{#each GROUP_ORDER as group}
 					{@const gBands = bandsForGroup(group)}
 					{@const gMeta = BAND_GROUPS[group]}

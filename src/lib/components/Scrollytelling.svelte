@@ -95,14 +95,19 @@
 	// −92.620 ha bei Code 1. Weil die Klassifikation nach Priorität zuweist,
 	// landen diese Flächen überwiegend in "Sonstige" (+78.762 ha), nicht im
 	// Potenzial — das wächst nur um 8.209 ha.
-	const SCHUTZ_HA = 915_085; // code 1
-	const SIEDLUNG_HA = 4_569_390; // code 2
-	const SONSTIGE_HA = 2_429_613; // codes 3–8, 10, 12, 13, 15, 16
-	const WIND_HA = 41_399; // code 11, Wind zu gering
-	const POTENTIAL_HA = 365_978; // code 14, raster-based
+	//
+	// varianten-50 (19.11.2026): Burgenland jetzt mit 1.200 m Siedlungsabstand
+	// (Siedlung +26.977 ha), Ramsar-Gebiete kein Ausschlusskriterium mehr
+	// (Schutz −12.872 ha), OpenStreetMap auf Stand 12.11.2026. Potenzial
+	// −10.839 ha, davon −14.207 ha im Burgenland.
+	const SCHUTZ_HA = 902_213; // code 1
+	const SIEDLUNG_HA = 4_596_367; // code 2
+	const SONSTIGE_HA = 2_426_339; // codes 3–8, 10, 12, 13, 15, 16
+	const WIND_HA = 41_417; // code 11, Wind zu gering
+	const POTENTIAL_HA = 355_139; // code 14, raster-based
 
 	// Vector-derived potential (used in the "final" headline)
-	const POTENTIAL_VECTOR_HA = 365_949;
+	const POTENTIAL_VECTOR_HA = 355_105;
 
 	// Colors for the persistent header bar — fixed left-to-right stacking
 	// order: each category's segment appears once its step is reached and
@@ -136,27 +141,28 @@
 	// Splitter übrig bleiben. Für die Prozentbalken unkritisch — als
 	// Flächenangabe für Dritte taugen diese Zahlen nicht.
 	const BUNDESLAND_HA: Record<string, number> = {
-		"Niederösterreich": 1_912_101,
-		"Steiermark": 1_622_717,
+		"Niederösterreich": 1_912_034,
+		"Steiermark": 1_622_724,
 		"Tirol": 1_249_113,
-		"Oberösterreich": 1_192_281,
+		"Oberösterreich": 1_192_283,
 		"Kärnten": 945_832,
-		"Salzburg": 706_233,
-		"Burgenland": 395_084,
-		"Vorarlberg": 256_866,
+		"Salzburg": 706_255,
+		"Burgenland": 395_132,
+		"Vorarlberg": 256_864,
 		"Wien": 41_445,
 	};
 
 	// ── Bundesland breakdown (vector data, sorted by potential area) ─────────
-	// Stand clean-44-ohne-lsg (abschichtung.tif, 21.10.2026) — aus geodata/zone_stats.json.
+	// Stand varianten-50 (abschichtung.tif, 19.11.2026), Default-Variante
+	// (1,2 km in NÖ und Bgld) — aus geodata/zone_stats.json.
 	const BUNDESLAENDER = [
-		{ name: "Niederösterreich", short: "NÖ", ha: 141_089 },
-		{ name: "Burgenland", short: "B", ha: 69_439 },
-		{ name: "Steiermark", short: "ST", ha: 47_409 },
-		{ name: "Oberösterreich", short: "OÖ", ha: 37_167 },
+		{ name: "Niederösterreich", short: "NÖ", ha: 143_657 },
+		{ name: "Burgenland", short: "B", ha: 55_252 },
+		{ name: "Steiermark", short: "ST", ha: 48_254 },
+		{ name: "Oberösterreich", short: "OÖ", ha: 37_162 },
 		{ name: "Kärnten", short: "K", ha: 27_132 },
-		{ name: "Salzburg", short: "S", ha: 19_605 },
-		{ name: "Tirol", short: "T", ha: 18_840 },
+		{ name: "Salzburg", short: "S", ha: 19_448 },
+		{ name: "Tirol", short: "T", ha: 18_948 },
 		{ name: "Vorarlberg", short: "V", ha: 4_917 },
 		{ name: "Wien", short: "W", ha: 253 },
 	];
