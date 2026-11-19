@@ -94,7 +94,7 @@
 		return `rgba(${r},${g},${b},${a})`;
 	}
 
-	// ── Siedlungsabstands-Varianten (Dropdown in der Detailansicht) ──
+	// ── Siedlungsabstands-Varianten (Dropdown unter der Ebene „Siedlungsabstand“) ──
 	// Namen und Beschreibung kommen aus dem Manifest; nur der Default heißt hier
 	// „Gesetzliche Abstände“ statt „Länderregel“ (Entscheidung 19.11.2026).
 	const VARIANT_TEXT: Record<string, { label: string; note: string }> = {
@@ -216,42 +216,6 @@
 				class="overflow-y-auto px-3 pt-3 pb-4 space-y-3"
 				style="max-height: calc(50vh - 80px);"
 			>
-				<!--
-					Siedlungsabstand als Variante: tauscht in der Karte die
-					Potenzialflächen und die Ebene „Siedlungsabstand“. Story, Texte
-					und Gemeindezahlen rechnen immer mit den gesetzlichen Abständen.
-				-->
-				{#if SETTLEMENT_VARIANTS.length > 1}
-					<div>
-						<label
-							for="settlement-variant"
-							class="block font-bold uppercase mb-1.5"
-							style="font-size:9px;letter-spacing:0.12em;color:var(--blue-sky);"
-						>
-							Siedlungsabstand
-						</label>
-						<select
-							id="settlement-variant"
-							class="w-full rounded-md border border-slate-200 bg-white px-1.5 py-1 cursor-pointer"
-							style="font-size:11px;color:#1f2937;"
-							bind:value={$settlementVariant}
-						>
-							{#each SETTLEMENT_VARIANTS as v}
-								<option value={v.key}>{variantText(v.key).label}</option>
-							{/each}
-						</select>
-						<p class="mt-1 leading-snug" style="font-size:10px;color:#64748b;">
-							{variantText($settlementVariant).note}.
-							{#if variantTotals}
-								<br /><span style="color:#1f2937;"
-									>{fmt(variantTotals.count)} Flächen, {fmt(variantTotals.totalHa)}&thinsp;ha
-									({pct(variantTotals.totalHa)}&thinsp;%)</span
-								>
-							{/if}
-						</p>
-					</div>
-				{/if}
-
 				{#each GROUP_ORDER as group}
 					{@const gBands = bandsForGroup(group)}
 					{@const gMeta = BAND_GROUPS[group]}
@@ -303,6 +267,35 @@
 											: '#4b5563'};">{def.label}</span
 									>
 								</button>
+								<!--
+									Siedlungsabstand als Variante, direkt unter seiner Ebene:
+									tauscht in der Karte die Potenzialflächen und diese Ebene.
+									Story, Texte und Gemeindezahlen rechnen immer mit den
+									gesetzlichen Abständen.
+								-->
+								{#if def.variants && SETTLEMENT_VARIANTS.length > 1}
+									<div class="pl-5 pb-1">
+										<select
+											aria-label="Siedlungsabstand"
+											class="w-full rounded-md border border-slate-200 bg-white px-1.5 py-1 cursor-pointer"
+											style="font-size:11px;color:#1f2937;"
+											bind:value={$settlementVariant}
+										>
+											{#each SETTLEMENT_VARIANTS as v}
+												<option value={v.key}>{variantText(v.key).label}</option>
+											{/each}
+										</select>
+										<p class="mt-1 leading-snug" style="font-size:10px;color:#64748b;">
+											{variantText($settlementVariant).note}.
+											{#if variantTotals}
+												<br /><span style="color:#1f2937;"
+													>{fmt(variantTotals.count)} Flächen, {fmt(variantTotals.totalHa)}&thinsp;ha
+													({pct(variantTotals.totalHa)}&thinsp;%)</span
+												>
+											{/if}
+										</p>
+									</div>
+								{/if}
 							{/each}
 						</div>
 					</div>
