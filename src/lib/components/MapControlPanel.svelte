@@ -62,7 +62,7 @@
 		});
 	}
 	const VECTOR_ROWS: { key: VectorLayerKey; label: string; swatch: string; round?: boolean }[] = [
-		{ key: "zones", label: "Windkraftzonen", swatch: "background:#7c3aed;border:1.5px dashed #6d28d9;" },
+		{ key: "zones", label: "Windkraftzonen", swatch: "background:rgba(124,58,237,0.75);border:1.5px dashed #6d28d9;" },
 		{ key: "exclusion", label: "Ausschlusszonen (Stmk.)", swatch: "background:repeating-linear-gradient(-45deg, #475569 0 1.5px, transparent 1.5px 4px);border:1px solid #475569;" },
 		{ key: "hulls", label: "Bestehende Windparks", swatch: "background:#0891b2;opacity:0.75;border:1px solid #0e7490;" },
 		{ key: "turbines", label: "Bestehende Anlagen", swatch: "background:#1e293b;border:1.5px solid white;box-shadow:0 0 0 1px #cbd5e1;", round: true },
@@ -181,7 +181,7 @@
 				<span class="flex items-center gap-2">
 					<span
 						class="w-3 h-3 rounded-sm flex-shrink-0 inline-block"
-						style="background: #7c3aed; border: 1.5px dashed #6d28d9;"
+						style="background: rgba(124, 58, 237, 0.75); border: 1.5px dashed #6d28d9;"
 					></span>
 					Offiz. Windkraftzone
 				</span>

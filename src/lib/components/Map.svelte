@@ -80,6 +80,10 @@
 	};
 
 	// Matches nothing — the resting state of the selected-region highlight layers.
+	// Offizielle Windkraftzonen leicht durchscheinend, damit man erkennt, ob
+	// darunter eine blaue Potenzialfläche liegt (Wunsch 20.11.2026).
+	const OFFICIAL_ZONE_OPACITY = 0.75;
+
 	const NO_REGION_FILTER = ["==", ["get", "AGS"], "\u0000"] as const;
 
 	/**
@@ -546,7 +550,7 @@
 			// Unterscheidung zur gestrichelten violetten Zonengrenze.
 			map.addLayer({ id: "wka-hulls-outline", type: "line", source: "wka-hulls", paint: { "line-color": "#0e7490", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1, 9, 2], "line-opacity": 0.9 } }, B);
 
-			map.addLayer({ id: "official-zones-fill",    type: "fill", source: "official-zones", paint: { "fill-color": "#7c3aed", "fill-opacity": 1 } }, B);
+			map.addLayer({ id: "official-zones-fill",    type: "fill", source: "official-zones", paint: { "fill-color": "#7c3aed", "fill-opacity": OFFICIAL_ZONE_OPACITY } }, B);
 			map.addLayer({ id: "official-zones-outline", type: "line", source: "official-zones", paint: { "line-color": "#6d28d9", "line-width": 1.5, "line-dasharray": [4, 2], "line-opacity": 0.8 } }, B);
 
 			// minzoom 4.5 statt 7, also gleich dem Mindestzoom der Karte: die
@@ -1115,7 +1119,7 @@
 					map.setPaintProperty("turbines", "circle-opacity", 0.85);
 				}
 				if (map.getLayer("official-zones-fill"))
-					map.setPaintProperty("official-zones-fill", "fill-opacity", 1);
+					map.setPaintProperty("official-zones-fill", "fill-opacity", OFFICIAL_ZONE_OPACITY);
 				if (map.getLayer("official-zones-outline")) {
 					map.setPaintProperty("official-zones-outline", "line-width", 1.5);
 					map.setPaintProperty("official-zones-outline", "line-opacity", 0.8);
@@ -1149,7 +1153,7 @@
 			show("wka-hulls-outline",      step >= 6);
 			if (step >= 6) {
 				if (map.getLayer("official-zones-fill"))
-					map.setPaintProperty("official-zones-fill", "fill-opacity", 1);
+					map.setPaintProperty("official-zones-fill", "fill-opacity", OFFICIAL_ZONE_OPACITY);
 				if (map.getLayer("official-zones-outline")) {
 					map.setPaintProperty("official-zones-outline", "line-width", 2.5);
 					map.setPaintProperty("official-zones-outline", "line-opacity", 1);
