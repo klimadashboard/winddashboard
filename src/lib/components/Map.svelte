@@ -1349,7 +1349,13 @@
 	});
 </script>
 
-<div bind:this={mapContainer} class="w-full h-full"></div>
+<!--
+	story-active: während der Story liegt die Scroll-Ebene (Scrollytelling,
+	fixed z-40) über der Karte und schluckte jeden Klick auf das „i“ der
+	Quellen. layout.css hebt deshalb in dieser Zeit die Ecke mit den Quellen
+	über die Ebene.
+-->
+<div bind:this={mapContainer} class="w-full h-full" class:story-active={$storyStep >= 0}></div>
 
 <style>
 	/* Keep MapLibre built-in controls at the same 1rem edge margin as all UI panels */
