@@ -7,7 +7,10 @@ const config = {
 		runes: ({ filename }) => (filename.split(/[/\\]/).includes('node_modules') ? undefined : true)
 	},
 	kit: {
-		adapter: adapter()
+		// Funktionen in Frankfurt statt im Vercel-Standard Washington (iad1):
+		// Publikum, Regions-API und Kachelserver sitzen in Europa. Vorher ging
+		// jede Gemeindeseite zweimal über den Atlantik (~0,6 s statt ~0,1 s).
+		adapter: adapter({ regions: ['fra1'] })
 	}
 };
 

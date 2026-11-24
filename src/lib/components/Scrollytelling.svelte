@@ -3,6 +3,7 @@
 	import { fly, fade, slide } from "svelte/transition";
 	import type { Snippet } from "svelte";
 	import { storyStep } from "$lib/stores/windStore";
+	import { track } from "$lib/analytics";
 	import RenewableGoalsChart from "./RenewableGoalsChart.svelte";
 	import { AUSTRIA_HA } from "$lib/config/austria";
 	import { loadRegionStats, type RegionStatsTable } from "$lib/data/regionStats";
@@ -260,6 +261,8 @@
 	}
 
 	function complete() {
+		if (exiting) return;
+		track("Story Exit", { step: step + 1, finished: step === NUM_STEPS - 1 ? "yes" : "no" });
 		exiting = true;
 		storyStep.set(-1);
 		setTimeout(onComplete, 600);

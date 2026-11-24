@@ -1,5 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
-import { statsForRegion, type RegionStatsTable } from '$lib/data/regionStats';
+import { browser } from '$app/environment';
+import { loadRegionStats, statsForRegion, type RegionStatsTable } from '$lib/data/regionStats';
 import type { Region, ZoneStats } from '$lib/stores/windStore';
 
 // SSR an, damit Titel, Beschreibung, Social-Karte und der eigentliche
@@ -10,6 +11,29 @@ export const prerender = false;
 
 const API = 'https://base.klimadashboard.org/items/regions';
 const FIELDS = 'id,name,slug,code,layer,layer_label,postcodes,center,outline,parents';
+
+/**
+ * Die Kennzahlentabelle (≈ 385 KB) auf dem Server mit dem globalen fetch
+ * holen, nicht mit dem von SvelteKit: SvelteKit bettet jede Antwort seines
+ * fetch für die Hydrierung ins HTML ein. So stand die ganze Tabelle in jeder
+ * Gemeindeseite (414 KB HTML statt ~30 KB), und der Browser lud sie für die
+ * Karte trotzdem noch einmal. Im Browser teilt sich die Seite den Abruf mit
+ * Karte und Story (loadRegionStats). Auf dem Server bleibt die Tabelle für
+ * die Lebensdauer der Funktionsinstanz im Speicher.
+ */
+let serverTable: Promise<RegionStatsTable | null> | null = null;
+function regionStatsTable(origin: URL): Promise<RegionStatsTable | null> {
+	if (browser) return loadRegionStats();
+	serverTable ??= globalThis
+		.fetch(new URL('/data/region_stats.json', origin))
+		.then((r) => (r.ok ? (r.json() as Promise<RegionStatsTable>) : null))
+		.catch(() => null)
+		.then((t) => {
+			if (!t) serverTable = null; // Fehlschlag nicht festhalten
+			return t;
+		});
+	return serverTable;
+}
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -44,7 +68,8 @@ async function fetchBy(
 
 export async function load({
 	params,
-	fetch
+	fetch,
+	url
 }): Promise<{ region: Region; stats: ZoneStats | null }> {
 	const key = params.slug;
 
@@ -69,10 +94,8 @@ export async function load({
 	// Schlägt es fehl, bleibt es beim Ladezustand — der Client holt es ohnehin.
 	let stats: ZoneStats | null = null;
 	try {
-		const statsRes = await fetch('/data/region_stats.json');
-		if (statsRes.ok) {
-			stats = statsForRegion(region, (await statsRes.json()) as RegionStatsTable);
-		}
+		const table = await regionStatsTable(url);
+		if (table) stats = statsForRegion(region, table);
 	} catch {
 		stats = null;
 	}

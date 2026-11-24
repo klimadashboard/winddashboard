@@ -2,6 +2,7 @@
 	import { onMount, onDestroy } from "svelte";
 	import { get } from "svelte/store";
 	import { goto } from "$app/navigation";
+	import { trackRegionSelect } from "$lib/analytics";
 	import {
 		mapInstance,
 		expertMode,
@@ -23,6 +24,7 @@
 	import { BAND_DEFS, bandLayerId, bandSourceLayer, EXCLUSION_BANDS_SOURCE, EXCLUSION_BANDS_TILES } from "$lib/config/bands";
 	import type { BandGroup, BandDef } from "$lib/config/bands";
 	import {
+		TILE_SERVER_BASE,
 		CARTO_BASEMAP,
 		CARTO_LABELS_STYLE,
 		CARTO_RASTER_CONTEXT,
@@ -323,7 +325,11 @@
 
 			map.addSource("municipalities", {
 				type: "vector",
-				url: "https://tiles.klimadashboard.org/data/municipalities-at.json",
+				// Kacheln statt TileJSON-URL, damit auch sie über den Proxy laufen
+				// (config/tiles.ts). Zoomstufen wie in municipalities-at.json.
+				tiles: [`${TILE_SERVER_BASE}/data/municipalities-at/{z}/{x}/{y}.pbf`],
+				minzoom: 5,
+				maxzoom: 12,
 				promoteId: { "municipalities": "AGS" },
 			});
 
@@ -972,6 +978,7 @@
 				const region = json.data?.[0] as Region | undefined;
 				if (!region) return;
 				selectedRegion.set(region);
+				trackRegionSelect(region, "map");
 				goto("/regions/" + region.slug, { noScroll: true });
 			});
 

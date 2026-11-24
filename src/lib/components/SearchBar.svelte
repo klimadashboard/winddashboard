@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { track, trackRegionSelect } from '$lib/analytics';
 	import { selectedRegion } from '$lib/stores/windStore';
 	import type { Region } from '$lib/stores/windStore';
 
@@ -43,6 +44,8 @@
 			}
 			results = merged.slice(0, 8);
 			open = results.length > 0;
+			// Nur den Stand nach der Entprellung melden, nicht jeden Tastendruck.
+			if (!results.length && q === query) track('Search No Results', { query: q.trim().toLowerCase() });
 		} catch {
 			results = [];
 		} finally {
@@ -88,6 +91,7 @@
 
 	function selectRegion(r: Region) {
 		selectedRegion.set(r);
+		trackRegionSelect(r, 'search');
 		goto('/regions/' + r.slug, { noScroll: true });
 		open = false;
 		activeIndex = -1;
@@ -95,6 +99,7 @@
 	}
 
 	function clearSelection() {
+		track('Region Reset', { from: 'search' });
 		selectedRegion.set(null);
 		goto('/', { noScroll: true });
 		inputEl?.focus();

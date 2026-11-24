@@ -1,3 +1,4 @@
+import { TILE_SERVER_BASE } from "./tiles";
 // ⚠️ Erzeugt von scripts/generate_bands_config.py — nicht von Hand ändern.
 // Quelle: scripts/raster/abschichtung.bands.json
 // Bandschema: varianten-50-nov-2026
@@ -244,5 +245,4 @@ export function bandSourceId(slug: string): string {
 }
 
 export const EXCLUSION_BANDS_SOURCE = "exclusion-bands";
-export const EXCLUSION_BANDS_TILES =
-	"https://tiles.klimadashboard.org/data/windkraft_exclusion_bands_v3/{z}/{x}/{y}.pbf";
+export const EXCLUSION_BANDS_TILES = `${TILE_SERVER_BASE}/data/windkraft_exclusion_bands_v3/{z}/{x}/{y}.pbf`;

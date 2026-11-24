@@ -147,7 +147,8 @@ def main() -> None:
 
     generated = manifest.get("generated_at", "?")
     schema = manifest.get("band_schema", "?")
-    content = f'''// ⚠️ Erzeugt von scripts/generate_bands_config.py — nicht von Hand ändern.
+    content = f'''import {{ TILE_SERVER_BASE }} from "./tiles";
+// ⚠️ Erzeugt von scripts/generate_bands_config.py — nicht von Hand ändern.
 // Quelle: scripts/raster/abschichtung.bands.json
 // Bandschema: {schema}
 // Manifest erzeugt: {generated}
@@ -214,8 +215,7 @@ export function bandSourceId(slug: string): string {{
 }}
 
 export const EXCLUSION_BANDS_SOURCE = "exclusion-bands";
-export const EXCLUSION_BANDS_TILES =
-\t"https://tiles.klimadashboard.org/data/{TILESET_ID}/{{z}}/{{x}}/{{y}}.pbf";
+export const EXCLUSION_BANDS_TILES = `${{TILE_SERVER_BASE}}/data/{TILESET_ID}/{{z}}/{{x}}/{{y}}.pbf`;
 '''
     with open(OUT, "w", encoding="utf-8") as fh:
         fh.write(content)

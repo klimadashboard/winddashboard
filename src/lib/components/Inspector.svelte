@@ -6,6 +6,7 @@
 	import { AUSTRIA_HA } from "$lib/config/austria";
 	import { fmtNumber } from "$lib/format";
 	import { goto } from "$app/navigation";
+	import { track } from "$lib/analytics";
 	import { page } from "$app/stores";
 	import WegZumWindrad from "./WegZumWindrad.svelte";
 	import RichText from "./RichText.svelte";
@@ -14,6 +15,7 @@
 	let lightbox: ReturnType<typeof Lightbox> | undefined;
 
 	function replayIntro() {
+		track('Story Replay');
 		selectedRegion.set(null);
 		storyComplete.set(false);
 		goto("/", { noScroll: true });

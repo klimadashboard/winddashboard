@@ -4,8 +4,26 @@
     {
       "name": "windkraft-dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--", "--port", "5175"],
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5175"
+      ],
       "port": 5175
+    },
+    {
+      "name": "windkraft-prod-preview",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "preview",
+        "--",
+        "--port",
+        "4175"
+      ],
+      "port": 4175
     }
   ]
 }

@@ -1,6 +1,22 @@
 import { env } from '$env/dynamic/public';
 
-export const TILE_SERVER_BASE = 'https://tiles.klimadashboard.org';
+/** Der eigentliche Kachelserver (TileServer GL hinter Apache, 2 Kerne). */
+export const TILE_ORIGIN = 'https://tiles.klimadashboard.org';
+
+/**
+ * Die Karte holt ihre Kacheln nicht direkt dort, sondern über /tiles auf der
+ * eigenen Domain (src/routes/tiles/[...path]/+server.ts). Vercels CDN hält sie
+ * dort vor; der Kachelserver sieht jede Kachel nur einmal je Cache-Zeitraum.
+ * Direkt angefragt hielt er im Lasttest vom 24.11.2026 rund 400 Anfragen/s
+ * aus und lief bei 400 offenen Verbindungen in Timeouts — bei rund 90 Kacheln
+ * je Besuch reicht das nicht für einen Ansturm nach Medienberichten.
+ *
+ * Absolut, weil MapLibre die Kacheln in Web Workern lädt, in denen eine
+ * relative URL nicht gegen die Seite aufgelöst wird. Die Karte läuft nur im
+ * Browser; der Fallback ist nur für den Import beim Server-Rendering da.
+ */
+export const TILE_SERVER_BASE =
+	typeof location !== 'undefined' ? `${location.origin}/tiles` : '/tiles';
 
 // TileServer GL serves raw MBTiles data at /data/{id}/{z}/{x}/{y}.{format}
 export const CLASSIFICATION_TILES = `${TILE_SERVER_BASE}/data/windkraft_classification/{z}/{x}/{y}.png`;
