@@ -14,18 +14,18 @@
 	// workers.dev-Adresse zum Testen behalten (winddashboard.web-19f.workers.dev).
 	"workers_dev": true,
 	"vars": {
-		// Leer = Kacheln über den Proxy /tiles in diesem Worker. Sobald
-		// tiles.winddashboard.at über den Cloudflare-Cache läuft, hier
-		// "https://tiles.winddashboard.at" eintragen: dann zählen Kacheln
-		// gar nicht mehr als Worker-Anfragen.
-		"PUBLIC_TILE_BASE": ""
+		// Kacheln direkt von tiles.winddashboard.at: CNAME auf den Kachelserver,
+		// über Cloudflare geproxied, Cache-Regel "Eligible for cache" auf den
+		// Hostnamen. So zählen Kacheln nicht als Worker-Anfragen. Wirkt erst
+		// nach neuem Build (landet in /_app/env.js). Leer = Proxy /tiles.
+		"PUBLIC_TILE_BASE": "https://tiles.winddashboard.at"
 	},
 	// Eigene Domains (Zone winddashboard.at liegt seit 24.11.2026 auf Cloudflare).
 	// Cloudflare legt dafür selbst DNS-Einträge und Zertifikate an.
-	// Vorübergehend aus: Cloudflare hängt die Domain erst an, wenn die von
-	// Vercel übernommenen DNS-Einträge gelöscht sind — und ohne erfolgreiche
-	// Domain-Anbindung aktiviert wrangler die neue Version gar nicht.
-	"routes": []
+	"routes": [
+		{ "pattern": "winddashboard.at", "custom_domain": true },
+		{ "pattern": "www.winddashboard.at", "custom_domain": true }
+	]
 	// PUBLIC_CARTO_API_KEY liegt als Secret im Worker (wrangler secret put),
 	// wie in .env lokal; ins vorgerenderte HTML kommt er beim Build aus .env.
 }
