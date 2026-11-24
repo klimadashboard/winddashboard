@@ -408,17 +408,6 @@
 			segment marks how much of the Potenzial is actually zoned.
 		-->
 		{#snippet revealBarHeader()}
-			<!--
-				Beschriftung, solange der Balken noch leer ist: ohne sie ist nicht
-				erkennbar, dass er die Gesamtfläche Österreichs darstellt und sich
-				Schritt für Schritt mit den Ausschlussgründen füllt.
-			-->
-			{#if step === 0}
-				<p class="text-xs text-slate-500 mb-1.5">
-					Die Gesamtfläche Österreichs — sie füllt sich Schritt für Schritt mit
-					den Flächen, auf denen kein Windrad stehen kann.
-				</p>
-			{/if}
 			<div
 				class="w-full flex rounded-full overflow-hidden"
 				style="height:0.5rem; background:#e2e8f0;"
