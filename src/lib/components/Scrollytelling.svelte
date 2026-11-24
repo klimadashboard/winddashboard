@@ -271,6 +271,7 @@
 	 * `step` ablesen ließe, also wird er direkt gesetzt.
 	 */
 	function goTo(s: number) {
+		if (exiting) return;
 		const target = Math.max(0, Math.min(s, NUM_STEPS - 1));
 		if (buttonNav) {
 			if (target !== step) {
@@ -283,7 +284,12 @@
 	}
 
 	function handleScroll() {
-		if (buttonNav) return;
+		// Nach complete() bleibt die Scroll-Ebene noch 600 ms für die Ausblendung
+		// stehen. Lief da noch ein weiches oder Trägheits-Scrollen, setzte dieser
+		// Handler storyStep wieder auf einen Schritt ≥ 0: Die Story war weg, die
+		// Karte aber im Zustand dieses Schritts — ohne Potenzialflächen (erst ab
+		// Schritt 5) oder ohne Anlagen (ab Schritt 7).
+		if (buttonNav || exiting) return;
 		if (!scrollEl) return;
 		const newStep = Math.min(
 			Math.round(scrollEl.scrollTop / window.innerHeight),
@@ -300,6 +306,7 @@
 	// keyboard users the same step-by-step control, Escape matches the usual
 	// "leave the overlay" convention for full-screen takeovers.
 	function handleKeydown(e: KeyboardEvent) {
+		if (exiting) return;
 		// Escape schließt zuerst das Popup, statt etwas anderes auszulösen.
 		if (e.key === "Escape" && hullInfoOpen) {
 			hullInfoOpen = false;

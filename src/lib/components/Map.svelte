@@ -531,9 +531,8 @@
 			// beim Hinsehen erkennbar sein, aber nicht als Erstes ins Auge springen
 			// (Wunsch der Redaktion, 17.11.2026; vorher 75 % / 80 %).
 			//
-			// Sichtbarkeit gleich beim Anlegen nach dem Story-Schritt: der erste
-			// applyStoryVisibility()-Aufruf nach addLayers() greift oft nicht, weil
-			// er bei noch ladenden Quellen (isStyleLoaded() === false) abbricht.
+			// Sichtbarkeit gleich beim Anlegen nach dem Story-Schritt, damit die
+			// Zone nicht kurz aufblitzt, bevor applyStoryVisibility() läuft.
 			if (!map.hasImage("exclusion-hatch")) map.addImage("exclusion-hatch", hatchPattern());
 			// Nur in der Detailansicht und nur, wenn nicht in der Legende ausgeblendet
 			// (Redaktion, 18.11.2026: beim ersten Anblick nicht zeigen).
@@ -650,7 +649,7 @@
 
 		// ── Unified layer-state: called whenever expert OR viz mode changes ─────
 		function updateLayers(expert: boolean, viz: VizMode) {
-			if (!map.isStyleLoaded()) return;
+			if (!sourcesReady) return; // nicht isStyleLoaded(), siehe applyStoryVisibility
 			const showZones = viz === "zones";
 			const showHeatmap = viz === "heatmap";
 			const showPolys = showZones || showHeatmap;
@@ -1083,8 +1082,19 @@
 			if (currentStoryStep < 0) updateLayers(currentExpert, currentViz);
 		}
 
+		// Bereit, sobald unsere Layer angelegt sind (`sourcesReady`), nicht erst
+		// bei `map.isStyleLoaded()`. Das ist false, solange irgendeine Kachel lädt,
+		// und außerdem direkt nach jedem setLayoutProperty() bis zum nächsten
+		// Frame (MapLibre merkt die Quelle zum Neuladen vor). Mit der alten
+		// Prüfung ging beim frühen Sprung zur Karte der Wechsel auf -1 verloren:
+		// Entweder lud die Karte nach dem Flug der Story noch Kacheln und der
+		// ganze Aufruf entfiel, oder das Ausblenden der Ausschlussebenen unten
+		// ließ den folgenden updateLayers()-Aufruf abbrechen. Die
+		// Potenzialflächen (erst ab Schritt 5 sichtbar) und die Anlagen (ab
+		// Schritt 7) blieben dann ausgeblendet. Layout- und Paint-Eigenschaften
+		// lassen sich setzen, sobald der Stil selbst geladen ist.
 		function applyStoryVisibility(step: number) {
-			if (!map.isStyleLoaded()) return;
+			if (!sourcesReady) return;
 
 			// Helper: set visibility on a layer if it exists
 			const show = (id: string, visible: boolean) => {
@@ -1222,8 +1232,8 @@
 			// Override with story visibility if story is active
 			applyStoryVisibility(currentStoryStep);
 			applyVariant();
-			// Noch einmal, sobald alle Quellen geladen sind: der Aufruf direkt
-			// darüber bricht ab, solange GeoJSON-Quellen laden (isStyleLoaded()).
+			// Noch einmal, sobald alle Quellen geladen sind — zur Sicherheit, falls
+			// sich der Story-Schritt während des ersten Ladens geändert hat.
 			map.once("idle", () => applyStoryVisibility(get(storyStep)));
 			mapInstance.set(map);
 			dataLoaded.set(true);
@@ -1325,7 +1335,7 @@
 		const unsubVariant = settlementVariant.subscribe(() => applyVariant());
 
 		const unsubBands = hiddenBands.subscribe(() => {
-			if (map && map.isStyleLoaded() && currentStoryStep < 0) {
+			if (map && sourcesReady && currentStoryStep < 0) {
 				updateLayers(currentExpert, currentViz);
 			}
 		});
