@@ -1205,42 +1205,30 @@
 			}
 		}
 
-		// ── German labels: fetch symbol layers from full GL style, add on top ──────
-		// The basemap uses positron-nolabels-gl-style (no streets/buildings/text).
-		// We fetch only the symbol layers from the full style, switch text-field
-		// to local language (German for AT/DE), and add them above everything.
-		const LOCAL_NAME_INSTEAD_OF = [
-			"Laibach", "Marburg", "Marburg an der Drau", "Steinamanger", "Königgrätz",
-			"Ödenburg", "Raab", "Fünfkirchen", "Agram", "Pressburg", "Preßburg",
-			"Cilli", "Pettau", "Görz", "Fiume", "Ungarisch-Altenburg", "Wieselburg",
-		];
+		// ── Beschriftung: Symbol-Layer aus dem vollen CARTO-Style, oben drauf ─────
+		// Die Grundkarte ist positron-nolabels (ohne Text). Die Beschriftung holen
+		// wir aus dem vollen Style und stellen die Namenswahl um.
+		//
+		// CARTO zeigt englische Namen (`name:en`, früher `name_en` — auf den alten
+		// Namen passte unser Ersatz nach CARTOs Umstellung nicht mehr, die Karte
+		// zeigte "Vienna", "Munich"). Wir nehmen stattdessen den lokalen Namen:
+		// In Österreich und Deutschland ist der ohnehin deutsch (Wien, München),
+		// außerhalb bleiben Orte so, wie sie dort heißen (Praha, Bratislava,
+		// Ljubljana) statt historischer deutscher Formen (Prag, Laibach, Iglau).
+		// Nur Staaten, Meere und Kontinente bekommen den deutschen Namen —
+		// „Tschechien“ statt „Česko“ auf einer deutschsprachigen Seite.
+		const GERMAN_NAME_LAYERS = /^(place_country|place_continent|watername_ocean|watername_sea)/;
 
 		async function addGermanLabels() {
 			try {
 				const style = await fetch(CARTO_LABELS_STYLE).then(r => r.json());
 				for (const layer of style.layers.filter((l: { type: string }) => l.type === "symbol")) {
 					if (layer.layout?.["text-field"]) {
-						// CARTO liest englische Namen: früher das Feld `name_en`,
-						// seit der Umstellung auf Protomaps-Kacheln `name:en` (darauf
-						// passte der alte Ersatz nicht mehr — die Karte zeigte
-						// "Vienna", "Munich"). Stattdessen der deutsche Name; fehlt
-						// er, greift CARTOs Rückfall auf den lokalen Namen.
-						//
-						// Ausnahme: historische Exonyme, die heute in österreichischen
-						// Medien kaum noch verwendet werden (Laibach, Marburg, …) —
-						// dort der lokale Name. Gängige Formen wie Prag, Brünn,
-						// Triest oder Venedig bleiben deutsch.
-						const germanName = [
-							"match",
-							["coalesce", ["get", "name:de"], ""],
-							LOCAL_NAME_INSTEAD_OF,
-							["get", "name"],
-							["get", "name:de"],
-						];
+						const field = GERMAN_NAME_LAYERS.test(layer.id) ? "name:de" : "name";
 						layer.layout["text-field"] = JSON.parse(
 							JSON.stringify(layer.layout["text-field"])
-								.replace(/\["get","name:en"\]/g, JSON.stringify(germanName))
-								.replace(/name_en/g, "name_de")
+								.replace(/\["get","name:en"\]/g, JSON.stringify(["get", field]))
+								.replace(/name_en/g, field === "name" ? "name" : "name_de")
 						);
 					}
 					try { map.addLayer(layer); } catch (_) {}
