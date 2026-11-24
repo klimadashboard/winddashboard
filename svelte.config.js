@@ -16,7 +16,12 @@ const adapter = process.env.VERCEL
 	? // Frankfurt statt Washington (iad1): Publikum, Regions-API und
 		// Kachelserver sitzen in Europa.
 		vercel({ regions: ['fra1'] })
-	: cloudflare();
+	: cloudflare({
+			// Die lokale Workers-Emulation (dev, prerender) ohne Zustand auf der
+			// Platte: Bindungen wie KV/D1 gibt es hier nicht, und die SQLite-
+			// Dateien unter .wrangler/state führten zu "database is locked".
+			platformProxy: { persist: false }
+		});
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -24,7 +29,19 @@ const config = {
 		// Force runes mode for the project, except for libraries. Can be removed in svelte 6.
 		runes: ({ filename }) => (filename.split(/[/\\]/).includes('node_modules') ? undefined : true)
 	},
-	kit: { adapter }
+	kit: {
+		adapter,
+		prerender: {
+			// Für kanonische URLs und og:url (SeoHead liest $page.url.origin);
+			// ohne das stünde dort http://sveltekit-prerender.
+			origin: 'https://winddashboard.at',
+			// ~2.200 Regionsseiten, jede mit einer Abfrage an die Regions-API.
+			concurrency: 8,
+			// Gefolgte Links ins Leere sollen den Build nicht abbrechen.
+			handleHttpError: 'warn',
+			handleMissingId: 'ignore'
+		}
+	}
 };
 
 export default config;
