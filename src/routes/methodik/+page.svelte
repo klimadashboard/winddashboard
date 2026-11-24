@@ -11,6 +11,7 @@
 	// Burgenland mit 1.200 m: seit der Lieferung vom 19.11.2026 rechnet auch die
 	// Karte so (Default-Variante „Länderregel“).
 	import SeoHead from "$lib/components/SeoHead.svelte";
+	import SiteFooter from "$lib/components/SiteFooter.svelte";
 
 	type Link = { label: string; href: string };
 	type Row = { kriterium: string; regel: string; daten: Link[]; datenText?: string };
@@ -454,13 +455,7 @@
 	</div>
 
 	<!-- Footer -->
-	<div class="mt-14 pt-6 border-t border-slate-200 flex items-center gap-6">
-		<span class="text-xs text-slate-400">© Klimadashboard.org</span>
-		<a
-			href="https://klimadashboard.org/impressum"
-			target="_blank"
-			rel="noopener"
-			class="text-xs text-slate-400 hover:text-slate-700 transition-colors">Impressum</a
-		>
+	<div class="mt-14 pt-6 border-t border-slate-200">
+		<SiteFooter showMethodikLink={false} />
 	</div>
 </div>

@@ -4,6 +4,7 @@
 	import DotGrid from "$lib/components/DotGrid.svelte";
 	import MapTooltip from "$lib/components/MapTooltip.svelte";
 	import Inspector from "$lib/components/Inspector.svelte";
+	import SiteFooter from "$lib/components/SiteFooter.svelte";
 	import HexbinOverlay from "$lib/components/HexbinOverlay.svelte";
 	import MapControlPanel from "$lib/components/MapControlPanel.svelte";
 	import NoeMindestabstandNotice from "$lib/components/NoeMindestabstandNotice.svelte";
@@ -108,24 +109,8 @@
 			</div>
 
 			<footer class="border-t border-slate-200">
-				<div class="max-w-4xl mx-auto px-4 sm:px-6 py-6 flex items-center gap-6">
-					<span class="text-xs text-slate-400">© Klimadashboard.org</span>
-					<a
-						href="https://klimadashboard.org/impressum"
-						target="_blank"
-						rel="noopener"
-						class="text-xs text-slate-400 hover:text-slate-700 transition-colors"
-					>Impressum</a>
-					<a
-						href="/methodik"
-						class="text-xs font-semibold transition-colors inline-flex items-center gap-1"
-						style="color: var(--blue-sky);"
-					>
-						Wie wir rechnen: Methodik
-						<svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-						</svg>
-					</a>
+				<div class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+					<SiteFooter />
 				</div>
 			</footer>
 		</div>
