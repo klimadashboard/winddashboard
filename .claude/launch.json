@@ -24,6 +24,17 @@
         "4175"
       ],
       "port": 4175
+    },
+    {
+      "name": "windkraft-workers",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "wrangler",
+        "dev",
+        "--port",
+        "8787"
+      ],
+      "port": 8787
     }
   ]
 }

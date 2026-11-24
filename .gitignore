@@ -65,3 +65,4 @@ vite.config.ts.timestamp-*
 
 # Python bytecode (scripts/ are run directly, never imported as a package)
 __pycache__/
+.dev.vars

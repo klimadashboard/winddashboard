@@ -16,7 +16,11 @@ export const TILE_ORIGIN = 'https://tiles.klimadashboard.org';
  * Browser; der Fallback ist nur für den Import beim Server-Rendering da.
  */
 export const TILE_SERVER_BASE =
-	typeof location !== 'undefined' ? `${location.origin}/tiles` : '/tiles';
+	// Auf Cloudflare: eigene Kachel-Subdomain hinter dem Cloudflare-Cache
+	// (wrangler.jsonc, PUBLIC_TILE_BASE). Dann zählt keine Kachel als
+	// Worker-Anfrage. Leer = Proxy wie oben.
+	env.PUBLIC_TILE_BASE ||
+	(typeof location !== 'undefined' ? `${location.origin}/tiles` : '/tiles');
 
 // TileServer GL serves raw MBTiles data at /data/{id}/{z}/{x}/{y}.{format}
 export const CLASSIFICATION_TILES = `${TILE_SERVER_BASE}/data/windkraft_classification/{z}/{x}/{y}.png`;

@@ -1,0 +1,24 @@
+// Cloudflare Worker für winddashboard.at (adapter-cloudflare, siehe svelte.config.js).
+// Bauen und ausrollen:  npm run deploy
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "winddashboard",
+	"main": ".svelte-kit/cloudflare/_worker.js",
+	"compatibility_date": "2026-11-01",
+	"compatibility_flags": ["nodejs_compat"],
+	"assets": {
+		"binding": "ASSETS",
+		"directory": ".svelte-kit/cloudflare"
+	},
+	"observability": { "enabled": true },
+	"vars": {
+		// Leer = Kacheln über den Proxy /tiles in diesem Worker. Sobald
+		// tiles.winddashboard.at über den Cloudflare-Cache läuft, hier
+		// "https://tiles.winddashboard.at" eintragen: dann zählen Kacheln
+		// gar nicht mehr als Worker-Anfragen.
+		"PUBLIC_TILE_BASE": ""
+	}
+	// PUBLIC_CARTO_API_KEY liegt als Secret im Worker (wrangler secret put),
+	// wie in .env lokal. Eigene Domain (routes) erst, wenn die Zone
+	// winddashboard.at auf Cloudflare liegt.
+}

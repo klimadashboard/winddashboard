@@ -1,5 +1,4 @@
 import { error } from '@sveltejs/kit';
-import { gzipSync } from 'node:zlib';
 import { TILE_ORIGIN } from '$lib/config/tiles';
 import type { RequestHandler } from './$types';
 
@@ -12,6 +11,8 @@ import type { RequestHandler } from './$types';
  * dieselben Kacheln wie bisher unter anderer Adresse ausgeliefert.
  */
 const ALLOWED = /^data\/(windkraft_[a-z0-9_]+|municipalities-at)\/\d{1,2}\/\d{1,6}\/\d{1,6}\.(pbf|png)$/;
+
+const ON_WORKERS = typeof navigator !== 'undefined' && navigator.userAgent === 'Cloudflare-Workers';
 
 // Browser eine Stunde, CDN eine Woche. Ein neues Deployment leert den
 // CDN-Cache ohnehin; neue Daten bekommen bisher auch neue Kachelsatz-IDs.
@@ -44,16 +45,28 @@ export const GET: RequestHandler = async ({ params }) => {
 		return new Response(null, { status: 502, headers: { 'cache-control': 'no-store' } });
 	}
 
-	// fetch hat die gzip-Kodierung des Kachelservers bereits entpackt.
-	const body = new Uint8Array(await upstream.arrayBuffer());
+	let body = new Uint8Array(await upstream.arrayBuffer());
 	const headers: Record<string, string> = {
 		'cache-control': CACHE,
 		'content-type': isPbf ? 'application/x-protobuf' : 'image/png',
 		'access-control-allow-origin': '*'
 	};
-	if (isPbf) {
-		headers['content-encoding'] = 'gzip';
-		return new Response(gzipSync(body), { headers });
+	if (!isPbf) return new Response(body, { headers });
+
+	// Ob die gzip-Kodierung des Kachelservers hier noch drauf ist, hängt an
+	// der Laufzeit (Node entpackt beim fetch, Workers nicht immer). Darum an
+	// den Bytes prüfen und auf die rohe Kachel bringen.
+	if (body[0] === 0x1f && body[1] === 0x8b) {
+		const raw = new Blob([body]).stream().pipeThrough(new DecompressionStream('gzip'));
+		body = new Uint8Array(await new Response(raw).arrayBuffer());
 	}
-	return new Response(body, { headers });
+
+	// Auf Workers roh und ohne Content-Encoding: Cloudflare komprimiert für
+	// den Client selbst. Mit gesetztem Content-Encoding legte der Cache von
+	// adapter-cloudflare die gepackte Fassung ab und packte sie beim nächsten
+	// Treffer noch einmal — MapLibre bekam doppelt gepackte Kacheln.
+	if (ON_WORKERS) return new Response(body, { headers });
+	headers['content-encoding'] = 'gzip';
+	const gz = new Blob([body]).stream().pipeThrough(new CompressionStream('gzip'));
+	return new Response(gz, { headers });
 };
