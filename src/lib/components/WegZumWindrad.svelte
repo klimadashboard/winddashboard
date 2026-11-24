@@ -22,37 +22,51 @@
 <svelte:window onkeydown={handleKeydown} />
 
 {#if content}
-	<div class="mb-10">
-		<h3 class="text-2xl font-extrabold tracking-tight mb-4" style="color: var(--blue-sky);">
+	<div class="mb-12">
+		<h2 class="text-2xl font-extrabold tracking-tight mb-4" style="color: var(--blue-sky);">
 			Weg zum Windrad
-		</h3>
+		</h2>
 
-		<p class="text-sm text-slate-500 leading-relaxed mb-3">{GENERAL_INTRO}</p>
-		{#if content.intro}
-			<p class="text-sm text-slate-500 leading-relaxed mb-4">{content.intro}</p>
-		{/if}
-
-		<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-			{#each content.steps as step}
-				<button
-					class="flex flex-col gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 text-left transition-colors duration-150 hover:bg-blue-50 hover:border-blue-200 cursor-pointer group"
-					onclick={() => openModal(step)}
-				>
-					<span
-						class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-						style="background: var(--blue-sky); color: #fff;"
-					>{step.number}</span>
-					<span class="flex-1 text-sm font-semibold leading-snug" style="color: var(--text-dark);">{step.title}</span>
-					{#if step.responsible}
-						<span
-							class="self-start text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-blue-50"
-							style="color: var(--blue-sky);"
-						>{step.responsible}</span>
-					{/if}
-					<span class="text-xs text-slate-400 group-hover:text-blue-500 transition-colors">Mehr erfahren →</span>
-				</button>
-			{/each}
+		<div class="max-w-2xl space-y-3 mb-5">
+			<p class="text-base text-slate-700 leading-relaxed">{GENERAL_INTRO}</p>
+			{#if content.intro}
+				<p class="text-base text-slate-700 leading-relaxed">{content.intro}</p>
+			{/if}
 		</div>
+
+		<!--
+			Nummerierte Liste mit Trennlinien statt Kartenraster (3 + 1 Karten mit
+			Kreis-Nummern und Pillen ließen rechts eine Lücke und wirkten
+			schablonenhaft). Gleiche Optik wie die FAQ darunter.
+		-->
+		<ol class="border-t border-slate-200">
+			{#each content.steps as step}
+				<li class="border-b border-slate-200">
+					<button
+						class="w-full grid grid-cols-[1.75rem_1fr_auto] gap-x-3 items-baseline py-3.5 text-left cursor-pointer group"
+						onclick={() => openModal(step)}
+					>
+						<span class="text-base font-bold tabular-nums" style="color: var(--blue-sky-ink);"
+							>{step.number}</span
+						>
+						<span class="min-w-0">
+							<span
+								class="block text-base font-semibold leading-snug group-hover:underline underline-offset-2 decoration-slate-300"
+								style="color: var(--text-dark);">{step.title}</span
+							>
+							{#if step.responsible}
+								<span class="block mt-1 text-xs font-semibold uppercase tracking-wide text-slate-600"
+									>{step.responsible}</span
+								>
+							{/if}
+						</span>
+						<span class="text-sm font-semibold whitespace-nowrap" style="color: var(--blue-sky-ink);"
+							><span class="hidden sm:inline">Mehr erfahren&nbsp;</span>→</span
+						>
+					</button>
+				</li>
+			{/each}
+		</ol>
 	</div>
 {/if}
 
@@ -71,21 +85,19 @@
 		aria-modal="true"
 	>
 		<div class="flex items-center gap-3 px-5 py-4 border-b border-slate-100 flex-shrink-0">
-			<span
-				class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold"
-				style="background: var(--blue-sky); color: #fff;"
-			>{openStep.number}</span>
+			<span class="self-start text-base font-bold tabular-nums" style="color: var(--blue-sky-ink);"
+				>{openStep.number}</span
+			>
 			<div class="flex-1 flex flex-col gap-1">
-				<h2 class="text-sm font-bold leading-snug" style="color: var(--text-dark);">{openStep.title}</h2>
+				<h2 class="text-base font-bold leading-snug" style="color: var(--text-dark);">{openStep.title}</h2>
 				{#if openStep.responsible}
-					<span
-						class="self-start text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-blue-50"
-						style="color: var(--blue-sky);"
-					>{openStep.responsible}</span>
+					<span class="text-xs font-semibold uppercase tracking-wide text-slate-600"
+						>{openStep.responsible}</span
+					>
 				{/if}
 			</div>
 			<button
-				class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+				class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
 				onclick={closeModal}
 				aria-label="Schließen"
 			>
@@ -97,7 +109,7 @@
 
 		<div class="overflow-y-auto px-5 py-4 space-y-3">
 			{#each openStep.paragraphs as para}
-				<p class="text-sm text-slate-600 leading-relaxed">{para}</p>
+				<p class="text-base text-slate-700 leading-relaxed">{para}</p>
 			{/each}
 		</div>
 	</div>

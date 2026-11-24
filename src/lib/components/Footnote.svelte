@@ -38,8 +38,8 @@
 <span class="relative inline-block">
 	<button
 		bind:this={buttonEl}
-		class="inline-flex items-center justify-center align-super ml-px mr-0.5 w-4 h-4 rounded-full text-[9px] font-bold leading-none cursor-pointer transition-colors"
-		style="background: {open ? 'var(--blue-sky)' : 'var(--blue-sky)20'}; color: {open ? '#fff' : 'var(--blue-sky)'};"
+		class="inline-flex items-center justify-center align-super ml-px mr-0.5 w-4 h-4 rounded-full text-[11px] font-bold leading-none cursor-pointer transition-colors"
+		style="background: {open ? 'var(--blue-sky-ink)' : '#f0f9ff'}; color: {open ? '#fff' : 'var(--blue-sky-ink)'};"
 		onclick={toggle}
 		aria-label="Quelle {id} anzeigen"
 	>
@@ -62,7 +62,7 @@
 					target="_blank"
 					rel="noopener"
 					class="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold underline"
-					style="color: var(--blue-sky);"
+					style="color: var(--blue-sky-ink);"
 				>
 					Quelle ansehen ↗
 				</a>

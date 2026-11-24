@@ -90,7 +90,7 @@
 						</div>
 						{#if $selectedRegion}
 							<span
-								class="text-[11px] font-medium rounded-full px-2 py-0.5 shrink-0 whitespace-nowrap"
+								class="text-xs font-medium rounded-full px-2 py-0.5 shrink-0 whitespace-nowrap"
 								style="background: #eef3ff; color: var(--blue-dark);"
 							>{$selectedRegion.layer_label}</span>
 						{/if}

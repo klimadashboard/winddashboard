@@ -128,7 +128,7 @@
 <div class="relative w-full">
 	<div class="flex items-center gap-2">
 		<!-- Search icon -->
-		<svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+		<svg class="w-4 h-4 text-slate-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
 			<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
 		</svg>
 
@@ -139,7 +139,7 @@
 			onkeydown={onKeyDown}
 			onfocus={() => { if (results.length) open = true; }}
 			placeholder="Gemeinde, Bezirk oder PLZ suchen …"
-			class="flex-1 text-sm text-slate-800 placeholder:text-slate-400 bg-transparent outline-none min-w-0 rounded focus-visible:ring-2 focus-visible:ring-blue-400"
+			class="flex-1 text-sm text-slate-800 placeholder:text-slate-500 bg-transparent outline-none min-w-0 rounded focus-visible:ring-2 focus-visible:ring-blue-400"
 			autocomplete="off"
 			spellcheck="false"
 			role="combobox"
@@ -150,7 +150,7 @@
 		/>
 
 		{#if loading}
-			<svg class="w-4 h-4 text-slate-400 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24">
+			<svg class="w-4 h-4 text-slate-500 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24">
 				<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
 				<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
 			</svg>
@@ -160,7 +160,7 @@
 				oder das Layout zu verändern. Vorher waren es 16 × 16 px — auf dem
 				Telefon kaum zu treffen.
 			-->
-			<button onclick={clearSelection} class="text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0 -m-2 p-2" aria-label="Auswahl löschen">
+			<button onclick={clearSelection} class="text-slate-500 hover:text-slate-600 transition-colors flex-shrink-0 -m-2 p-2" aria-label="Auswahl löschen">
 				<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 				</svg>
@@ -186,13 +186,13 @@
 						onmouseenter={(e) => { if (i !== activeIndex) (e.currentTarget as HTMLElement).style.background = '#f8f9fc'; }}
 						onmouseleave={(e) => { if (i !== activeIndex) (e.currentTarget as HTMLElement).style.background = ''; }}
 					>
-						<svg class="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+						<svg class="w-4 h-4 text-slate-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
 							<path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
 						</svg>
 						<div class="min-w-0">
 							<div class="text-sm font-medium truncate" style="color: var(--text-dark);">{r.name}</div>
-							<div class="text-xs text-slate-400 flex items-center gap-1.5">
+							<div class="text-xs text-slate-500 flex items-center gap-1.5">
 								<span>{r.layer_label}</span>
 								{#if matchedPostcode(r)}
 									<span class="rounded px-1" style="background: #eef3ff; color: var(--blue-dark);">{matchedPostcode(r)}</span>

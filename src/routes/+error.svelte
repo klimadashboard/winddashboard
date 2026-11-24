@@ -22,7 +22,7 @@
 
 <div class="min-h-screen flex items-center justify-center px-6">
 	<div class="max-w-lg text-center">
-		<p class="font-mono text-sm tracking-widest text-slate-400 mb-3">{status}</p>
+		<p class="font-mono text-sm tracking-widest text-slate-500 mb-3">{status}</p>
 		<h1 class="font-extrabold text-3xl tracking-tight mb-3" style="color: var(--text-dark);">
 			{title}
 		</h1>

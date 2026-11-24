@@ -120,11 +120,11 @@
 
 <div class="w-full">
 	{#if loading}
-		<div class="flex items-center justify-center h-20 text-xs text-slate-400">
+		<div class="flex items-center justify-center h-20 text-xs text-slate-500">
 			Lade Daten…
 		</div>
 	{:else if error}
-		<div class="text-xs text-slate-400">
+		<div class="text-xs text-slate-500">
 			Daten konnten nicht geladen werden.
 		</div>
 	{:else}
@@ -148,7 +148,7 @@
 					text-anchor="end"
 					dominant-baseline="middle"
 					font-size="8"
-					fill="#94a3b8">{tick}</text
+					fill="#64748b">{tick}</text
 				>
 			{/each}
 
@@ -158,7 +158,7 @@
 				y={PAD.top - 2}
 				text-anchor="middle"
 				font-size="7.5"
-				fill="#94a3b8">TWh</text
+				fill="#64748b">TWh</text
 			>
 
 			<!-- x-axis ticks -->
@@ -168,7 +168,7 @@
 					y={H - 4}
 					text-anchor="middle"
 					font-size="8"
-					fill="#94a3b8">{yr}</text
+					fill="#64748b">{yr}</text
 				>
 			{/each}
 
@@ -241,7 +241,7 @@
 				stroke-width="1"
 			/>
 		</svg>
-		<p class="text-[9px] text-slate-400 mt-0.5">
+		<p class="text-[11px] text-slate-500 mt-0.5">
 			<!--
 				Quelle Energy-Charts, nicht E-Control: die Werte aus ee_produktion
 				decken sich mit Energy-Charts (2025: 8,540 gegenüber 8,544 TWh,

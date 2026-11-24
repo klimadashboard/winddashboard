@@ -73,7 +73,7 @@
 			</svg>
 		</button>
 
-		<span class="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60 text-xs font-medium pointer-events-none">
+		<span class="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/85 text-xs font-medium pointer-events-none">
 			{zoomed ? 'Klicken zum Verkleinern' : 'Klicken zum Vergrößern'}
 		</span>
 	</div>

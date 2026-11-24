@@ -147,13 +147,13 @@
 			</svg>
 			Zur Karte
 		</a>
-		<span class="text-slate-300">|</span>
+		<span class="text-slate-300" aria-hidden="true">|</span>
 		<span class="text-sm text-slate-500">Methodik</span>
 	</div>
 </nav>
 
 {#snippet citation()}
-	<blockquote class="rounded-xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-700 leading-relaxed">
+	<blockquote class="border-l-2 border-slate-300 pl-4 text-base text-slate-700 leading-relaxed">
 		J. Hurt, „Wind power exclusion and suitability areas for Austria on a 25 m grid (Abschichtung
 		Windkraft Österreich)“,
 		<a href={DATASET_DOI} target="_blank" rel="noopener" class="underline underline-offset-2 break-all hover:text-slate-900"
@@ -175,7 +175,7 @@
 <div class="max-w-4xl mx-auto px-4 sm:px-6 py-12">
 	<!-- Header -->
 	<div class="mb-8">
-		<p class="text-[10px] font-bold uppercase tracking-widest mb-3" style="color: var(--blue-sky);">
+		<p class="text-xs font-bold uppercase tracking-widest mb-3" style="color: var(--blue-sky-ink);">
 			Methodik
 		</p>
 		<h1
@@ -188,55 +188,53 @@
 			Diese Seite erklärt, welche Daten wir verwenden, wie wir die Potenzialflächen berechnen und
 			was die Karte zeigt.
 		</p>
-		<p class="text-xs text-slate-400 mt-3">Letztes Update: November 2026</p>
+		<p class="text-sm text-slate-600 mt-3">Letztes Update: November 2026</p>
 	</div>
 
-	<!-- Kurz gesagt -->
-	<div class="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 mb-8">
-		<p class="text-sm font-semibold mb-2" style="color: var(--text-dark);">Kurz gesagt</p>
-		<p class="text-sm text-slate-600 leading-relaxed">
+	<!--
+		Früher vier verschieden gestaltete Kästen untereinander (grau, Zitat,
+		gelbe Warnung mit Symbol). Jetzt normale Abschnitte in derselben
+		Typografie wie der Rest der Seite; der Hinweis zum Grobscreening steht als
+		eigener Abschnitt direkt danach und verliert dadurch nichts an Gewicht.
+	-->
+	<section class="mb-12 max-w-2xl">
+		<h2 class="font-bold text-xl mb-3" style="color: var(--text-dark);">Kurz gesagt</h2>
+		<p class="text-base text-slate-700 leading-relaxed">
 			Wir legen über ganz Österreich alle Flächen, auf denen nach einheitlichen Kriterien kein
 			Windrad stehen kann: Abstände zu Siedlungen und Gebäuden, Verkehrswege, Militärgebiete und
 			Flughäfen, Schutzgebiete, zu steiles oder zu hoch gelegenes Gelände, Gewässer und Standorte
 			mit zu wenig Wind. Was danach übrig bleibt und zusammenhängend mindestens 10&nbsp;Hektar groß
 			ist, zeigen wir als <strong>Potenzialfläche</strong>.
 		</p>
-	</div>
+		<p class="text-base text-slate-700 leading-relaxed mt-4">
+			<strong>Datengrundlage:</strong> J. Hurt, „Wind power exclusion and suitability areas for
+			Austria on a 25 m grid (Abschichtung Windkraft Österreich)“,
+			<a href={DATASET_DOI} target="_blank" rel="noopener" class="underline underline-offset-2 break-all hover:text-slate-900"
+				>{DATASET_DOI}</a
+			>
+		</p>
+	</section>
 
-	<!-- Datengrundlage: dasselbe Zitat wie unten unter „Zitat und Quellen“ (Redaktion, 18.11.2026) -->
-	<div class="mb-8">
-		<p class="text-sm font-semibold mb-2" style="color: var(--text-dark);">Datengrundlage</p>
-		{@render citation()}
-	</div>
-
-	<!-- Grobscreening -->
-	<div class="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 mb-12 flex gap-3">
-		<svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
-			<path
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-			/>
-		</svg>
-		<div class="space-y-2">
-			<p class="text-sm font-semibold text-amber-800">Ein Grobscreening, kein Gutachten</p>
-			<p class="text-sm text-amber-800/90 leading-relaxed">
-				Die Karte zeigt, wo ein Windrad grundsätzlich denkbar wäre. Sie ersetzt keine
-				Standortprüfung und ist keine Grundlage für eine Genehmigung. Für jedes konkrete Projekt
-				müssen Naturschutz, Schall und Schattenwurf einzeln geprüft werden. Die Karte gibt außerdem
-				keine Auskunft über einen möglichen Netzanschluss oder die Verfügbarkeit der Grundstücke.
-				Für jedes Projekt ist zudem eine eigene Windmessung vor Ort nötig, um die
-				Wirtschaftlichkeit zu prüfen.
+	<section class="mb-14 max-w-2xl">
+		<h2 class="font-bold text-xl mb-3" style="color: var(--text-dark);">Ein Grobscreening, kein Gutachten</h2>
+		<div class="space-y-3">
+			<p class="text-base text-slate-700 leading-relaxed">
+			Die Karte zeigt, wo ein Windrad grundsätzlich denkbar wäre. Sie ersetzt keine
+			Standortprüfung und ist keine Grundlage für eine Genehmigung. Für jedes konkrete Projekt
+			müssen Naturschutz, Schall und Schattenwurf einzeln geprüft werden. Die Karte gibt außerdem
+			keine Auskunft über einen möglichen Netzanschluss oder die Verfügbarkeit der Grundstücke.
+			Für jedes Projekt ist zudem eine eigene Windmessung vor Ort nötig, um die
+			Wirtschaftlichkeit zu prüfen.
 			</p>
-			<p class="text-sm text-amber-800/90 leading-relaxed">
-				Wir haben ausschließlich mit öffentlich zugänglichen Daten gearbeitet und zur Vereinfachung
-				einheitliche Annahmen getroffen. Die Karte kann daher Flächen enthalten, die wir als
-				Potenzialfläche zeigen, bei einer genaueren Prüfung jedoch wegfallen. Umgekehrt können
-				Flächen, die wir nicht als Potenzialfläche ausweisen, sich bei genauer Prüfung als geeignet
-				herausstellen.
+			<p class="text-base text-slate-700 leading-relaxed">
+			Wir haben ausschließlich mit öffentlich zugänglichen Daten gearbeitet und zur Vereinfachung
+			einheitliche Annahmen getroffen. Die Karte kann daher Flächen enthalten, die wir als
+			Potenzialfläche zeigen, bei einer genaueren Prüfung jedoch wegfallen. Umgekehrt können
+			Flächen, die wir nicht als Potenzialfläche ausweisen, sich bei genauer Prüfung als geeignet
+			herausstellen.
 			</p>
 		</div>
-	</div>
+	</section>
 
 	<div class="space-y-14">
 		<!-- Drei Gruppen -->
@@ -255,21 +253,21 @@
 				{#each GROUPS as group}
 					<div>
 						<div class="flex items-center gap-2 mb-2">
-							<span class="w-3 h-3 rounded-sm" style="background:{group.color};"></span>
-							<h3 class="text-xs font-bold uppercase tracking-widest" style="color:{group.color};">
+							<span class="w-3 h-3 rounded-sm" style="background:{group.color};" aria-hidden="true"></span>
+							<h3 class="text-base font-bold" style="color: var(--text-dark);">
 								{group.name}
 							</h3>
 						</div>
-						<div class="hidden sm:grid grid-cols-[9rem_1fr_13rem] gap-x-6 text-[11px] uppercase tracking-wide text-slate-400 font-semibold pb-1 border-b-2 border-slate-200">
+						<div class="hidden sm:grid grid-cols-[9rem_1fr_13rem] gap-x-6 text-xs uppercase tracking-wide text-slate-600 font-semibold pb-1.5 border-b border-slate-300">
 							<span>Kriterium</span><span>Regel</span><span>Daten</span>
 						</div>
 						<dl>
 							{#each group.rows as row}
-								<div class="grid sm:grid-cols-[9rem_1fr_13rem] gap-x-6 gap-y-1 py-3 border-b border-slate-100">
+								<div class="grid sm:grid-cols-[9rem_1fr_13rem] gap-x-6 gap-y-1 py-3 border-b border-slate-200">
 									<dt class="font-semibold text-slate-800 text-sm">{row.kriterium}</dt>
 									<dd class="text-sm text-slate-700 leading-relaxed min-w-0">{row.regel}</dd>
-									<dd class="text-xs text-slate-500 leading-relaxed min-w-0">
-										<span class="sm:hidden font-semibold text-slate-400">Daten: </span>
+									<dd class="text-sm text-slate-600 leading-relaxed min-w-0">
+										<span class="sm:hidden font-semibold text-slate-700">Daten: </span>
 										{#if row.datenText}{row.datenText}{" "}{/if}{@render links(row.daten)}
 									</dd>
 								</div>
@@ -362,7 +360,7 @@
 				Eine Windmessung vor Ort ist trotzdem immer notwendig. Sie dauert in der Regel ein Jahr und
 				liefert genauere Daten als das Modell, das unserer Karte zugrunde liegt.
 			</p>
-			<p class="text-xs text-slate-500 leading-relaxed mb-8 max-w-2xl">
+			<p class="text-sm text-slate-600 leading-relaxed mb-8 max-w-2xl">
 				Quelle: Davis, N. N., Badger, J., Hahmann, A. N. et al. (2023): The Global Wind Atlas: A
 				high-resolution dataset of climatologies and associated web-based application. Bulletin of
 				the American Meteorological Society 104(8), E1507–E1525.
@@ -384,7 +382,7 @@
 		<!-- Weitere Hinweise -->
 		<section>
 			<h2 class="font-bold text-2xl mb-6" style="color: var(--text-dark);">Weitere methodische Hinweise</h2>
-			<dl class="divide-y divide-slate-100 border-y border-slate-200">
+			<dl class="divide-y divide-slate-200 border-y border-slate-200">
 				<div class="grid sm:grid-cols-[13rem_1fr] gap-x-6 gap-y-1 py-4">
 					<dt class="font-semibold text-slate-800 text-sm">Windkraftzonen der Bundesländer</dt>
 					<dd class="text-sm text-slate-700 leading-relaxed min-w-0 space-y-2">
@@ -393,7 +391,7 @@
 							In Oberösterreich, Vorarlberg, Tirol und Wien gibt es keine vom Land ausgewiesenen
 							Windkraft-Zonen.
 						</p>
-						<p class="text-xs text-slate-500">
+						<p class="text-sm text-slate-600">
 							*Das Land Burgenland veröffentlicht nur die aktuellen Eignungszonen, nicht die älteren
 							Zonen, in denen bereits Windräder stehen. Deshalb liegen auf der Karte viele
 							burgenländische Windräder scheinbar außerhalb der Zonen. Um solche bestehenden Windparks

@@ -6,7 +6,12 @@
 
 :root {
   --blue-dark: #1e3689;
-  --blue-sky:  #009ee3;
+  /* Sky-Blau für große Überschriften (4,0:1 auf Weiß; für große Schrift
+     reichen 3:1). Für kleine Schrift, Links und weiße Schrift auf Blau gilt
+     --blue-sky-ink (≥ 4,7:1 auf Weiß, Off-White und Blau-50). Vorher
+     #009ee3 mit 3,0:1 — für Fließtext und Links zu wenig. */
+  --blue-sky:  #0087c2;
+  --blue-sky-ink: #0075a8;
   --text-dark: #1a1a2e;
   --off-white: #f8f9fc;
 }

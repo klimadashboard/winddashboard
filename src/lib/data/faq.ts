@@ -189,7 +189,7 @@ export const faqCategories: FaqCategory[] = [
 	{
 		id: "finance",
 		label: "Geld, Finanzen, Kosten",
-		color: "#059669",
+		color: "#047857",
 		bg: "#f0fdf4",
 		items: [
 			{

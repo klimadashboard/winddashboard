@@ -1,4 +1,16 @@
 <script lang="ts">
+	/**
+	 * Gruppenfarben (bands.ts) sind für Flächen und Farbfelder gedacht; als
+	 * 11-px-Schrift auf Weiß sind Orange (2,8:1) und Grün (3,3:1) zu hell.
+	 * Für die Beschriftung daher derselbe Farbton dunkler (≥ 5:1).
+	 */
+	const GROUP_TEXT: Record<string, string> = {
+		"#f97316": "#c2410c",
+		"#16a34a": "#15803d",
+		"#78716c": "#57534e",
+	};
+	const groupTextColor = (c: string) => GROUP_TEXT[c.toLowerCase()] ?? c;
+
 	import { onMount } from "svelte";
 	import {
 		expertMode,
@@ -239,9 +251,9 @@
 							></span>
 							<span
 								class="font-bold uppercase flex-1 text-left"
-								style="font-size:9px;letter-spacing:0.12em;color:{allHidden
-									? '#94a3b8'
-									: gMeta.color};">{gMeta.label}</span
+								style="font-size:11px;letter-spacing:0.12em;color:{allHidden
+									? '#64748b'
+									: groupTextColor(gMeta.color)};">{gMeta.label}</span
 							>
 						</button>
 						<!-- Per-band rows -->
@@ -263,7 +275,7 @@
 									<span
 										class="leading-tight"
 										style="font-size:11px;color:{hidden
-											? '#94a3b8'
+											? '#64748b'
 											: '#4b5563'};">{def.label}</span
 									>
 								</button>
@@ -285,7 +297,7 @@
 												<option value={v.key}>{variantText(v.key).label}</option>
 											{/each}
 										</select>
-										<p class="mt-1 leading-snug" style="font-size:10px;color:#64748b;">
+										<p class="mt-1 leading-snug" style="font-size:12px;color:#64748b;">
 											{variantText($settlementVariant).note}.
 											{#if variantTotals}
 												<br /><span style="color:#1f2937;"
@@ -309,7 +321,7 @@
 				<div>
 					<div
 						class="font-bold uppercase mb-1.5"
-						style="font-size:9px;letter-spacing:0.12em;color:var(--blue-sky);"
+						style="font-size:11px;letter-spacing:0.12em;color:var(--blue-sky-ink);"
 					>
 						Vektorebenen
 					</div>
@@ -325,7 +337,7 @@
 									class="w-3 h-3 flex-shrink-0 {row.round ? 'rounded-full' : 'rounded-sm'}"
 									style="display:inline-block;{hidden ? 'background:#e2e8f0;border:1px solid #cbd5e1;' : row.swatch}"
 								></span>
-								<span style="font-size:11px;color:{hidden ? '#94a3b8' : '#4b5563'};">{row.label}</span>
+								<span style="font-size:11px;color:{hidden ? '#64748b' : '#4b5563'};">{row.label}</span>
 							</button>
 						{/each}
 					</div>

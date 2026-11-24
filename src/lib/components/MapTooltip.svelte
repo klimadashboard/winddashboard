@@ -35,7 +35,7 @@
 	>
 		{#if info.bands && info.bands.length > 0}
 		<div class="px-3 py-2 border-b border-slate-100">
-			<p class="text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#64748b;">
+			<p class="text-xs font-bold uppercase tracking-widest mb-2" style="color:#64748b;">
 				{info.bands.length === 1 ? 'Ausschlussgrund' : `${info.bands.length} Ausschlussgründe`}
 			</p>
 			<div class="space-y-1.5">
@@ -45,7 +45,7 @@
 							style="background:{band.color.slice(0,7)};"></span>
 						<div>
 							<p class="text-xs font-semibold text-slate-800 leading-tight">{band.label}</p>
-							<p class="text-[10px] text-slate-400 leading-snug">{band.description}</p>
+							<p class="text-xs text-slate-500 leading-snug">{band.description}</p>
 						</div>
 					</div>
 				{/each}
@@ -67,7 +67,7 @@
 				</div>
 				<div class="text-slate-600 text-xs space-y-0.5">
 					<div>
-						<span class="text-slate-400">Fläche</span>
+						<span class="text-slate-500">Fläche</span>
 						<span class="font-medium text-slate-700"
 							>{fmtNumber(Number(info.zone.area_ha))} ha</span
 						>
@@ -80,7 +80,7 @@
 						Zählergebnis. Bestandsanlagen werden stattdessen je Gemeinde im
 						Fließtext ausgewiesen.
 					-->
-					<div class="text-slate-400 mt-1 text-[10px]">
+					<div class="text-slate-500 mt-1 text-xs">
 						{info.zone.bundesland ?? ""}
 					</div>
 				</div>
@@ -100,29 +100,29 @@
 				</div>
 				<div class="text-slate-600 text-xs space-y-0.5">
 					<div>
-						<span class="text-slate-400">Bezeichnung</span>
+						<span class="text-slate-500">Bezeichnung</span>
 						<span class="font-medium text-slate-700">{info.official.name}</span>
 					</div>
 					<div>
-						<span class="text-slate-400">Fläche</span>
+						<span class="text-slate-500">Fläche</span>
 						<span class="font-medium text-slate-700"
 							>{fmtNumber(Number(info.official.area_ha))} ha</span
 						>
 					</div>
 					<div>
-						<span class="text-slate-400">Rechtsgrundlage</span>
+						<span class="text-slate-500">Rechtsgrundlage</span>
 						<span class="font-medium text-slate-700"
 							>{info.official.legal_basis ?? "–"}</span
 						>
 					</div>
 					<div>
-						<span class="text-slate-400">Gültig ab</span>
+						<span class="text-slate-500">Gültig ab</span>
 						<span class="font-medium text-slate-700"
 							>{formatDate(info.official.effective_from)}</span
 						>
 					</div>
 					{#if info.official.communities}
-						<div class="text-slate-400 text-[10px] mt-0.5">
+						<div class="text-slate-500 text-xs mt-0.5">
 							{info.official.communities}
 						</div>
 					{/if}
@@ -157,14 +157,14 @@
 					-->
 					{#if Number(info.hull.turbines ?? 0) > 0}
 						<div>
-							<span class="text-slate-400">Anlagen</span>
+							<span class="text-slate-500">Anlagen</span>
 							<span class="font-medium text-slate-700"
 								>{fmtNumber(Number(info.hull.turbines))}</span
 							>
 						</div>
 					{/if}
 					<div>
-						<span class="text-slate-400">Fläche</span>
+						<span class="text-slate-500">Fläche</span>
 						<span class="font-medium text-slate-700"
 							>{fmtNumber(Number(info.hull.area_ha))} ha</span
 						>
@@ -187,13 +187,13 @@
 				</div>
 				<div class="text-slate-600 text-xs space-y-0.5">
 					{#if info.turbine.gemeinde || info.turbine.bezirk}
-						<div><span class="text-slate-400">Standort</span> <span class="font-medium text-slate-700">{[info.turbine.gemeinde, info.turbine.bezirk].filter(Boolean).join(', ')}</span></div>
+						<div><span class="text-slate-500">Standort</span> <span class="font-medium text-slate-700">{[info.turbine.gemeinde, info.turbine.bezirk].filter(Boolean).join(', ')}</span></div>
 					{/if}
 					{#if info.turbine.power_kw}
-						<div><span class="text-slate-400">Leistung</span> <span class="font-medium text-slate-700">{fmtNumber(Number(info.turbine.power_kw))} kW</span></div>
+						<div><span class="text-slate-500">Leistung</span> <span class="font-medium text-slate-700">{fmtNumber(Number(info.turbine.power_kw))} kW</span></div>
 					{/if}
 					{#if info.turbine.commissioned}
-						<div><span class="text-slate-400">Inbetriebnahme</span> <span class="font-medium text-slate-700">{String(info.turbine.commissioned).slice(-4)}</span></div>
+						<div><span class="text-slate-500">Inbetriebnahme</span> <span class="font-medium text-slate-700">{String(info.turbine.commissioned).slice(-4)}</span></div>
 					{/if}
 				</div>
 			</div>

@@ -414,7 +414,7 @@
 				Schritt für Schritt mit den Ausschlussgründen füllt.
 			-->
 			{#if step === 0}
-				<p class="text-[10px] text-slate-400 mb-1.5">
+				<p class="text-xs text-slate-500 mb-1.5">
 					Die Gesamtfläche Österreichs — sie füllt sich Schritt für Schritt mit
 					den Flächen, auf denen kein Windrad stehen kann.
 				</p>
@@ -512,7 +512,7 @@
 						{#if align === "left"}
 							<button
 								class="absolute top-2 right-2 flex items-center justify-center w-7 h-7 rounded-md
-									text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors
+									text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors
 									focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400"
 								onclick={() => (panelCollapsed = true)}
 								aria-expanded="true"
@@ -539,8 +539,8 @@
 		{#if step === 0}
 			{#snippet step0()}
 				<p
-					class="text-[10px] font-bold uppercase tracking-widest mb-2"
-					style="color:#3b82f6;"
+					class="text-xs font-bold uppercase tracking-widest mb-2"
+					style="color:#1d4ed8;"
 				>
 					Windpotenzial Österreich
 				</p>
@@ -620,8 +620,8 @@
 						style="background:{COLOR_SIEDLUNG};"
 					></span>
 					<p
-						class="text-[10px] font-bold uppercase tracking-widest"
-						style="color:#ea580c;"
+						class="text-xs font-bold uppercase tracking-widest"
+						style="color:#c2410c;"
 					>
 						Siedlungsabstand
 					</p>
@@ -635,10 +635,10 @@
 					— mehr als die Hälfte des Landes.
 				</p>
 				<div class="flex justify-between">
-					<span class="text-[9px] text-orange-600 font-medium"
+					<span class="text-[11px] text-orange-700 font-medium"
 						>− {fmt(SIEDLUNG_HA)}&thinsp;ha</span
 					>
-					<span class="text-[9px] text-slate-400"
+					<span class="text-[11px] text-slate-500"
 						>von {fmt(AUSTRIA_HA)}&thinsp;ha</span
 					>
 				</div>
@@ -655,8 +655,8 @@
 						style="background:{COLOR_SCHUTZ};"
 					></span>
 					<p
-						class="text-[10px] font-bold uppercase tracking-widest"
-						style="color:#16a34a;"
+						class="text-xs font-bold uppercase tracking-widest"
+						style="color:#15803d;"
 					>
 						Naturschutzgebiete
 					</p>
@@ -670,10 +670,10 @@
 					Landschaftsschutzgebiete zählen nicht dazu.
 				</p>
 				<div class="flex justify-between">
-					<span class="text-[9px] text-green-600 font-medium"
+					<span class="text-[11px] text-green-700 font-medium"
 						>− {fmt(SCHUTZ_HA)}&thinsp;ha</span
 					>
-					<span class="text-[9px] text-slate-400"
+					<span class="text-[11px] text-slate-500"
 						>von {fmt(AUSTRIA_HA)}&thinsp;ha</span
 					>
 				</div>
@@ -690,7 +690,7 @@
 						style="background:{COLOR_SONSTIGE};"
 					></span>
 					<p
-						class="text-[10px] font-bold uppercase tracking-widest"
+						class="text-xs font-bold uppercase tracking-widest"
 						style="color:#64748b;"
 					>
 						Weitere Ausschlüsse
@@ -703,10 +703,10 @@
 					<strong class="text-slate-900">{fmt(SONSTIGE_HA)}&thinsp;ha</strong> aus.
 				</p>
 				<div class="flex justify-between">
-					<span class="text-[9px] text-slate-500 font-medium"
+					<span class="text-[11px] text-slate-500 font-medium"
 						>− {fmt(SONSTIGE_HA)}&thinsp;ha</span
 					>
-					<span class="text-[9px] text-slate-400"
+					<span class="text-[11px] text-slate-500"
 						>von {fmt(AUSTRIA_HA)}&thinsp;ha</span
 					>
 				</div>
@@ -723,7 +723,7 @@
 						style="background:{COLOR_WIND};"
 					></span>
 					<p
-						class="text-[10px] font-bold uppercase tracking-widest"
+						class="text-xs font-bold uppercase tracking-widest"
 						style="color:#9d174d;"
 					>
 						Zu wenig Wind
@@ -738,16 +738,16 @@
 					über einen Zeitraum von mindestens einem Jahr erforderlich.
 				</p>
 				<div class="flex justify-between mb-4">
-					<span class="text-[9px] font-medium" style="color:#9d174d;"
+					<span class="text-[11px] font-medium" style="color:#9d174d;"
 						>− {fmt(WIND_HA)}&thinsp;ha</span
 					>
-					<span class="text-[9px] text-slate-400"
+					<span class="text-[11px] text-slate-500"
 						>von {fmt(AUSTRIA_HA)}&thinsp;ha</span
 					>
 				</div>
 
 				<!-- Legend: recap of every exclusion category + the Potenzial preview -->
-				<div class="space-y-1 text-[10px] text-slate-500">
+				<div class="space-y-1 text-xs text-slate-500">
 					<div class="flex items-center gap-1.5">
 						<span
 							class="w-2 h-2 rounded-sm"
@@ -795,7 +795,7 @@
 						style="background:{COLOR_POTENTIAL};"
 					></span>
 					<p
-						class="text-[10px] font-bold uppercase tracking-widest"
+						class="text-xs font-bold uppercase tracking-widest"
 						style="color:#1d4ed8;"
 					>
 						Potenzialflächen
@@ -815,23 +815,23 @@
 				<!-- Absolut (default) vs. Anteil an der Bundeslandfläche toggle -->
 				<div class="flex items-center gap-1 mb-2">
 					<button
-						class="text-[9px] font-semibold px-2 py-1 rounded-full transition-colors cursor-pointer"
+						class="text-[11px] font-semibold px-2 py-1 rounded-full transition-colors cursor-pointer"
 						style="background:{potentialViewMode === 'absolute'
 							? COLOR_POTENTIAL
 							: '#f1f5f9'}; color:{potentialViewMode === 'absolute'
 							? '#fff'
-							: '#64748b'};"
+							: '#475569'};"
 						onclick={() => (potentialViewMode = "absolute")}
 					>
 						Absolut
 					</button>
 					<button
-						class="text-[9px] font-semibold px-2 py-1 rounded-full transition-colors cursor-pointer"
+						class="text-[11px] font-semibold px-2 py-1 rounded-full transition-colors cursor-pointer"
 						style="background:{potentialViewMode === 'percent'
 							? COLOR_POTENTIAL
 							: '#f1f5f9'}; color:{potentialViewMode === 'percent'
 							? '#fff'
-							: '#64748b'};"
+							: '#475569'};"
 						onclick={() => (potentialViewMode = "percent")}
 					>
 						% der Fläche
@@ -850,7 +850,7 @@
 						{@const ownPct = (bl.ha / stateHa) * 100}
 						{@const pct = potentialViewMode === "absolute" ? absPct : ownPct}
 						<div class="flex items-center gap-2">
-							<span class="w-6 text-[9px] text-slate-500 text-right shrink-0"
+							<span class="w-6 text-[11px] text-slate-500 text-right shrink-0"
 								>{bl.short}</span
 							>
 							<div
@@ -864,7 +864,7 @@
 									style="width:{pct}%; background:{COLOR_POTENTIAL}; opacity:0.85;"
 								></div>
 							</div>
-							<span class="text-[9px] text-slate-500 w-24 shrink-0"
+							<span class="text-[11px] text-slate-500 w-24 shrink-0"
 								>{fmt(bl.ha)}&thinsp;ha{#if potentialViewMode === "percent"}
 									&nbsp;({fmt(ownPct, 1)}&thinsp;%){/if}</span
 							>
@@ -873,7 +873,7 @@
 				</div>
 
 				<!-- Legend -->
-				<div class="flex items-center gap-1.5 mt-3 text-[9px] text-slate-500">
+				<div class="flex items-center gap-1.5 mt-3 text-[11px] text-slate-500">
 					<span
 						class="w-2.5 h-2.5 rounded-sm"
 						style="background:{COLOR_POTENTIAL}; opacity:0.85;"
@@ -897,7 +897,7 @@
 						style="border-color:{COLOR_ZONIERT};"
 					></span>
 					<p
-						class="text-[10px] font-bold uppercase tracking-widest"
+						class="text-xs font-bold uppercase tracking-widest"
 						style="color:#5b21b6;"
 					>
 						Zonierungsflächen
@@ -948,7 +948,7 @@
 							style="background:{COLOR_BESTAND_FLAECHE}; opacity:0.75; border:1px solid #0e7490;"
 						></span>
 						<p
-							class="text-[10px] font-bold uppercase tracking-widest"
+							class="text-xs font-bold uppercase tracking-widest"
 							style="color:#155e75;"
 						>
 							Bestehende Windparks
@@ -966,7 +966,7 @@
 						uns berechnete, türkis eingefärbte Fläche.
 						<button
 							type="button"
-							class="inline-flex items-center justify-center w-4 h-4 ml-0.5 align-[-2px] rounded-full text-[10px] font-bold
+							class="inline-flex items-center justify-center w-4 h-4 ml-0.5 align-[-2px] rounded-full text-xs font-bold
 								text-white transition-opacity hover:opacity-80
 								focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-cyan-600"
 							style="background:#0e7490;"
@@ -987,7 +987,7 @@
 						>
 							<button
 								type="button"
-								class="absolute top-1.5 right-1.5 w-6 h-6 flex items-center justify-center rounded text-slate-400
+								class="absolute top-1.5 right-1.5 w-6 h-6 flex items-center justify-center rounded text-slate-500
 									hover:text-slate-700 hover:bg-slate-100"
 								aria-label="Schließen"
 								onclick={() => (hullInfoOpen = false)}
@@ -1022,7 +1022,7 @@
 						{@const hullHa = hullByBL[bl.name] ?? 0}
 						{@const hullPct = (hullHa / BUNDESLAENDER[0].ha) * 100}
 						<div class="flex items-center gap-2">
-							<span class="w-6 text-[9px] text-slate-500 text-right shrink-0"
+							<span class="w-6 text-[11px] text-slate-500 text-right shrink-0"
 								>{bl.short}</span
 							>
 							<div class="flex-1 relative h-3 rounded-sm overflow-hidden">
@@ -1053,9 +1053,9 @@
 								{/if}
 							</div>
 							<span
-								class="text-[9px] w-16 shrink-0 {zonedHa > 0
+								class="text-[11px] w-16 shrink-0 {zonedHa > 0
 									? 'font-semibold'
-									: 'text-slate-400'}"
+									: 'text-slate-500'}"
 								style={zonedHa > 0 ? "color:#5b21b6;" : ""}
 							>
 								{zonedHa > 0 ? fmt(Math.round(zonedHa)) + " ha" : "–"}
@@ -1065,7 +1065,7 @@
 				</div>
 
 				<!-- Legend -->
-				<div class="flex gap-4 mt-3 text-[9px] text-slate-500">
+				<div class="flex gap-4 mt-3 text-[11px] text-slate-500">
 					<div class="flex items-center gap-1">
 						<span
 							class="w-2.5 h-2.5 rounded-sm"
@@ -1113,7 +1113,7 @@
 						style="background:{COLOR_TURBINE}; border-color:#ffffff; box-shadow:0 0 0 1px #cbd5e1;"
 					></span>
 					<p
-						class="text-[10px] font-bold uppercase tracking-widest"
+						class="text-xs font-bold uppercase tracking-widest"
 						style="color:{COLOR_TURBINE};"
 					>
 						Windkraft heute
@@ -1137,7 +1137,7 @@
 						{@const count = turbinesByBL[bl.name] ?? 0}
 						{@const pct = (count / maxTurbinesByBL) * 100}
 						<div class="flex items-center gap-2">
-							<span class="w-6 text-[9px] text-slate-500 text-right shrink-0"
+							<span class="w-6 text-[11px] text-slate-500 text-right shrink-0"
 								>{bl.short}</span
 							>
 							<div class="flex-1 h-3 rounded-sm overflow-hidden">
@@ -1147,7 +1147,7 @@
 								></div>
 							</div>
 							{@render turbineIcon()}
-							<span class="text-[9px] text-slate-500 w-6 shrink-0 text-right"
+							<span class="text-[11px] text-slate-500 w-6 shrink-0 text-right"
 								>{count}</span
 							>
 						</div>
@@ -1155,7 +1155,7 @@
 				</div>
 
 				<!-- Legend -->
-				<div class="flex items-center gap-1.5 mt-3 text-[9px] text-slate-500">
+				<div class="flex items-center gap-1.5 mt-3 text-[11px] text-slate-500">
 					{@render turbineIcon()}
 					Bestehende Windräder je Bundesland
 				</div>

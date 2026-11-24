@@ -135,7 +135,7 @@
 			{/if}
 			{#if intro.afterBullets}
 				{#each intro.afterBullets as para}
-					<p class="mt-3 text-sm text-slate-500 leading-relaxed">{para}</p>
+					<p class="mt-3 text-sm text-slate-600 leading-relaxed">{para}</p>
 				{/each}
 			{/if}
 		{/if}
@@ -148,7 +148,7 @@
 	-->
 	<a
 		href="/methodik"
-		class="inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-3 py-1.5 transition-colors mb-8"
+		class="inline-flex items-center gap-1.5 text-sm font-semibold rounded-full px-3 py-1.5 transition-colors mb-8"
 		style="background: #eef3ff; color: var(--blue-dark);"
 	>
 		<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -186,13 +186,13 @@
 			> in Österreich, die einer Fläche von {fmtNumber(potentialPct, 1)} % der österreichischen
 			Landesfläche entsprechen.
 		</p>
-		<p class="text-sm text-slate-400 mt-2 leading-relaxed">
+		<p class="text-sm text-slate-600 mt-2 leading-relaxed">
 			Suche nach einer Gemeinde oder einem Bezirk für regionale Details.
 		</p>
 		<div class="mt-3 flex flex-wrap items-center gap-2">
 			<button
 				onclick={replayIntro}
-				class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full px-3 py-1.5 transition-colors cursor-pointer"
+				class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full px-3 py-1.5 transition-colors cursor-pointer"
 			>
 				<svg
 					class="w-3.5 h-3.5"
@@ -211,7 +211,7 @@
 			</button>
 			<a
 				href="/methodik"
-				class="inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-3 py-1.5 transition-colors"
+				class="inline-flex items-center gap-1.5 text-sm font-semibold rounded-full px-3 py-1.5 transition-colors"
 				style="background: #eef3ff; color: var(--blue-dark);"
 			>
 				<svg
@@ -294,7 +294,7 @@
 						>
 							{card.title}
 						</p>
-						<p class="text-white/65 text-xs leading-snug line-clamp-2">
+						<p class="text-white/85 text-sm leading-snug line-clamp-3">
 							{card.lead}
 						</p>
 					</div>
@@ -337,7 +337,7 @@
 					class="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-150 cursor-pointer"
 					style={activeCategory === cat.id
 						? `background: ${cat.color}; color: #fff; border-color: ${cat.color};`
-						: `background: transparent; color: ${cat.color}; border-color: ${cat.color}; opacity: 0.75;`}
+						: `background: transparent; color: ${cat.color}; border-color: ${cat.color};`}
 					onclick={() => selectCategory(cat.id)}
 				>
 					{cat.label}
@@ -345,34 +345,27 @@
 			{/each}
 		</div>
 
-		<div class="space-y-2">
+		<!--
+			Schlichte Liste mit Trennlinien statt einzeln umrandeter Karten mit
+			Nummern-Plaketten: ruhiger, und die Frage selbst trägt die Zeile.
+		-->
+		<div class="border-t border-slate-200">
 			{#each currentCategory.items as item}
 				{@const isOpen = openFaq === item.id}
-				<div
-					class="rounded-xl border overflow-hidden transition-shadow duration-150"
-					style="border-color: {isOpen
-						? currentCategory.color + '40'
-						: '#f1f5f9'}; box-shadow: {isOpen
-						? '0 2px 12px rgba(0,0,0,0.06)'
-						: 'none'};"
-				>
+				<div class="border-b border-slate-200">
 					<button
-						class="w-full flex items-start justify-between px-4 py-3 text-left transition-colors duration-150 cursor-pointer"
-						style="background: {isOpen ? currentCategory.bg : 'transparent'};"
+						class="w-full flex items-start justify-between gap-4 py-3.5 text-left cursor-pointer group"
+						aria-expanded={isOpen}
 						onclick={() => toggleFaq(item.id)}
 					>
 						<span
-							class="text-sm font-semibold leading-snug pr-2"
+							class="text-base font-semibold leading-snug group-hover:underline underline-offset-2 decoration-slate-300"
 							style="color: var(--text-dark);"
 						>
-							<span
-								class="inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold mr-2"
-								style="background: {currentCategory.color}20; color: {currentCategory.color};"
-								>{item.id}</span
-							>{item.question}
+							{item.question}
 						</span>
 						<svg
-							class="w-4 h-4 flex-shrink-0 mt-0.5 transition-transform duration-200"
+							class="w-4 h-4 flex-shrink-0 mt-1 transition-transform duration-200"
 							class:rotate-180={isOpen}
 							fill="none"
 							viewBox="0 0 24 24"
@@ -389,13 +382,10 @@
 					</button>
 
 					{#if isOpen}
-						<div
-							class="px-4 pb-4 border-t"
-							style="border-color: {currentCategory.color}20;"
-						>
-							<div class="space-y-2 mt-3">
+						<div class="pb-5 max-w-2xl">
+							<div class="space-y-3">
 								{#each item.answer as para}
-									<p class="text-sm text-slate-600 leading-relaxed"><RichText text={para} /></p>
+									<p class="text-base text-slate-700 leading-relaxed"><RichText text={para} /></p>
 								{/each}
 							</div>
 							{#if item.graphic}
@@ -414,7 +404,7 @@
 										{@render zoomHint()}
 									</button>
 									{#if item.graphicCaption}
-										<p class="text-xs text-slate-400 text-center mt-1.5 leading-relaxed">
+										<p class="text-sm text-slate-600 text-center mt-2 leading-relaxed">
 											<RichText text={item.graphicCaption} />
 										</p>
 									{/if}
@@ -426,12 +416,12 @@
 			{/each}
 		</div>
 
-		<p class="text-xs text-slate-400 leading-relaxed mt-5">
+		<p class="text-sm text-slate-600 leading-relaxed mt-5">
 			Inhalte: <a
 				href="https://www.scientists4future.at/2026/04/28/factsheet-windkraft/"
 				target="_blank"
 				rel="noopener"
-				class="underline">Scientists for Future Austria</a
+				class="underline underline-offset-2 hover:text-slate-900">Scientists for Future Austria</a
 			>, Factsheet Windkraft (Mai 2026).
 		</p>
 	</div>
@@ -463,7 +453,7 @@
 					{openCard.title}
 				</h2>
 				<button
-					class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+					class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
 					onclick={closeBentoCard}
 					aria-label="Schließen"
 				>
@@ -483,7 +473,7 @@
 				</button>
 			</div>
 			<div class="overflow-y-auto px-5 py-4 space-y-3">
-				<p class="text-sm font-semibold text-slate-500">{openCard.lead}</p>
+				<p class="text-sm font-semibold text-slate-600">{openCard.lead}</p>
 				{#if openCard.graphic}
 					<div class="my-3">
 						<button
@@ -500,7 +490,7 @@
 							{@render zoomHint()}
 						</button>
 						{#if openCard.graphicCaption}
-							<p class="text-xs text-slate-400 text-center mt-1.5 leading-relaxed">
+							<p class="text-sm text-slate-600 text-center mt-2 leading-relaxed">
 								<RichText text={openCard.graphicCaption} />
 							</p>
 						{/if}
