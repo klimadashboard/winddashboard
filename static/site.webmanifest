@@ -1,0 +1,28 @@
+{
+  "name": "winddashboard.at – Windkraft in Österreich",
+  "short_name": "Winddashboard",
+  "description": "Wo in Österreich Windräder möglich sind: interaktive Karte für alle Gemeinden.",
+  "lang": "de-AT",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#f8f9fc",
+  "theme_color": "#1d4ed8",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
