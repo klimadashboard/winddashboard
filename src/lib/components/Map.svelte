@@ -23,11 +23,10 @@
 	import type { VizMode, VectorLayerKey } from "$lib/stores/windStore";
 	import { BAND_DEFS, bandLayerId, bandSourceLayer, EXCLUSION_BANDS_SOURCE, EXCLUSION_BANDS_TILES } from "$lib/config/bands";
 	import type { BandGroup, BandDef } from "$lib/config/bands";
+	import type { LayerSpecification } from "maplibre-gl";
 	import {
 		TILE_SERVER_BASE,
-		CARTO_BASEMAP,
-		CARTO_LABELS_STYLE,
-		CARTO_RASTER_CONTEXT,
+		BASEMAP_STYLE,
 		AUSTRIA_CENTER,
 		AUSTRIA_ZOOM,
 		AUSTRIA_BOUNDS,
@@ -118,6 +117,7 @@
 	});
 
 	onMount(async () => {
+		const CONTEXT_OPACITY = 0.4;
 		// Dynamic import keeps maplibre-gl out of SSR bundle
 		const { default: maplibregl } = await import("maplibre-gl");
 		await import("maplibre-gl/dist/maplibre-gl.css");
@@ -193,14 +193,33 @@
 			map.fitBounds(AUSTRIA_BOUNDS, { padding, duration, maxZoom: 9 });
 		}
 
+		// Grundkarte ohne Beschriftung: Die Symbol-Ebenen (Ortsnamen, Straßennamen)
+		// nimmt transformStyle heraus und merkt sie sich; addGermanLabels() legt sie
+		// nach den Datenebenen wieder obenauf. Straßen und Gebäude werden zusätzlich
+		// gemerkt und als halbtransparente Kopie über die Datenflächen gelegt
+		// (addContextLayers) — so bleibt das Straßennetz unter den Flächen sichtbar.
+		let labelLayers: LayerSpecification[] = [];
+		let contextLayers: LayerSpecification[] = [];
+
 		const map = new maplibregl.Map({
 			container: mapContainer,
-			style: CARTO_BASEMAP,
 			center: AUSTRIA_CENTER,
 			zoom: AUSTRIA_ZOOM,
 			minZoom: isMobile() ? 4.5 : 6,
 			maxZoom: 16,
 			attributionControl: false,
+		});
+		map.setStyle(BASEMAP_STYLE, {
+			transformStyle: (_prev, next) => {
+				labelLayers = next.layers.filter((l: LayerSpecification) => l.type === "symbol");
+				contextLayers = next.layers.filter(
+					(l: LayerSpecification) =>
+						"source-layer" in l &&
+						((l.type === "line" && l["source-layer"] === "transportation" && !l.id.startsWith("tunnel_")) ||
+							(l.type === "fill" && l["source-layer"] === "building")),
+				);
+				return { ...next, layers: next.layers.filter((l: LayerSpecification) => l.type !== "symbol") };
+			},
 		});
 
 		// Zitat des Datensatzes, auf dem Ausschluss- und Potenzialflächen beruhen,
@@ -216,7 +235,8 @@
 		//
 		// © Statistik Austria bleibt: die Gemeindegrenzen (Kachelquelle
 		// municipalities-at und region_stats.json) stehen unter CC BY 4.0, die
-		// Quellennennung ist Lizenzbedingung — ebenso OpenStreetMap (ODbL) und CARTO.
+		// Quellennennung ist Lizenzbedingung — ebenso OpenStreetMap (ODbL) und
+		// OpenMapTiles; beide nennt die Kachelquelle von OpenFreeMap selbst.
 		const DATASET_DOI = "https://doi.org/10.5281/zenodo.24267882";
 		const attribution = new maplibregl.AttributionControl({
 			compact: true,
@@ -331,17 +351,6 @@
 				minzoom: 5,
 				maxzoom: 12,
 				promoteId: { "municipalities": "AGS" },
-			});
-
-			// Semi-transparent street/building context layer (sits above data fills,
-			// below labels). Uses the no-labels raster so text stays solely from the
-			// German GL label fetch.
-			map.addSource("carto-context", {
-				type: "raster",
-				tiles: [CARTO_RASTER_CONTEXT],
-				tileSize: 256,
-				// Keine eigene Attribution: der Basemap-Style nennt CARTO bereits,
-				// sonst stand "© CARTO" zweimal in derselben Zeile.
 			});
 
 			// Single vector-tile source for all 16 exclusion band layers.
@@ -589,14 +598,17 @@
 			}, B);
 
 			// ── Road/building context — above data fills, below labels ──────────────
-			// Carto light_nolabels raster at low opacity: gives road-network context
-			// without dominating the data fills. Labels come on top via addGermanLabels.
-			map.addLayer({
-				id: "carto-context",
-				type: "raster",
-				source: "carto-context",
-				paint: { "raster-opacity": 0.30 },
-			});
+			// Halbtransparente Kopien der Straßen- und Gebäudeebenen der Grundkarte:
+			// geben Orientierung, ohne die Datenflächen zu überdecken. Früher eine
+			// CARTO-Rasterebene (light_nolabels, 30 %), die pro Kartenansicht rund
+			// 50 zusätzliche Kachelanfragen kostete; die Vektorkacheln sind ohnehin
+			// schon geladen. Die Beschriftung kommt per addGermanLabels obenauf.
+			for (const layer of contextLayers) {
+				const paint = { ...(layer as { paint?: Record<string, unknown> }).paint };
+				if (layer.type === "line") paint["line-opacity"] = CONTEXT_OPACITY;
+				else paint["fill-opacity"] = CONTEXT_OPACITY;
+				map.addLayer({ ...layer, id: `ctx-${layer.id}`, paint } as LayerSpecification);
+			}
 
 			// ── Municipality outline — just below GL labels, above all data fills ──
 			map.addLayer({
@@ -1217,29 +1229,25 @@
 		// Ljubljana) statt historischer deutscher Formen (Prag, Laibach, Iglau).
 		// Nur Staaten, Meere und Kontinente bekommen den deutschen Namen —
 		// „Tschechien“ statt „Česko“ auf einer deutschsprachigen Seite.
-		const GERMAN_NAME_LAYERS = /^(place_country|place_continent|watername_ocean|watername_sea)/;
+		// Der OpenFreeMap-Style nimmt `name_en`, sonst `name` (bzw. lateinische
+		// Umschrift plus Originalschrift) — ersetzt durch `name`, bei Staaten
+		// durch `name:de`. Straßennummern (`ref`) bleiben, wie sie sind.
+		const GERMAN_NAME_LAYERS = /^label_country/;
 
-		async function addGermanLabels() {
-			try {
-				const style = await fetch(CARTO_LABELS_STYLE).then(r => r.json());
-				for (const layer of style.layers.filter((l: { type: string }) => l.type === "symbol")) {
-					if (layer.layout?.["text-field"]) {
-						const field = GERMAN_NAME_LAYERS.test(layer.id) ? "name:de" : "name";
-						layer.layout["text-field"] = JSON.parse(
-							JSON.stringify(layer.layout["text-field"])
-								.replace(/\["get","name:en"\]/g, JSON.stringify(["get", field]))
-								.replace(/name_en/g, field === "name" ? "name" : "name_de")
-						);
-					}
-					try { map.addLayer(layer); } catch (_) {}
+		function addGermanLabels() {
+			for (const layer of labelLayers) {
+				const layout = (layer as { layout?: Record<string, unknown> }).layout;
+				const textField = layout?.["text-field"];
+				if (textField && JSON.stringify(textField).includes("name")) {
+					const field = GERMAN_NAME_LAYERS.test(layer.id) ? "name:de" : "name";
+					layout!["text-field"] = ["coalesce", ["get", field], ["get", "name"]];
 				}
-			} catch (e) {
-				console.warn("[labels] could not add German labels:", e);
+				try { map.addLayer(layer); } catch (e) { console.warn("[labels]", layer.id, e); }
 			}
 		}
 
 		map.on("load", () => {
-			// Basemap is positron-nolabels: no symbol layers, no streets/buildings.
+			// Basemap symbol layers were stripped in transformStyle (see above).
 			// Data layers are added to the top of the stack.
 			// addGermanLabels() then places German text labels above all data fills.
 			addSources();
@@ -1247,7 +1255,7 @@
 			addLayers(undefined);
 			setupHoverEvents();
 			addAustriaMask(); // async, non-blocking
-			addGermanLabels(); // async, non-blocking
+			addGermanLabels();
 			updateLayers(currentExpert, currentViz);
 			// Override with story visibility if story is active
 			applyStoryVisibility(currentStoryStep);

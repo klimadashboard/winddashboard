@@ -446,7 +446,7 @@
 					>, Fraunhofer ISE
 				</li>
 				<li>
-					<strong>Hintergrundkarte:</strong> © OpenStreetMap-Mitwirkende, © CARTO
+					<strong>Hintergrundkarte:</strong> <a href="https://openfreemap.org" target="_blank" rel="noopener" class="underline underline-offset-2 hover:text-slate-900">OpenFreeMap</a>, © OpenMapTiles, © OpenStreetMap-Mitwirkende
 				</li>
 			</ul>
 		</section>

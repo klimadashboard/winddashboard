@@ -20,10 +20,9 @@ npx sv@0.15.2 create --template minimal --types ts --add tailwindcss="plugins:no
 
 ## Environment variables
 
-Copy `.env.example` to `.env` and fill in `PUBLIC_CARTO_API_KEY` — the map's
-CARTO basemap requires an API key ([get one here](https://carto.com/basemaps/apikey/)).
-Set the same variable in the Vercel project's environment variables for
-deployed builds.
+No keys are required. The basemap comes from [OpenFreeMap](https://openfreemap.org)
+(no API key, no request limit). `.env.example` lists the optional
+`PUBLIC_TILE_BASE` override for the data tiles.
 
 ## Developing
 
