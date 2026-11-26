@@ -371,8 +371,16 @@
 		const prevOverflow = document.body.style.overflow;
 		document.body.style.overflow = "hidden";
 
+		// Zwei-Finger-Zoom der Seite sperren. `overflow: hidden` hält nur das
+		// Scrollen auf, nicht das Zoomen; iOS Safari zoomt die Seite trotz
+		// `touch-action` am Overlay zusätzlich über das WebKit-eigene
+		// gesturestart-Ereignis (nicht passiv, sonst wirkt preventDefault nicht).
+		const blockPageZoom = (e: Event) => e.preventDefault();
+		document.addEventListener("gesturestart", blockPageZoom, { passive: false });
+
 		return () => {
 			mq.removeEventListener("change", sync);
+			document.removeEventListener("gesturestart", blockPageZoom);
 			document.body.style.overflow = prevOverflow;
 		};
 	});
@@ -382,7 +390,7 @@
 
 <div
 	class="fixed inset-0 z-40 transition-opacity duration-500"
-	style="opacity:{exiting ? 0 : 1}; pointer-events:{exiting ? 'none' : 'auto'};"
+	style="opacity:{exiting ? 0 : 1}; pointer-events:{exiting ? 'none' : 'auto'}; touch-action:pan-y;"
 >
 	<!-- ── Scroll spacer ── -->
 	<div

@@ -86,6 +86,11 @@
   }
 }
 @media (max-width: 767px) {
+  /* Die Kamera gehört während der Story der Story, und die Ebene darüber
+     fängt jeden Tipp ab: Zoomknöpfe wären sichtbar, aber ohne Wirkung. */
+  .story-active .maplibregl-ctrl-top-right {
+    display: none;
+  }
   .story-active .maplibregl-ctrl-bottom-right {
     z-index: 41;
   }
