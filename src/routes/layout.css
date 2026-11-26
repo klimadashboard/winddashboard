@@ -63,45 +63,15 @@
 }
 
 /*
-  Quellen während der Story bedienbar halten.
+  Attribution während der Story auf dem Handy.
 
-  Die Story legt eine unsichtbare Scroll-Ebene (Scrollytelling.svelte, fixed,
-  z-40) über die ganze Karte. Sie fing die Klicks auf das „i“ ab: Die Quellen
-  ließen sich nicht einklappen und blieben groß, weil MapLibre sie nur beim
-  Ziehen der Karte einklappt — und in der Story bewegt sich die Karte per
-  Scrollen. Darum liegt die Ecke mit den Quellen in dieser Zeit über der
-  Ebene: am Desktop oben rechts (mit den Zoomknöpfen), auf dem Handy unten
-  rechts. Oben rechts bleibt auf dem Handy unten, sonst lägen die Zoomknöpfe
-  über der Story-Karte.
-
-  Auf dem Handy reichte die aufgeklappte Box mit dem Abstand zur Suchleiste
-  an die Vor/Zurück-Knöpfe der Story heran. Die Suchleiste ist während der
-  Story verdeckt, deshalb sitzt die Box dann wieder am unteren Rand. Zur
-  Sicherheit nimmt nur das „i“ und die Links Klicks an, der Rest der Box
-  lässt sie zur Story durch.
+  Die Story liegt als Infobox über der Karte (Scrollytelling.svelte) und lässt
+  alle Klicks zur Karte durch. Die Suchleiste ist während der Story verdeckt,
+  deshalb sitzt die Attribution unten rechts dann wieder am unteren Rand statt
+  über der Suchleiste.
 */
-@media (min-width: 768px) {
-  .story-active .maplibregl-ctrl-top-right {
-    z-index: 41;
-  }
-}
 @media (max-width: 767px) {
-  /* Die Kamera gehört während der Story der Story, und die Ebene darüber
-     fängt jeden Tipp ab: Zoomknöpfe wären sichtbar, aber ohne Wirkung. */
-  .story-active .maplibregl-ctrl-top-right {
-    display: none;
-  }
-  .story-active .maplibregl-ctrl-bottom-right {
-    z-index: 41;
-  }
   .story-active .maplibregl-ctrl-bottom-right .maplibregl-ctrl-attrib {
     margin-bottom: 10px !important;
   }
-}
-.story-active .maplibregl-ctrl-attrib {
-  pointer-events: none;
-}
-.story-active .maplibregl-ctrl-attrib-button,
-.story-active .maplibregl-ctrl-attrib a {
-  pointer-events: auto;
 }

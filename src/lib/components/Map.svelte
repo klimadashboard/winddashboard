@@ -875,6 +875,15 @@
 			const zoneLayers = ["possible-zones-fill", "official-zones-fill", "wka-hulls-fill", "turbines"];
 
 			map.on("mousemove", (e) => {
+				// Während der Story bleibt die Karte frei bedienbar, zeigt aber keine
+				// Gemeinde-/Zonen-Hover: Die Story erklärt die Ebenen selbst, und der
+				// Zeiger „klickbar“ wäre irreführend (siehe Klick unten).
+				if (get(storyStep) >= 0) {
+					map.getCanvas().style.cursor = "";
+					clearRegionHover();
+					onHover(null);
+					return;
+				}
 				const bbox = [
 					[e.point.x - 3, e.point.y - 3],
 					[e.point.x + 3, e.point.y + 3],
@@ -971,6 +980,8 @@
 			});
 
 			map.on("click", async (e) => {
+				// Während der Story führt ein Klick nicht auf eine Gemeindeseite.
+				if (get(storyStep) >= 0) return;
 				// Turbine clicks: do nothing (no region to navigate to)
 				const zoneFeat = map.queryRenderedFeatures(e.point, { layers: zoneLayers });
 				if (zoneFeat.length > 0 && zoneFeat.every(f => f.layer.id === "turbines")) return;
@@ -1388,10 +1399,9 @@
 </script>
 
 <!--
-	story-active: während der Story liegt die Scroll-Ebene (Scrollytelling,
-	fixed z-40) über der Karte und schluckte jeden Klick auf das „i“ der
-	Quellen. layout.css hebt deshalb in dieser Zeit die Ecke mit den Quellen
-	über die Ebene.
+	story-active: die Story (Scrollytelling, fixed z-40) fängt keine Zeiger-
+	ereignisse ab, die Karte bleibt bedienbar. layout.css nutzt die Klasse nur
+	noch für den Abstand der Attribution auf dem Handy (Suchleiste fehlt).
 -->
 <div bind:this={mapContainer} class="w-full h-full" class:story-active={$storyStep >= 0}></div>
 
