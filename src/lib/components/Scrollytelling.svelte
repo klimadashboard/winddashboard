@@ -25,31 +25,15 @@
 	let { onComplete }: { onComplete: () => void } = $props();
 
 	// ── State ─────────────────────────────────────────────────────────────────
-	let scrollEl = $state<HTMLDivElement | null>(null);
 	let step = $state(0);
-	/**
-	 * Unter `sm` führen ausschließlich die Knöpfe durch die Geschichte, der
-	 * Scroll-Spacer ist dort abgeschaltet.
-	 *
-	 * Vorher lagen zwei Gesten übereinander: die Karte füllt den Bildschirm und
-	 * will verschoben werden, gleichzeitig blätterte jede vertikale Wischbewegung
-	 * die Geschichte weiter. Wer die Karte ansehen wollte, sprang ungewollt einen
-	 * Schritt vor. Die Knöpfe gab es schon, sie waren nur nicht die einzige Art
-	 * weiterzukommen. Am Schreibtisch bleibt Scrollen, dort gibt es keine
-	 * konkurrierende Geste.
-	 *
-	 * 640 px ist Tailwinds `sm` — derselbe Wert, an dem die Knöpfe sichtbar und
-	 * die Punkte unsichtbar werden.
-	 */
-	let buttonNav = $state(false);
-	// Textkarte eingeklappt, um die ganze Karte zu sehen (slidePanel). Gilt nur
-	// für den aktuellen Schritt: jeder Schrittwechsel klappt wieder auf.
-	let panelCollapsed = $state(false);
+	// Infobox (Textkarte samt Schritt-Knöpfen) ein- oder ausgeblendet. Gilt für
+	// die ganze Geschichte, nicht je Schritt: Wer die Karte frei sehen will,
+	// blendet die Infobox aus und über „Infobox“ oben links wieder ein.
+	let boxOpen = $state(true);
 	// Popup „Bestehende Windparks“ im Zonierungsschritt (Fragezeichen).
 	let hullInfoOpen = $state(false);
 	$effect(() => {
 		step;
-		panelCollapsed = false;
 		hullInfoOpen = false;
 	});
 	let exiting = $state(false);
@@ -270,44 +254,22 @@
 
 	/**
 	 * Der einzige Weg, den Schritt zu wechseln — von Knöpfen, Punkten und
-	 * Tastatur aus. Ohne Scroll-Navigation gibt es keinen Spacer, an dem sich
-	 * `step` ablesen ließe, also wird er direkt gesetzt.
+	 * Tastatur aus. Die Karte ist immer frei bedienbar (Zoomen, Verschieben,
+	 * Zoomknöpfe), deshalb führt kein Scrollen durch die Geschichte.
 	 */
 	function goTo(s: number) {
 		if (exiting) return;
 		const target = Math.max(0, Math.min(s, NUM_STEPS - 1));
-		if (buttonNav) {
-			if (target !== step) {
-				step = target;
-				storyStep.set(target);
-			}
-			return;
-		}
-		scrollEl?.scrollTo({ top: target * window.innerHeight, behavior: "smooth" });
-	}
-
-	function handleScroll() {
-		// Nach complete() bleibt die Scroll-Ebene noch 600 ms für die Ausblendung
-		// stehen. Lief da noch ein weiches oder Trägheits-Scrollen, setzte dieser
-		// Handler storyStep wieder auf einen Schritt ≥ 0: Die Story war weg, die
-		// Karte aber im Zustand dieses Schritts — ohne Potenzialflächen (erst ab
-		// Schritt 5) oder ohne Anlagen (ab Schritt 7).
-		if (buttonNav || exiting) return;
-		if (!scrollEl) return;
-		const newStep = Math.min(
-			Math.round(scrollEl.scrollTop / window.innerHeight),
-			NUM_STEPS - 1,
-		);
-		if (newStep !== step) {
-			step = newStep;
-			storyStep.set(newStep);
+		if (target !== step) {
+			step = target;
+			storyStep.set(target);
 		}
 	}
 
-	// Keyboard nav: the story otherwise only responds to scroll/wheel/touch and
-	// the (small, hard-to-tab-to) pagination dots — arrow/space/page keys give
-	// keyboard users the same step-by-step control, Escape matches the usual
-	// "leave the overlay" convention for full-screen takeovers.
+	// Keyboard nav: arrow/space/page keys step through the story for keyboard
+	// users (the pagination dots are small and hard to tab to). Hängt an der
+	// Infobox, nicht am Fenster: Die Pfeiltasten gehören der Karte, sobald sie
+	// den Fokus hat. Escape blendet die Infobox aus.
 	function handleKeydown(e: KeyboardEvent) {
 		if (exiting) return;
 		// Escape schließt zuerst das Popup, statt etwas anderes auszulösen.
@@ -339,7 +301,7 @@
 				break;
 			case "Escape":
 				e.preventDefault();
-				complete();
+				boxOpen = false;
 				break;
 		}
 	}
@@ -347,55 +309,47 @@
 	onMount(() => {
 		storyStep.set(0);
 		loadData();
-
-		// matchMedia statt eines resize-Listeners mit Breitenvergleich: der
-		// Browser meldet nur den Wechsel über die Grenze, nicht jedes Pixel.
-		const mq = window.matchMedia("(max-width: 639px)");
-		const sync = () => {
-			buttonNav = mq.matches;
-			// Zurück am Schreibtisch: der Spacer steht noch dort, wo er beim
-			// letzten Scrollen stand. Ohne Nachführen würde die nächste
-			// Scrollbewegung zum zuletzt gescrollten Schritt zurückspringen.
-			if (!buttonNav && scrollEl) {
-				scrollEl.scrollTop = step * window.innerHeight;
-			}
-		};
-		sync();
-		mq.addEventListener("change", sync);
-
-		// Dokument feststellen, solange die Geschichte den Bildschirm ausfüllt.
-		// Bisher fing der Scroll-Spacer jede Wischbewegung ab; ohne ihn würde auf
-		// dem Telefon stattdessen die Seite hinter dem Vollbild wegscrollen — der
-		// Nutzer sieht nichts davon und findet die Seite nach dem Schließen an
-		// einer anderen Stelle wieder.
-		const prevOverflow = document.body.style.overflow;
-		document.body.style.overflow = "hidden";
-
-		return () => {
-			mq.removeEventListener("change", sync);
-			document.body.style.overflow = prevOverflow;
-		};
 	});
 </script>
 
-<svelte:window onkeydown={handleKeydown} />
-
+<!--
+	Die Ebene fängt keine Zeigerereignisse ab: Karte, Zoomknöpfe und Quellen
+	bleiben während der ganzen Geschichte bedienbar. Nur Infobox und
+	„Infobox“-Knopf nehmen Klicks an (pointer-events-auto).
+-->
 <div
-	class="fixed inset-0 z-40 transition-opacity duration-500"
-	style="opacity:{exiting ? 0 : 1}; pointer-events:{exiting ? 'none' : 'auto'};"
+	class="fixed inset-0 z-40 pointer-events-none transition-opacity duration-500"
+	style="opacity:{exiting ? 0 : 1};"
 >
-	<!-- ── Scroll spacer ── -->
-	<div
-		bind:this={scrollEl}
-		onscroll={handleScroll}
-		class="absolute inset-0"
-		style="overflow-y:{buttonNav ? 'hidden' : 'scroll'}; z-index:0;"
-	>
-		<div style="height:{buttonNav ? 100 : NUM_STEPS * 100}vh;"></div>
-	</div>
-
 	<!-- ── Slide cards ── -->
 	<div class="absolute inset-0 pointer-events-none" style="z-index:10;">
+		<!--
+			Infobox-Knopf: blendet die Textkarte samt Schritt-Knöpfen aus und ein.
+			Sitzt dort, wo nach der Geschichte die Legende steht, und sieht aus wie
+			deren eingeklappte Kopfzeile.
+		-->
+		<button
+			class="pointer-events-auto absolute top-4 left-4 flex items-center gap-2 rounded-2xl px-3 py-2.5 text-xs text-left
+				transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400"
+			style="width:188px; background:white; border:1px solid #e2e8f0; box-shadow:0 2px 18px rgba(0,0,0,0.08);"
+			onclick={() => (boxOpen = !boxOpen)}
+			aria-expanded={boxOpen}
+			aria-label={boxOpen
+				? "Infobox ausblenden, um die ganze Karte zu sehen"
+				: "Infobox einblenden"}
+		>
+			<svg class="w-3.5 h-3.5 shrink-0 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+			</svg>
+			<span class="flex-1 font-semibold" style="color:var(--text-dark);">Infobox</span>
+			<svg
+				class="w-3.5 h-3.5 shrink-0 opacity-30 transition-transform {boxOpen ? 'rotate-180' : ''}"
+				fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"
+			>
+				<path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+			</svg>
+		</button>
+
 		<!--
 			revealBarHeader: persistent area breakdown bar, shown at the bottom
 			of every card's text container (not full-bleed — user feedback showed
@@ -434,6 +388,57 @@
 		{/snippet}
 
 		<!--
+			stepNav: Schritt-Knöpfe, Zähler (Telefon) und Punkte (ab `sm`) am Fuß
+			der Infobox. Sie gehören zur Infobox und verschwinden mit ihr.
+		-->
+		{#snippet stepNav()}
+			<div class="mt-4 flex items-center justify-between gap-3">
+				<button
+					onclick={() => goTo(Math.max(step - 1, 0))}
+					disabled={step === 0}
+					class="flex items-center justify-center shrink-0 rounded-full bg-slate-100 transition-opacity disabled:opacity-30
+						focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
+					style="width:44px; height:44px;"
+					aria-label="Vorheriger Schritt"
+				>
+					<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="#1d4ed8" stroke-width="2.5" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+					</svg>
+				</button>
+				<span class="sm:hidden text-xs font-semibold tabular-nums" style="color:#1d4ed8;">
+					{step + 1} / {NUM_STEPS}
+				</span>
+				<div class="hidden sm:flex items-center gap-2">
+					{#each Array(NUM_STEPS) as _, i (i)}
+						<button
+							class="rounded-full transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
+							style="width:{step === i
+								? '20px'
+								: '7px'}; height:7px; background:{step === i
+								? '#1d4ed8'
+								: 'rgba(0,0,0,0.2)'};"
+							onclick={() => goTo(i)}
+							aria-label="Zu Schritt {i + 1}"
+							aria-current={step === i ? "step" : undefined}
+						></button>
+					{/each}
+				</div>
+				<button
+					onclick={() =>
+						step === NUM_STEPS - 1 ? complete() : goTo(Math.min(step + 1, NUM_STEPS - 1))}
+					class="flex items-center justify-center shrink-0 rounded-full transition-opacity
+						focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
+					style="width:44px; height:44px; background:#1d4ed8;"
+					aria-label={step === NUM_STEPS - 1 ? "Zur Karte" : "Nächster Schritt"}
+				>
+					<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="#ffffff" stroke-width="2.5" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+					</svg>
+				</button>
+			</div>
+		{/snippet}
+
+		<!--
 			slidePanel: common white card shell shared by every step.
 			  inner    — snippet with the card's body content
 			  align    — 'left' (default) pins card top-left; 'center' centers it
@@ -442,9 +447,9 @@
 
 			  Margins: all panels use 1rem (p-4) from every screen edge — matching
 			  the map control panel (top-4 left-4) and the MapLibre zoom margin.
-			  Left-aligned panels get pr-16 on mobile to clear the top-right zoom
-			  controls; center-aligned panels sit near the top on mobile so the map
-			  stays visible below.
+			  Oben bleibt Platz für den „Infobox“-Knopf. Left-aligned panels get
+			  pr-16 on mobile to clear the top-right zoom controls; center-aligned
+			  panels sit near the top on mobile so the map stays visible below.
 		-->
 		{#snippet slidePanel(
 			inner: Snippet,
@@ -453,60 +458,43 @@
 			padding = "p-6",
 		)}
 			<!--
-				pb-48 hält unten Platz für den gesamten Navigationsblock frei —
-				Schritt-Knöpfe, Zähler und Sprunglink zusammen. Ohne das lag er auf
-				kurzen Telefonen mitten im Diagramm: beim Zonierungsschritt
-				verdeckten Punkte und Sprunglink die Balken von Kärnten abwärts.
+				pb-20 hält auf dem Telefon unten die Attribution frei.
 
 				max-h + overflow-y-auto statt overflow-hidden auf der Hülle: der
 				längste Schritt braucht 697 px, ein iPhone SE bietet 667. Vorher
 				wurde der Rest wortlos abgeschnitten und war nicht erreichbar.
 			-->
 			<div
-				class="absolute inset-0 flex flex-col pb-48 sm:pb-4
+				class="absolute inset-0 flex flex-col pb-20 sm:pb-4
 					{align === 'center'
-					? 'p-4 items-center justify-start sm:justify-center'
-					: 'pt-[8%] pl-4 pr-16 sm:pr-4 items-start justify-start'}"
+					? 'px-4 pt-[4.5rem] sm:pt-4 items-center justify-start sm:justify-center'
+					: 'pt-[max(4.5rem,8%)] pl-4 pr-16 sm:pr-4 items-start justify-start'}"
 				transition:fade={{ duration: 300 }}
 			>
 				<!--
-					Einklappen: die Textkarte deckt am Schreibtisch Vorarlberg und
-					Nordtirol ab, auf dem Telefon ein gutes Stück der Karte. Nur bei
-					den linken Karten (Schritte 1–7) — Titel und Schluss sind
-					zentriert und haben keine Karte dahinter, die man sehen müsste.
-					Beim Schrittwechsel klappt die Karte wieder auf (siehe $effect),
-					sonst stünde man ohne Text im nächsten Schritt.
+					Ausblenden: die Textkarte deckt am Schreibtisch Vorarlberg und
+					Nordtirol ab, auf dem Telefon ein gutes Stück der Karte. Zurück
+					kommt sie über den „Infobox“-Knopf oben links (boxOpen).
 				-->
-				{#if align === "left" && panelCollapsed}
-					<button
-						class="pointer-events-auto flex items-center gap-2 rounded-md bg-white/95 backdrop-blur-sm shadow-lg
-							px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-white transition-colors
-							focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
-						onclick={() => (panelCollapsed = false)}
-						aria-expanded="false"
-						in:fade={{ duration: 150 }}
-					>
-						<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-						</svg>
-						Text einblenden
-					</button>
-				{:else}
+				{#if boxOpen}
+					<!-- svelte-ignore a11y_no_noninteractive_element_interactions -- Tastatursteuerung bubbelt von den Knöpfen in der Infobox hoch -->
 					<div
 						class="relative bg-white/95 backdrop-blur-sm rounded-md w-full {maxWidth} shadow-lg pointer-events-auto
 							max-h-full overflow-y-auto overscroll-contain"
 						in:fly={{ y: 20, duration: 400, delay: 80 }}
-						onwheel={(e) => scrollEl?.scrollBy({ top: e.deltaY })}
+						onkeydown={handleKeydown}
+						role="group"
+						aria-label="Infobox"
 					>
 						{#if align === "left"}
 							<button
 								class="absolute top-2 right-2 flex items-center justify-center w-7 h-7 rounded-md
 									text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors
 									focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400"
-								onclick={() => (panelCollapsed = true)}
+								onclick={() => (boxOpen = false)}
 								aria-expanded="true"
-								aria-label="Text einklappen, um die ganze Karte zu sehen"
-								title="Text einklappen"
+								aria-label="Infobox ausblenden, um die ganze Karte zu sehen"
+								title="Infobox ausblenden"
 							>
 								<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
@@ -518,6 +506,7 @@
 							<div class="mt-4">
 								{@render revealBarHeader()}
 							</div>
+							{@render stepNav()}
 						</div>
 					</div>
 				{/if}
@@ -545,57 +534,13 @@
 					> Fläche. Aber nicht überall darf man ein Windrad hinbauen.
 				</p>
 
-				<div class="mt-4 flex flex-col gap-2">
-					<button
-						class="w-full flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity"
-						style="background:#1d4ed8;"
-						onclick={() => goTo(1)}
-						onwheel={(e) => scrollEl?.scrollBy({ top: e.deltaY })}
-					>
-						<!--
-							Auf dem Telefon führt kein Scrollen mehr durch die Geschichte,
-							also darf der Knopf auch nicht dazu auffordern. Das Mausrad-
-							Symbol entfällt dort aus demselben Grund.
-						-->
-						{buttonNav ? "Los geht's" : "Scrolle, um mehr zu erfahren"}
-						<svg
-							class="w-4 h-5 {buttonNav ? 'hidden' : ''}"
-							viewBox="0 0 16 24"
-							fill="none"
-						>
-							<rect
-								x="1"
-								y="1"
-								width="14"
-								height="22"
-								rx="7"
-								stroke="currentColor"
-								stroke-width="1.5"
-							/>
-							<circle cx="8" cy="7" r="1.6" fill="currentColor">
-								<animate
-									attributeName="cy"
-									values="7;15;7"
-									dur="1.6s"
-									repeatCount="indefinite"
-								/>
-								<animate
-									attributeName="opacity"
-									values="1;0;0"
-									dur="1.6s"
-									repeatCount="indefinite"
-								/>
-							</circle>
-						</svg>
-					</button>
-					<button
-						class="w-full py-2 px-4 rounded-xl text-sm text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
-						onclick={complete}
-						onwheel={(e) => scrollEl?.scrollBy({ top: e.deltaY })}
-					>
-						Direkt zur interaktiven Karte springen
-					</button>
-				</div>
+				<button
+					class="mt-4 w-full flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+					style="background:#1d4ed8;"
+					onclick={() => goTo(1)}
+				>
+					Los geht's
+				</button>
 			{/snippet}
 			{@render slidePanel(step0, "center", "max-w-md")}
 		{/if}
@@ -1195,78 +1140,12 @@
 					class="w-full py-3 px-6 rounded-xl font-semibold text-white text-sm hover:opacity-90 transition-opacity"
 					style="background:#1d4ed8;"
 				>
-					Direkt zur interaktiven Karte →
+					Karte erkunden →
 				</button>
 			{/snippet}
 			{@render slidePanel(step8, "center", "max-w-sm", "p-8 text-center")}
 		{/if}
 
-		<!--
-			Bottom nav: Schritt-Knöpfe, Punkte und Sprunglink.
-
-			Auf dem Telefon führt reines Scrollen durch die Story schlecht: Die
-			Karte liegt im Vollbild, jede Wischbewegung konkurriert mit dem
-			Verschieben der Karte, und wie weit man wischen muss, ist nicht
-			absehbar. Deshalb gibt es unter `sm` zwei ausdrückliche Knöpfe. Am
-			Schreibtisch bleibt es beim Scrollen, dort funktioniert es.
-		-->
-		<div
-			class="absolute bottom-20 sm:bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-auto"
-		>
-			<div class="flex sm:hidden items-center gap-3 mb-1">
-				<button
-					onclick={() => goTo(Math.max(step - 1, 0))}
-					disabled={step === 0}
-					class="flex items-center justify-center rounded-full transition-opacity disabled:opacity-30 shadow-md"
-					style="width:44px; height:44px; background:rgba(255,255,255,0.95); backdrop-filter:blur(4px);"
-					aria-label="Vorheriger Schritt"
-				>
-					<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="#1d4ed8" stroke-width="2.5">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-					</svg>
-				</button>
-				<span class="text-xs font-semibold tabular-nums" style="color:#1d4ed8;">
-					{step + 1} / {NUM_STEPS}
-				</span>
-				<button
-					onclick={() =>
-						step === NUM_STEPS - 1 ? complete() : goTo(Math.min(step + 1, NUM_STEPS - 1))}
-					class="flex items-center justify-center rounded-full transition-opacity shadow-md"
-					style="width:44px; height:44px; background:#1d4ed8;"
-					aria-label={step === NUM_STEPS - 1 ? "Zur Karte" : "Nächster Schritt"}
-				>
-					<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="#ffffff" stroke-width="2.5">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-					</svg>
-				</button>
-			</div>
-			<div class="hidden sm:flex gap-2">
-				{#each Array(NUM_STEPS) as _, i (i)}
-					<button
-						class="rounded-full transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
-						style="width:{step === i
-							? '20px'
-							: '7px'}; height:7px; background:{step === i
-							? '#1d4ed8'
-							: 'rgba(0,0,0,0.2)'};"
-						onclick={() => goTo(i)}
-						onwheel={(e) => scrollEl?.scrollBy({ top: e.deltaY })}
-						aria-label="Zu Schritt {i + 1}"
-						aria-current={step === i ? "step" : undefined}
-					></button>
-				{/each}
-			</div>
-			{#if step >= 1 && step < NUM_STEPS - 1}
-				<button
-					onclick={complete}
-					class="text-xs text-slate-500 hover:text-slate-800 transition-colors px-3 py-1 rounded-lg"
-					style="background:rgba(255,255,255,0.85); backdrop-filter:blur(4px);"
-					onwheel={(e) => scrollEl?.scrollBy({ top: e.deltaY })}
-				>
-					Direkt zur interaktiven Karte →
-				</button>
-			{/if}
-		</div>
 	</div>
 	<!-- /visual layers -->
 </div>

@@ -14,6 +14,8 @@
 	import { browser } from "$app/environment";
 	import { onMount } from "svelte";
 	import { page } from "$app/stores";
+	import { goto } from "$app/navigation";
+	import { track } from "$lib/analytics";
 	import type { HoverInfo } from "$lib/components/Map.svelte";
 
 	let { children } = $props();
@@ -35,6 +37,15 @@
 
 	const isRoot = $derived($page.url.pathname === "/");
 	const showStory = $derived(browser && isRoot && !$storyComplete);
+
+	// „Infobox“ über der Legende: öffnet die Story wieder bei Schritt 1. Die
+	// Karte wird dabei nicht neu eingepasst, der Zoom des Nutzers bleibt.
+	function reopenInfobox() {
+		track("Story Replay");
+		selectedRegion.set(null);
+		storyComplete.set(false);
+		goto("/", { noScroll: true });
+	}
 </script>
 
 <div>
@@ -60,7 +71,23 @@
 		<MapTooltip info={hoverInfo} />
 
 		{#if !showStory}
-			<div class="absolute top-4 left-4 z-10">
+			<div class="absolute top-4 left-4 z-10 flex flex-col gap-2">
+				<!-- Gleicher Platz und Stil wie der „Infobox“-Knopf der Story (Scrollytelling.svelte) -->
+				<button
+					class="flex items-center gap-2 rounded-2xl px-3 py-2.5 text-xs text-left transition-colors hover:bg-slate-50
+						focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400"
+					style="width:188px; background:white; border:1px solid #e2e8f0; box-shadow:0 2px 18px rgba(0,0,0,0.08);"
+					onclick={reopenInfobox}
+					aria-label="Infobox einblenden: Einführung zur Karte noch einmal öffnen"
+				>
+					<svg class="w-3.5 h-3.5 shrink-0 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+					</svg>
+					<span class="flex-1 font-semibold" style="color:var(--text-dark);">Infobox</span>
+					<svg class="w-3.5 h-3.5 shrink-0 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+					</svg>
+				</button>
 				<MapControlPanel />
 			</div>
 			<!--
